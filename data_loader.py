@@ -57,7 +57,7 @@ class WGISDMaskedDataset(Dataset):
             img = np.moveaxis(img, -1, 0)
             img = torch.as_tensor(img, dtype=torch.float32)
 
-            # Loading masks:
+        # Loading masks:
         #
         # As seen in WGISD (README.md):
         #
@@ -73,8 +73,8 @@ class WGISDMaskedDataset(Dataset):
         # masks (UInt8Tensor[N, H, W]): the segmentation binary masks for each
         # instance
         #
-        # WGISD provides [H, W, N] masks, but Torchvision asks for [N, H, W]. Lett's
-        # employ NumPy moveaxis.
+        # WGISD provides [H, W, N] masks, but Torchvision asks for [N, H, W].
+        # Let's employ NumPy moveaxis.
         wgisd_masks = np.load(mask_path)['arr_0'].astype(np.uint8)
         masks = np.moveaxis(wgisd_masks, -1, 0)
 
@@ -115,6 +115,10 @@ class WGISDMaskedDataset(Dataset):
         masks = torch.as_tensor(masks, dtype=torch.uint8)
         image_id = torch.tensor([idx])
 
+        area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        # suppose all instances are not crowd
+        iscrowd = torch.zeros((num_objs,), dtype=torch.int64)
+
         # There is only one class -> grapes
         # IMPORTANT: Torchvision considers 0 as background.
         # So, let's make grapes as class 1
@@ -124,7 +128,9 @@ class WGISDMaskedDataset(Dataset):
             "boxes": boxes,
             "labels": labels,
             "masks": masks,
-            "image_id": image_id
+            "image_id": image_id,
+            "area": area,
+            "iscrowd" : iscrowd
         }
 
         return img, target
