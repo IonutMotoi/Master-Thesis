@@ -7,22 +7,28 @@ import utils
 import torch
 from torch.utils.data import DataLoader
 import torchvision
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--dataset', dest = 'dataset_path', default='./wgisd')
 
 
 if __name__ == '__main__':
+    
+    args = parser.parse_args()
+    
     # Train on the GPU or on the CPU, if a GPU is not available
-    # if torch.cuda.is_available():
-    #     device = torch.device('cuda')
-    #     print("device = cuda")
-    # else:
-    device = torch.device('cpu')
-    print("device = cpu")
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+        print("device = cuda")
+    else:
+        device = torch.device('cpu')
 
     # WGISD has only 2 classes: grapes and background
     num_classes = 2
     # Training and validation datasets
-    dataset = WGISDMaskedDataset('./wgisd')
-    dataset_test = WGISDMaskedDataset('./wgisd', source='test')
+    dataset = WGISDMaskedDataset(args.dataset_path)
+    dataset_test = WGISDMaskedDataset(args.dataset_path, source='test')
 
     # Training and validation data loaders
     data_loader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=4, collate_fn=utils.collate_fn)
