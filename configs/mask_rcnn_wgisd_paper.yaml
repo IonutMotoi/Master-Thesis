@@ -1,0 +1,21 @@
+_BASE_: "./mask_rcnn_R_50_FPN_3x.yaml"
+DATASETS:
+  TRAIN : ("wgisd_train",)
+  TEST : ("wgisd_valid",)
+DATALOADER:
+  NUM_WORKERS : 2
+INPUT:
+  MASK_FORMAT : "bitmask"
+SOLVER:
+  IMS_PER_BATCH : 16
+  BASE_LR : 0.02
+  STEPS: (367, 489)
+  MAX_ITER: 550
+  CHECKPOINT_PERIOD : 5
+  WARMUP_ITERS :
+MODEL:
+  ROI_HEADS:
+    NUM_CLASSES : 1
+TEST:
+  EVAL_PERIOD: 5
+OUTPUT_DIR: "../output/exp1"
