@@ -6,6 +6,7 @@ from detectron2.config import get_cfg
 from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup, launch
 from detectron2.evaluation import COCOEvaluator, verify_results
 
+from setup_wgisd import setup_wgisd
 
 class Trainer(DefaultTrainer):
     @classmethod
@@ -27,6 +28,9 @@ def setup(args):
 
 def main(args):
     cfg = setup(args)
+
+    # Register datasets
+    setup_wgisd()
 
     if args.eval_only:
         model = Trainer.build_model(cfg)
