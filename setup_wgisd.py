@@ -84,7 +84,7 @@ def get_wgisd_dicts(root, source):
   return dataset_dicts
 
 def setup_wgisd():
-  data_path = "/content/drive/MyDrive/Thesis/Mask RCNN/wgisd"
+  data_path = "./wgisd"
 
   for d in ["train", "valid", "test"]:
     dataset_name = "wgisd_" + d
@@ -94,7 +94,5 @@ def setup_wgisd():
     DatasetCatalog.register(dataset_name, lambda d=d: get_wgisd_dicts(data_path, d))
     MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
 
-  wgisd_metadata = MetadataCatalog.get("wgisd_train")
-  wgisd_metadata.size = 88
   MetadataCatalog.get("wgisd_valid").set(evaluator_type = "coco")
   MetadataCatalog.get("wgisd_test").set(evaluator_type = "coco")
