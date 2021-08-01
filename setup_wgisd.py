@@ -84,7 +84,7 @@ def get_wgisd_dicts(root, source):
 
 
 def setup_wgisd():
-    data_path = "/datasets/wgisd"
+    data_path = "/thesis/wgisd"
 
     for d in ["train", "valid", "test"]:
         dataset_name = "wgisd_" + d
