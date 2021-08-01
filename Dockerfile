@@ -6,5 +6,7 @@ RUN pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/c
 
 RUN pip install notebook
 
+RUN pip install wandb
+
 COPY wgisd /thesis/wgisd
 COPY detectron2_baseline /thesis/detectron2_baseline

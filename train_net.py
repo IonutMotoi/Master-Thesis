@@ -8,6 +8,8 @@ from detectron2.evaluation import COCOEvaluator, verify_results
 
 from setup_wgisd import setup_wgisd
 
+import wandb
+
 
 class Trainer(DefaultTrainer):
     @classmethod
@@ -34,6 +36,8 @@ def main(args):
 
     # Register datasets
     setup_wgisd()
+
+    wandb.init(project="Mask_RCNN", sync_tensorboard=True)
 
     if args.eval_only:
         model = Trainer.build_model(cfg)
