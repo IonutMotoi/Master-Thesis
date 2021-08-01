@@ -8,12 +8,14 @@ from detectron2.evaluation import COCOEvaluator, verify_results
 
 from setup_wgisd import setup_wgisd
 
+
 class Trainer(DefaultTrainer):
     @classmethod
     def build_evaluator(cls, cfg, dataset_name, output_folder=None):
         if output_folder is None:
             output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
         return COCOEvaluator(dataset_name, output_dir=output_folder)
+
 
 def setup(args):
     """
@@ -25,6 +27,7 @@ def setup(args):
     cfg.freeze()
     default_setup(cfg, args)
     return cfg
+
 
 def main(args):
     cfg = setup(args)
