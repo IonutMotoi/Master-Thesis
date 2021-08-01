@@ -6,3 +6,5 @@ RUN apt-get update
 RUN apt-get install -y libgl1-mesa-dev libglib2.0-0
 
 RUN pip install notebook
+
+COPY wgisd /datasets/wgisd
