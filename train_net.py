@@ -1,25 +1,34 @@
+import logging
 import os
+from collections import OrderedDict
 
-import detectron2.utils.comm as comm
+from torch.nn.parallel import DistributedDataParallel
+
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
-from detectron2.engine import DefaultTrainer, default_argument_parser, default_setup, launch
-from detectron2.evaluation import COCOEvaluator, verify_results
+from detectron2.evaluation import COCOEvaluator
+from detectron2.engine import launch, default_argument_parser, default_setup
+from detectron2.modeling import build_model
+from detectron2.utils import comm
 
-from setup_wgisd import setup_wgisd
-
-import wandb
-
-
-class Trainer(DefaultTrainer):
-    @classmethod
-    def build_evaluator(cls, cfg, dataset_name, output_folder=None):
-        if output_folder is None:
-            output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
-        return COCOEvaluator(dataset_name, output_dir=output_folder)
+logger = logging.getLogger("detectron2")
 
 
-def setup(args):
+def get_evaluator(cfg, dataset_name, output_folder=None):
+    if output_folder is None:
+        output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
+    return COCOEvaluator(dataset_name, output_dir=output_folder)
+
+
+def do_test(cfg, model):
+    results = OrderedDict()
+
+
+def do_train(cfg, model, resume=False):
+    pass
+
+
+def setup():
     """
     Create configs and perform basic setups.
     """
@@ -31,27 +40,27 @@ def setup(args):
     return cfg
 
 
-def main(args):
-    cfg = setup(args)
+def main():
+    cfg = setup()
 
-    # Register datasets
-    setup_wgisd()
-
-    wandb.init(project="Mask_RCNN", sync_tensorboard=True)
+    model = build_model(cfg)
+    logger.info("Model:\n{}".format(model))
 
     if args.eval_only:
-        model = Trainer.build_model(cfg)
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
-        res = Trainer.test(cfg, model)
-        if comm.is_main_process():
-            verify_results(cfg, res)
-        return res
+        return do_test(cfg, model)
 
-    trainer = Trainer(cfg)
-    trainer.resume_or_load(resume=args.resume)
-    return trainer.train()
+    distributed = comm.get_world_size() > 1
+    if distributed:
+        model = DistributedDataParallel(
+            model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
+        )
+
+    do_train(cfg, model, resume=args.resume)
+
+    return do_test(cfg, model)
 
 
 if __name__ == "__main__":
