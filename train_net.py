@@ -86,7 +86,7 @@ def do_train(cfg, model, resume=False):
             periodic_checkpointer.step(iteration)
 
 
-def setup():
+def setup(args):
     """
     Create configs and perform basic setups.
     """
@@ -98,8 +98,8 @@ def setup():
     return cfg
 
 
-def main():
-    cfg = setup()
+def main(args):
+    cfg = setup(args)
 
     model = build_model(cfg)
     logger.info("Model:\n{}".format(model))
