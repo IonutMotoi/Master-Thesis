@@ -14,6 +14,9 @@ from detectron2.solver import build_optimizer, build_lr_scheduler
 from detectron2.utils import comm
 from detectron2.utils.events import EventStorage
 
+import wandb
+from setup_wgisd import setup_wgisd
+
 logger = logging.getLogger("detectron2")
 
 
@@ -103,6 +106,12 @@ def main(args):
 
     model = build_model(cfg)
     logger.info("Model:\n{}".format(model))
+
+    # Register datasets
+    setup_wgisd()
+
+    # Init Weight & Biases and sync with Tensorboard
+    wandb.init(project="Mask_RCNN", sync_tensorboard=True)
 
     if args.eval_only:
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
