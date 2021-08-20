@@ -46,7 +46,7 @@ def do_test(cfg, model):
 def do_train(cfg, model, resume=False):
     model.train()
     optimizer = build_optimizer(cfg, model)
-    scheduler = build_lr_scheduler(cfg, model)
+    scheduler = build_lr_scheduler(cfg, optimizer)
     checkpointer = DetectionCheckpointer(model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler)
     start_iter = (checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1)
     max_iter = cfg.SOLVER.MAX_ITER
