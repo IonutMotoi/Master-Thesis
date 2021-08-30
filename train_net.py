@@ -80,8 +80,9 @@ def do_train(cfg, model, resume=False):
                 and iteration != max_iter - 1
             ):
                 test_results = do_test(cfg, model)
-                for _, dataset_test_results in test_results.items():
-                    storage.put_scalars(**dataset_test_results)
+                for name, results in test_results.items():
+                    with storage.name_scope(name):
+                        storage.put_scalars(**results)
                 comm.synchronize()
 
             if iteration - start_iter > 5 and ((iteration + 1) % 20 == 0 or iteration == max_iter - 1):
