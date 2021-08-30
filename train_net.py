@@ -80,7 +80,7 @@ def do_train(cfg, model, resume=False):
                 and iteration != max_iter - 1
             ):
                 test_results = do_test(cfg, model)
-                for _, dataset_test_results in test_results:
+                for _, dataset_test_results in test_results.items():
                     storage.put_scalars(dataset_test_results)
                 comm.synchronize()
 
