@@ -76,8 +76,7 @@ def do_train(cfg, model, resume=False):
 
             if(
                 cfg.TEST.EVAL_PERIOD > 0
-                and (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0
-                and iteration != max_iter - 1
+                and ((iteration + 1) % cfg.TEST.EVAL_PERIOD == 0 or iteration == max_iter - 1)
             ):
                 test_results = do_test(cfg, model)
                 for name, results in test_results.items():
@@ -130,7 +129,7 @@ def main(args):
 
     do_train(cfg, model, resume=args.resume)
 
-    return do_test(cfg, model)
+    return
 
 
 if __name__ == "__main__":
