@@ -129,6 +129,8 @@ def main(args):
 
     do_train(cfg, model, resume=args.resume)
 
+    wandb.save(os.path.join(cfg.OUTPUT_DIR, "model_final.pth"))
+
     return
 
 
