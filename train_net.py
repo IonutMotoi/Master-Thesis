@@ -50,7 +50,7 @@ def do_train(cfg, model, resume=False):
     checkpointer = DetectionCheckpointer(model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler)
     start_iter = (checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1)
     max_iter = cfg.SOLVER.MAX_ITER
-    periodic_checkpointer = PeriodicCheckpointer(checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter, max_to_keep=3)
+    periodic_checkpointer = PeriodicCheckpointer(checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter, max_to_keep=1)
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
     data_loader = build_detection_train_loader(cfg)
 
