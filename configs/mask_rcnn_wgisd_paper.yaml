@@ -29,3 +29,4 @@ MODEL:
 TEST:
   EVAL_PERIOD: 88
 OUTPUT_DIR: "./output/wgisd_paper"
+SEED: 42
