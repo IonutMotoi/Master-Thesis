@@ -8,5 +8,7 @@ RUN pip install notebook
 
 RUN pip install wandb
 
+RUN pip install -U albumentations
+
 COPY wgisd /thesis/wgisd
 COPY detectron2_baseline /thesis/detectron2_baseline
