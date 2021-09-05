@@ -65,6 +65,9 @@ def do_train(cfg, model, resume=False):
         for data, iteration in zip(data_loader, range(start_iter, max_iter)):
             storage.iter = iteration
 
+            print(type(data))
+            input()
+
             loss_dict = model(data)
             losses = sum(loss_dict.values())
             assert torch.isfinite(losses).all(), loss_dict
