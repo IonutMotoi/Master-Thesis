@@ -54,6 +54,9 @@ def do_train(cfg, model, resume=False):
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
     data_loader = build_detection_train_loader(cfg)
 
+    if cfg.ALBUMENTATIONS:
+        print("ALBUMENTATIONS TEST")
+
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
         for data, iteration in zip(data_loader, range(start_iter, max_iter)):

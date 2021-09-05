@@ -30,3 +30,4 @@ TEST:
   EVAL_PERIOD: 88
 OUTPUT_DIR: "./output/test"
 SEED: 42
+ALBUMENTATIONS: True
