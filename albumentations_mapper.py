@@ -3,6 +3,7 @@ import logging
 import numpy as np
 from typing import List, Optional, Union
 import torch
+from pycocotools.mask import encode
 
 from detectron2.config import configurable
 from detectron2.data import detection_utils as utils
@@ -111,18 +112,12 @@ class AlbumentationsMapper:
         Returns:
             dict: a format that builtin models in detectron2 accept
         """
-        dataset_dict = copy.deepcopy(dataset_dict)  # it will be modified by code below
-        # USER: Write your own image loading if it's not from a file
+        dataset_dict = copy.deepcopy(dataset_dict)
+
         image = utils.read_image(dataset_dict["file_name"], format=self.image_format)
         utils.check_image_size(dataset_dict, image)
 
-        # USER: Remove if you don't do semantic/panoptic segmentation.
-        if "sem_seg_file_name" in dataset_dict:
-            sem_seg_gt = utils.read_image(dataset_dict.pop("sem_seg_file_name"), "L").squeeze(2)
-        else:
-            sem_seg_gt = None
-
-        aug_input = T.AugInput(image, sem_seg=sem_seg_gt)
+        aug_input = T.AugInput(image)
         transforms = self.augmentations(aug_input)
         image, sem_seg_gt = aug_input.image, aug_input.sem_seg
 
@@ -156,7 +151,7 @@ class AlbumentationsMapper:
                     anno.pop("keypoints", None)
 
             for anno in dataset_dict["annotations"]:
-                anno["segmentation"]
+                anno["segmentation"] = encode(np.asarray(anno["segmentation"], order="F"))
 
             # USER: Implement additional transformations if you have other types of data
             annos = [
