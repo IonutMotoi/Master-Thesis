@@ -16,7 +16,7 @@ from detectron2.utils.events import EventStorage
 
 import wandb
 from setup_wgisd import setup_wgisd
-import albumentations as A
+from albumentations_mapper import AlbumentationsMapper
 
 logger = logging.getLogger("detectron2")
 
@@ -44,10 +44,6 @@ def do_test(cfg, model):
     return results
 
 
-def albumentations_mapper(cfg):
-    pass
-
-
 def do_train(cfg, model, resume=False):
     model.train()
     optimizer = build_optimizer(cfg, model)
@@ -58,9 +54,9 @@ def do_train(cfg, model, resume=False):
     periodic_checkpointer = PeriodicCheckpointer(checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter, max_to_keep=1)
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
 
-    if cfg.ALBUMENTATIONS:
+    if cfg.ALBUMENTATIONS.ENABLED:
         print("############# ALBUMENTATIONS #################")
-        data_loader = build_detection_train_loader(cfg, is_train=True)
+        data_loader = build_detection_train_loader(cfg)
     else:
         data_loader = build_detection_train_loader(cfg)
 
