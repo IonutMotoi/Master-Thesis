@@ -54,7 +54,7 @@ def do_train(cfg, model, resume=False):
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
     data_loader = build_detection_train_loader(cfg)
 
-    if cfg.INPUT.ALBUMENTATIONS:
+    if cfg.ALBUMENTATIONS:
         print("ALBUMENTATIONS TEST")
 
     logger.info("Starting training from iteration {}".format(start_iter))
@@ -99,6 +99,7 @@ def setup(args):
     Create configs and perform basic setups.
     """
     cfg = get_cfg()
+    cfg.set_new_allowed(True)
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
     cfg.freeze()
