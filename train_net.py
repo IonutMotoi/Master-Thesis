@@ -44,6 +44,10 @@ def do_test(cfg, model):
     return results
 
 
+def albumentations_mapper(cfg):
+    pass
+
+
 def do_train(cfg, model, resume=False):
     model.train()
     optimizer = build_optimizer(cfg, model)
@@ -53,10 +57,12 @@ def do_train(cfg, model, resume=False):
     max_iter = cfg.SOLVER.MAX_ITER
     periodic_checkpointer = PeriodicCheckpointer(checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter, max_to_keep=1)
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
-    data_loader = build_detection_train_loader(cfg)
 
     if cfg.ALBUMENTATIONS:
-        print("ALBUMENTATIONS TEST")
+        print("############# ALBUMENTATIONS #################")
+        data_loader = build_detection_train_loader(cfg, is_train=True)
+    else:
+        data_loader = build_detection_train_loader(cfg)
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
