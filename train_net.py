@@ -59,7 +59,7 @@ def do_train(cfg, model, resume=False):
     if cfg.ALBUMENTATIONS.ENABLED:
         print("############# ALBUMENTATIONS #################")
         mapper = AlbumentationsMapper(cfg, is_train=True)
-        data_loader = build_detection_train_loader(cfg)
+        data_loader = build_detection_train_loader(cfg, mapper=mapper)
     else:
         data_loader = build_detection_train_loader(cfg)
 
