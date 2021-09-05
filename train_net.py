@@ -89,6 +89,7 @@ def do_train(cfg, model, resume=False):
                 comm.synchronize()
 
             if iteration - start_iter > 5 and ((iteration + 1) % 20 == 0 or iteration == max_iter - 1):
+                # Visualization
                 print(data[0])
                 image = data[0]["image"]
                 image = image[[2, 1, 0], :, :]  # BGR to RGB

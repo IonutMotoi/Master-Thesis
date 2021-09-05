@@ -1,7 +1,7 @@
 import copy
 import logging
 import numpy as np
-from typing import List, Optional, Union
+from typing import List, Union
 import torch
 from pycocotools.mask import encode
 
@@ -81,7 +81,7 @@ class AlbumentationsMapper:
         }
 
         if cfg.ALBUMENTATIONS.ENABLED:
-            print("############# ALBUMENTATIONS ON #################")
+            print("############# ALBUMENTATIONS #################")
 
         return ret
 
@@ -129,4 +129,5 @@ class AlbumentationsMapper:
             if self.recompute_boxes:
                 instances.gt_boxes = instances.gt_masks.get_bounding_boxes()
             dataset_dict["instances"] = utils.filter_empty_instances(instances)
+
         return dataset_dict
