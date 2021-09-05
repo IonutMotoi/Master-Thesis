@@ -68,7 +68,7 @@ def get_wgisd_dicts(root, source):
 
             # Convert a uint8 mask of 0s and 1s into dict
             # with keys “size” and “counts”
-            # mask = pycocotools.mask.encode(np.asarray(mask, order="F"))
+            mask = pycocotools.mask.encode(np.asarray(mask, order="F"))
 
             obj = {
                 "bbox": box,

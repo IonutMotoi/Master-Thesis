@@ -1,6 +1,8 @@
 import logging
 import os
 from collections import OrderedDict
+
+import detectron2.data.detection_utils
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
@@ -92,7 +94,8 @@ def do_train(cfg, model, resume=False):
 
             if iteration - start_iter > 5 and ((iteration + 1) % 20 == 0 or iteration == max_iter - 1):
                 print(data[0])
-                storage.put_image("Example image", data[0]["image"])
+                storage.put_image("Example image",
+                                  detectron2.data.detection_utils.convert_image_to_rgb(data[0]["image"], "BGR"))
 
                 for writer in writers:
                     writer.write()
