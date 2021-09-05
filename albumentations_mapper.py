@@ -59,7 +59,7 @@ class AlbumentationsMapper:
         self.instance_mask_format   = instance_mask_format
         self.recompute_boxes        = recompute_boxes
 
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger("detectron2")
         mode = "training" if is_train else "inference"
         logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}: {augmentations}")
         print("############# ALBUMENTATIONS INIT #################")

@@ -2,7 +2,6 @@ import logging
 import os
 from collections import OrderedDict
 
-import detectron2.data.detection_utils
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
