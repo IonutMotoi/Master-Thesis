@@ -65,10 +65,6 @@ def do_train(cfg, model, resume=False):
         for data, iteration in zip(data_loader, range(start_iter, max_iter)):
             storage.iter = iteration
 
-            print(data[0]["image"])
-            storage.put_image("Example image", data[0]["image"])
-            input()
-
             loss_dict = model(data)
             losses = sum(loss_dict.values())
             assert torch.isfinite(losses).all(), loss_dict
@@ -95,6 +91,9 @@ def do_train(cfg, model, resume=False):
                 comm.synchronize()
 
             if iteration - start_iter > 5 and ((iteration + 1) % 20 == 0 or iteration == max_iter - 1):
+                print(data[0])
+                storage.put_image("Example image", data[0]["image"])
+
                 for writer in writers:
                     writer.write()
 
