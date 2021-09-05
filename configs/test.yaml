@@ -31,4 +31,4 @@ TEST:
 OUTPUT_DIR: "./output/test"
 SEED: 42
 ALBUMENTATIONS:
-  ENABLED: True
+  ENABLED: False
