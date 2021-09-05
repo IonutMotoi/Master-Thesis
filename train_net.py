@@ -16,6 +16,7 @@ from detectron2.utils.events import EventStorage
 
 import wandb
 from setup_wgisd import setup_wgisd
+import albumentations as A
 
 logger = logging.getLogger("detectron2")
 
