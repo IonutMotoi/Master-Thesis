@@ -66,10 +66,6 @@ def get_wgisd_dicts(root, source):
             y2 = box[1] + box[3] / 2
             box = [x1 * width, y1 * height, x2 * width, y2 * height]
 
-            # Convert a uint8 mask of 0s and 1s into dict
-            # with keys “size” and “counts”
-            # mask = pycocotools.mask.encode(np.asarray(mask, order="F"))
-
             obj = {
                 "bbox": box,
                 "bbox_mode": BoxMode.XYXY_ABS,
