@@ -66,6 +66,7 @@ def do_train(cfg, model, resume=False):
             storage.iter = iteration
 
             print(data)
+            storage.put_image("Example image", data["image"])
             input()
 
             loss_dict = model(data)
