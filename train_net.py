@@ -94,8 +94,9 @@ def do_train(cfg, model, resume=False):
 
             if iteration - start_iter > 5 and ((iteration + 1) % 20 == 0 or iteration == max_iter - 1):
                 print(data[0])
-                storage.put_image("Example image",
-                                  detectron2.data.detection_utils.convert_image_to_rgb(data[0]["image"], "BGR"))
+                image = data[0]["image"]
+                image = image[[2, 1, 0], :, :]  # BGR to RGB
+                storage.put_image("Example image", image)
 
                 for writer in writers:
                     writer.write()
