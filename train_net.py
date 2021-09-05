@@ -68,7 +68,6 @@ def do_train(cfg, model, resume=False):
             print(data[0]["image"])
             storage.put_image("Example image", data[0]["image"])
             input()
-            break
 
             loss_dict = model(data)
             losses = sum(loss_dict.values())
