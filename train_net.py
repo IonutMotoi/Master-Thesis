@@ -99,7 +99,7 @@ def setup(args):
     Create configs and perform basic setups.
     """
     cfg = get_cfg()
-    cfg.set_new_allowed(True)
+    cfg.set_new_allowed(True)  # to allow merging new keys
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
     cfg.freeze()
