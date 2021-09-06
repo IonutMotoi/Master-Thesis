@@ -52,7 +52,7 @@ class AlbumentationsMapper:
             assert use_instance_mask, "recompute_boxes requires instance masks"
 
         self.is_train               = is_train
-        self.augmentations          = T.AugmentationList(augmentations)
+        self.augmentations          = augmentations
         self.image_format           = image_format
         self.use_instance_mask      = use_instance_mask
         self.instance_mask_format   = instance_mask_format
@@ -99,7 +99,7 @@ class AlbumentationsMapper:
         utils.check_image_size(dataset_dict, image)
 
         aug_input = T.AugInput(image)
-        transforms = self.augmentations(aug_input)
+        transforms = T.AugmentationList(self.augmentations)(aug_input)
         image = aug_input.image
         image_shape = image.shape[:2]  # h, w
         dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose(2, 0, 1)))
