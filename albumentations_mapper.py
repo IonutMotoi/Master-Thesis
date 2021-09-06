@@ -80,8 +80,12 @@ class AlbumentationsMapper:
             "recompute_boxes": recompute_boxes,
         }
 
+        logger = logging.getLogger("detectron2")
         if cfg.ALBUMENTATIONS.ENABLED:
-            print("############# ALBUMENTATIONS #################")
+            logger.info("############# ALBUMENTATIONS #################")
+        if cfg.INPUT.PAD.ENABLED:
+            logger.info(f"Padding images to size {cfg.INPUT.PAD.TARGET_WIDTH} "
+                        f"x {cfg.INPUT.PAD.TARGET_HEIGHT} with value {cfg.INPUT.PAD.VALUE}")
 
         return ret
 
@@ -102,7 +106,7 @@ class AlbumentationsMapper:
         transforms = T.AugmentationList(self.augmentations)(aug_input)
         image = aug_input.image
         image_shape = image.shape[:2]  # h, w
-        dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose(2, 0, 1)))
+        dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
 
         if not self.is_train:
             dataset_dict.pop("annotations", None)
