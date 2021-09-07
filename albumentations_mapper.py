@@ -26,17 +26,7 @@ class AlbumentationsMapper:
     4. Prepare data and annotations to Tensor and :class:`Instances`
     """
 
-    @configurable
-    def __init__(
-        self,
-        is_train: bool,
-        *,
-        augmentations: List[Union[T.Augmentation, T.Transform]],
-        image_format: str,
-        use_instance_mask: bool = False,
-        instance_mask_format: str = "polygon",
-        recompute_boxes: bool = False,
-    ):
+    def __init__(self, cfg, is_train: bool = True):
         """
         Args:
             is_train: whether it's used in training or inference
@@ -48,46 +38,30 @@ class AlbumentationsMapper:
             recompute_boxes: whether to overwrite bounding box annotations
                 by computing tight bounding boxes from instance mask annotations.
         """
-        if recompute_boxes:
-            assert use_instance_mask, "recompute_boxes requires instance masks"
 
-        self.is_train               = is_train
-        self.augmentations          = augmentations
-        self.image_format           = image_format
-        self.use_instance_mask      = use_instance_mask
-        self.instance_mask_format   = instance_mask_format
-        self.recompute_boxes        = recompute_boxes
+        self.is_train = is_train
+        self.augmentations = utils.build_augmentation(cfg, is_train)
+        self.image_format = cfg.INPUT.FORMAT
+        self.use_instance_mask = cfg.MODEL.MASK_ON
+        self.instance_mask_format = cfg.INPUT.MASK_FORMAT
+
+        if cfg.INPUT.CROP.ENABLED and is_train:
+            self.augmentations.insert(0, T.RandomCrop(cfg.INPUT.CROP.TYPE, cfg.INPUT.CROP.SIZE))
+            self.recompute_boxes = cfg.MODEL.MASK_ON
+        else:
+            self.recompute_boxes = False
+
+        if self.recompute_boxes:
+            assert self.use_instance_mask, "recompute_boxes requires instance masks"
 
         logger = logging.getLogger("detectron2")
         mode = "training" if is_train else "inference"
-        logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}: {augmentations}")
-
-    @classmethod
-    def from_config(cls, cfg, is_train: bool = True):
-        augs = utils.build_augmentation(cfg, is_train)
-        if cfg.INPUT.CROP.ENABLED and is_train:
-            augs.insert(0, T.RandomCrop(cfg.INPUT.CROP.TYPE, cfg.INPUT.CROP.SIZE))
-            recompute_boxes = cfg.MODEL.MASK_ON
-        else:
-            recompute_boxes = False
-
-        ret = {
-            "is_train": is_train,
-            "augmentations": augs,
-            "image_format": cfg.INPUT.FORMAT,
-            "use_instance_mask": cfg.MODEL.MASK_ON,
-            "instance_mask_format": cfg.INPUT.MASK_FORMAT,
-            "recompute_boxes": recompute_boxes,
-        }
-
-        logger = logging.getLogger("detectron2")
+        logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}: {self.augmentations}")
         if cfg.ALBUMENTATIONS.ENABLED:
             logger.info("############# ALBUMENTATIONS #################")
         if cfg.INPUT.PAD.ENABLED:
             logger.info(f"Padding images to size {cfg.INPUT.PAD.TARGET_WIDTH} "
                         f"x {cfg.INPUT.PAD.TARGET_HEIGHT} with value {cfg.INPUT.PAD.VALUE}")
-
-        return ret
 
     def __call__(self, dataset_dict):
         """
