@@ -1,13 +1,13 @@
 import copy
 import logging
 import numpy as np
-from typing import List, Union
 import torch
 from pycocotools.mask import encode
 
-from detectron2.config import configurable
 from detectron2.data import detection_utils as utils
 from detectron2.data import transforms as T
+
+import albumentations as A
 
 """
 This file contains the mapping with Albumentations augmentation.
@@ -29,16 +29,9 @@ class AlbumentationsMapper:
     def __init__(self, cfg, is_train: bool = True):
         """
         Args:
+            cfg: configuration
             is_train: whether it's used in training or inference
-            augmentations: a list of augmentations or deterministic transforms to apply
-            image_format: an image format supported by :func:`detection_utils.read_image`.
-            use_instance_mask: whether to process instance segmentation annotations, if available
-            instance_mask_format: one of "polygon" or "bitmask". Process instance segmentation
-                masks into this format.
-            recompute_boxes: whether to overwrite bounding box annotations
-                by computing tight bounding boxes from instance mask annotations.
         """
-
         self.is_train = is_train
         self.augmentations = utils.build_augmentation(cfg, is_train)
         self.image_format = cfg.INPUT.FORMAT
@@ -54,6 +47,7 @@ class AlbumentationsMapper:
         if self.recompute_boxes:
             assert self.use_instance_mask, "recompute_boxes requires instance masks"
 
+        # Log
         logger = logging.getLogger("detectron2")
         mode = "training" if is_train else "inference"
         logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}: {self.augmentations}")
@@ -62,6 +56,12 @@ class AlbumentationsMapper:
         if cfg.INPUT.PAD.ENABLED:
             logger.info(f"Padding images to size {cfg.INPUT.PAD.TARGET_WIDTH} "
                         f"x {cfg.INPUT.PAD.TARGET_HEIGHT} with value {cfg.INPUT.PAD.VALUE}")
+
+        self.transform = A.Compose([
+            A.RandomCrop(width=450, height=450),
+            A.HorizontalFlip(p=0.5),
+            A.RandomBrightnessContrast(p=0.2),
+        ], bbox_params=A.BboxParams(format='pascal_voc'))
 
     def __call__(self, dataset_dict):
         """
@@ -76,9 +76,27 @@ class AlbumentationsMapper:
         image = utils.read_image(dataset_dict["file_name"], format=self.image_format)
         utils.check_image_size(dataset_dict, image)
 
-        aug_input = T.AugInput(image)
-        transforms = T.AugmentationList(self.augmentations)(aug_input)
-        image = aug_input.image
+        bboxes = [anno["bbox"] for anno in dataset_dict["annotations"]]
+        masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
+
+        transformed = self.transform(
+            image=image,
+            masks=masks,
+            bboxes=bboxes
+        )
+        image = transformed['image']
+        bboxes = transformed['bboxes']
+        masks = transformed['masks']
+
+        i = 0
+        for anno in dataset_dict["annotations"]:
+            anno["bbox"] = bboxes[i]
+            anno["segmentation"] = masks[i]
+            i += 1
+
+        # aug_input = T.AugInput(image)
+        # transforms = T.AugmentationList(self.augmentations)(aug_input)
+        # image = aug_input.image
         image_shape = image.shape[:2]  # h, w
         dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
 
@@ -94,11 +112,12 @@ class AlbumentationsMapper:
                 else:
                     anno.pop("segmentation", None)
 
-            annos = [
-                utils.transform_instance_annotations(obj, transforms, image_shape)
-                for obj in dataset_dict.pop("annotations")
-                if obj.get("iscrowd", 0) == 0
-            ]
+            # annos = [
+            #     utils.transform_instance_annotations(obj, transforms, image_shape)
+            #     for obj in dataset_dict.pop("annotations")
+            #     if obj.get("iscrowd", 0) == 0
+            # ]
+            annos = [anno for anno in dataset_dict.pop("annotations") if anno.get("iscrowd", 0) == 0]
 
             instances = utils.annotations_to_instances(
                 annos, image_shape, mask_format=self.instance_mask_format
