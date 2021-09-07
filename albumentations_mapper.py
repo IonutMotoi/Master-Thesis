@@ -78,11 +78,13 @@ class AlbumentationsMapper:
 
         bboxes = [anno["bbox"] for anno in dataset_dict["annotations"]]
         masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
+        class_labels = np.zeros(len(bboxes))
 
         transformed = self.transform(
             image=image,
             masks=masks,
-            bboxes=bboxes
+            bboxes=bboxes,
+            class_labels=class_labels
         )
         image = transformed['image']
         bboxes = transformed['bboxes']
