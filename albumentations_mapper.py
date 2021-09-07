@@ -77,6 +77,7 @@ class AlbumentationsMapper:
         utils.check_image_size(dataset_dict, image)
 
         bboxes = [anno["bbox"] for anno in dataset_dict["annotations"]]
+        print(len(bboxes))
         masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
         class_labels = np.zeros(len(bboxes))
 
@@ -88,6 +89,7 @@ class AlbumentationsMapper:
         )
         image = transformed['image']
         bboxes = transformed['bboxes']
+        print(len(bboxes))
         masks = transformed['masks']
 
         i = 0
