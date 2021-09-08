@@ -142,6 +142,15 @@ def convert_pascal_voc_bbox_to_albumentations(bbox, height, width):
     x_min, x_max = x_min / width, x_max / width
     y_min, y_max = y_min / height, y_max / height
 
+    if x_min < 0 and np.isclose(x_min, 0):
+        x_min = 0.0
+    if y_min < 0 and np.isclose(y_min, 0):
+        y_min = 0.0
+    if x_max > 1 and np.isclose(x_max, 1):
+        x_max = 1.0
+    if y_max > 1 and np.isclose(y_max, 1):
+        y_max = 1.0
+
     # Check that the bbox is in the range [0.0, 1.0]
     assert 0 <= x_min <= 1, "Expected bbox to be in the range [0.0, 1.0], got x_min = {x_min}.".format(x_min=x_min)
     assert 0 <= y_min <= 1, "Expected bbox to be in the range [0.0, 1.0], got y_min = {y_min}.".format(y_min=y_min)
