@@ -33,24 +33,14 @@ class AlbumentationsMapper:
             is_train: whether it's used in training or inference
         """
         self.is_train = is_train
-        self.augmentations = utils.build_augmentation(cfg, is_train)
         self.image_format = cfg.INPUT.FORMAT
         self.use_instance_mask = cfg.MODEL.MASK_ON
         self.instance_mask_format = cfg.INPUT.MASK_FORMAT
 
-        if cfg.INPUT.CROP.ENABLED and is_train:
-            self.augmentations.insert(0, T.RandomCrop(cfg.INPUT.CROP.TYPE, cfg.INPUT.CROP.SIZE))
-            self.recompute_boxes = cfg.MODEL.MASK_ON
-        else:
-            self.recompute_boxes = False
-
-        if self.recompute_boxes:
-            assert self.use_instance_mask, "recompute_boxes requires instance masks"
-
         # Log
         logger = logging.getLogger("detectron2")
-        mode = "training" if is_train else "inference"
-        logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}: {self.augmentations}")
+        # mode = "training" if is_train else "inference"
+        # logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}: {self.augmentations}")
         if cfg.ALBUMENTATIONS.ENABLED:
             logger.info("############# ALBUMENTATIONS #################")
         if cfg.INPUT.PAD.ENABLED:
@@ -95,23 +85,13 @@ class AlbumentationsMapper:
         bbox_ids = transformed['bbox_ids']
 
         # Filter the masks that don't have a corresponding bbox anymore
-        masks = [masks[i] for i in bbox_ids]
+        # and convert uint8 masks of 0s and 1s into dicts in COCO’s compressed RLE format
+        masks = [encode(np.asarray(masks[i], order="F")) for i in bbox_ids]
 
         assert len(bboxes) == len(class_labels), \
             "The number of bounding boxes should be equal to the number of class labels"
         assert len(bboxes) == len(masks), \
             "The number of bounding boxes should be equal to the number of masks"
-
-        # objs = []
-        # for mask, bbox, class_label in zip(masks, bboxes, class_labels):
-        #     obj = {
-        #         "bbox": bbox,
-        #         "bbox_mode": bbox_mode,
-        #         "segmentation": mask,
-        #         "category_id": class_label,
-        #     }
-        #     objs.append(obj)
-        # dataset_dict["annotations"] = objs
 
         dataset_dict["annotations"] = [
             {
@@ -123,9 +103,6 @@ class AlbumentationsMapper:
             for i in range(len(bboxes))
         ]
 
-        # aug_input = T.AugInput(image)
-        # transforms = T.AugmentationList(self.augmentations)(aug_input)
-        # image = aug_input.image
         image_shape = image.shape[:2]  # h, w
         dataset_dict["height"] = image_shape[0]
         dataset_dict["width"] = image_shape[1]
@@ -135,22 +112,11 @@ class AlbumentationsMapper:
             dataset_dict.pop("annotations", None)
             return dataset_dict
 
-        if "annotations" in dataset_dict:
-            for anno in dataset_dict["annotations"]:
-                if self.use_instance_mask:
-                    # Convert uint8 mask of 0s and 1s into dict in COCO’s compressed RLE format
-                    anno["segmentation"] = encode(np.asarray(anno["segmentation"], order="F"))
-                else:
-                    anno.pop("segmentation", None)
+        annos = [anno for anno in dataset_dict.pop("annotations") if anno.get("iscrowd", 0) == 0]
 
-            annos = [anno for anno in dataset_dict.pop("annotations") if anno.get("iscrowd", 0) == 0]
-
-            instances = utils.annotations_to_instances(
-                annos, image_shape, mask_format=self.instance_mask_format
-            )
-
-            if self.recompute_boxes:
-                instances.gt_boxes = instances.gt_masks.get_bounding_boxes()
-            dataset_dict["instances"] = utils.filter_empty_instances(instances)
+        instances = utils.annotations_to_instances(
+            annos, image_shape, mask_format=self.instance_mask_format
+        )
+        dataset_dict["instances"] = utils.filter_empty_instances(instances)
 
         return dataset_dict
