@@ -51,7 +51,7 @@ class AlbumentationsMapper:
             A.RandomCrop(width=450, height=450),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(p=0.2),
-        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels', 'bbox_ids']))
+        ], bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
 
     def __call__(self, dataset_dict):
         """
@@ -71,6 +71,9 @@ class AlbumentationsMapper:
         masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
         class_labels = [anno["category_id"] for anno in dataset_dict["annotations"]]
 
+        # Convert bboxes from the pascal_voc to the albumentations format
+        bboxes = convert_pascal_voc_bboxes_to_albumentations(bboxes, height=image.shape[0], width=image.shape[1])
+
         transformed = self.transform(
             image=image,
             bboxes=bboxes,
@@ -87,6 +90,9 @@ class AlbumentationsMapper:
         # Filter the masks that don't have a corresponding bbox anymore
         # and convert uint8 masks of 0s and 1s into dicts in COCO’s compressed RLE format
         masks = [encode(np.asarray(masks[i], order="F")) for i in bbox_ids]
+
+        # Convert bboxes from the albumentations format to the pascal_voc format
+        bboxes = convert_albumentations_bboxes_to_pascal_voc(bboxes, height=image.shape[0], width=image.shape[1])
 
         assert len(bboxes) == len(class_labels), \
             "The number of bounding boxes should be equal to the number of class labels"
@@ -120,3 +126,63 @@ class AlbumentationsMapper:
         dataset_dict["instances"] = utils.filter_empty_instances(instances)
 
         return dataset_dict
+
+
+def convert_pascal_voc_bbox_to_albumentations(bbox, height, width):
+    """
+    Convert a bounding box from the pascal_voc format to the albumentations format:
+    normalized coordinates of top-left and bottom-right corners of the bounding box in a form of
+    `(x_min, y_min, x_max, y_max)` e.g. `(0.15, 0.27, 0.67, 0.5)`.
+    :param bbox: (tuple) Denormalized (pascal_voc format) bounding box `(x_min, y_min, x_max, y_max)`.
+    :param height: (int) Image height.
+    :param width: (int) Image width.
+    :return: (tuple) Normalized (albumentations format) bounding box `(x_min, y_min, x_max, y_max)`.
+    """
+    x_min, y_min, x_max, y_max = bbox
+    x_min, x_max = x_min / width, x_max / width
+    y_min, y_max = y_min / height, y_max / height
+
+    # Check that the bbox is in the range [0.0, 1.0]
+    assert 0 <= x_min <= 1, "Expected bbox to be in the range [0.0, 1.0], got x_min = {x_min}.".format(x_min=x_min)
+    assert 0 <= y_min <= 1, "Expected bbox to be in the range [0.0, 1.0], got y_min = {y_min}.".format(y_min=y_min)
+    assert 0 <= x_max <= 1, "Expected bbox to be in the range [0.0, 1.0], got x_max = {x_max}.".format(x_max=x_max)
+    assert 0 <= y_max <= 1, "Expected bbox to be in the range [0.0, 1.0], got y_max = {y_max}.".format(y_max=y_max)
+
+    return x_min, y_min, x_max, y_max
+
+
+def convert_albumentations_bbox_to_pascal_voc(bbox, height, width):
+    """
+    Convert a bounding box from the albumentations format to the pascal_voc format:
+    denormalized coordinates of top-left and bottom-right corners of the bounding box in a form of
+    `(x_min, y_min, x_max, y_max)`.
+    :param bbox: (tuple) Normalized (albumentations format) bounding box `(x_min, y_min, x_max, y_max)`.
+    :param height: (int) Image height.
+    :param width: (int) Image width.
+    :return: (tuple) Denormalized (pascal_voc format) bounding box `(x_min, y_min, x_max, y_max)`.
+    """
+    x_min, y_min, x_max, y_max = bbox
+    x_min, x_max = x_min * width, x_max * width
+    y_min, y_max = y_min * height, y_max * height
+
+    # Check that the bbox is in the range [0.0, 0.0, height, width]
+    assert 0 <= x_min <= x_max, \
+        "Expected x_min to be in the range [0.0, x_max], got x_min = {x_min}.".format(x_min=x_min)
+    assert 0 <= y_min <= y_max, \
+        "Expected y_min to be in the range [0.0, y_max], got y_min = {y_min}.".format(y_min=y_min)
+    assert x_min <= x_max <= width, \
+        "Expected x_max to be in the range [x_min, width], got x_max = {x_max}.".format(x_max=x_max)
+    assert y_min <= y_max <= height, \
+        "Expected y_max to be in the range [y_min, height], got y_max = {y_max}.".format(y_max=y_max)
+
+    return x_min, y_min, x_max, y_max
+
+
+def convert_pascal_voc_bboxes_to_albumentations(bboxes, height, width):
+    """Convert a list of bounding boxes from the pascal_voc format to the albumentations format"""
+    return [convert_pascal_voc_bbox_to_albumentations(bbox, height, width) for bbox in bboxes]
+
+
+def convert_albumentations_bboxes_to_pascal_voc(bboxes, height, width):
+    """Convert a list of bounding boxes from the albumentations format to the pascal_voc format"""
+    return [convert_albumentations_bbox_to_pascal_voc(bbox, height, width) for bbox in bboxes]
