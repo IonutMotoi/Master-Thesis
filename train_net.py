@@ -92,9 +92,9 @@ def do_train(cfg, model, resume=False):
                 print(data[0])
                 image = data[0]["image"]
                 image = image[[2, 1, 0], :, :]  # BGR to RGB
-                mask = data[0]["instances"]["gt_masks"][0]
+                # mask = data[0]["instances"]["gt_masks"][0]
                 storage.put_image("Example image", image)
-                storage.put_image("Example mask", mask)
+                # storage.put_image("Example mask", mask)
 
                 for writer in writers:
                     writer.write()
