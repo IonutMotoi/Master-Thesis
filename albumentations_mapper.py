@@ -77,33 +77,43 @@ class AlbumentationsMapper:
         utils.check_image_size(dataset_dict, image)
 
         bboxes = [anno["bbox"] for anno in dataset_dict["annotations"]]
-        print("Before aug:", len(bboxes))
-        print(type(bboxes))
+        bbox_mode = dataset_dict["annotations"][0]["bbox_mode"]
         masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
-        class_labels = np.zeros(len(bboxes))
+        class_labels = [anno["category_id"] for anno in dataset_dict["annotations"]]
 
         transformed = self.transform(
             image=image,
-            masks=masks,
             bboxes=bboxes,
+            masks=masks,
             class_labels=class_labels
         )
         image = transformed['image']
         bboxes = transformed['bboxes']
-        print("After aug:", len(bboxes))
-        print(type(bboxes))
         masks = transformed['masks']
+        class_labels = transformed['class_labels']
 
-        i = 0
-        for anno in dataset_dict["annotations"]:
-            anno["bbox"] = bboxes[i]
-            anno["segmentation"] = masks[i]
-            i += 1
+        assert len(bboxes) == len(class_labels), \
+            "The number of bounding boxes should be equal to the number of class labels"
+        assert len(bboxes) == len(masks), \
+            "The number of bounding boxes should be equal to the number of masks"
+
+        objs = []
+        for mask, bbox, class_label in zip(masks, bboxes, class_labels):
+            obj = {
+                "bbox": bbox,
+                "bbox_mode": bbox_mode,
+                "segmentation": mask,
+                "category_id": class_label,
+            }
+            objs.append(obj)
+        dataset_dict["annotations"] = objs
 
         # aug_input = T.AugInput(image)
         # transforms = T.AugmentationList(self.augmentations)(aug_input)
         # image = aug_input.image
         image_shape = image.shape[:2]  # h, w
+        dataset_dict["height"] = image_shape[0]
+        dataset_dict["width"] = image_shape[1]
         dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
 
         if not self.is_train:
