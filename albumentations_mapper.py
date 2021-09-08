@@ -61,7 +61,7 @@ class AlbumentationsMapper:
             A.RandomCrop(width=450, height=450),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(p=0.2),
-        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels']))
+        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels', 'bbox_ids']))
 
     def __call__(self, dataset_dict):
         """
@@ -80,22 +80,23 @@ class AlbumentationsMapper:
         bbox_mode = dataset_dict["annotations"][0]["bbox_mode"]
         masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
         class_labels = [anno["category_id"] for anno in dataset_dict["annotations"]]
-        print("B:",len(bboxes))
-        print("M:",len(masks))
-        print("C:",len(class_labels))
+
         transformed = self.transform(
             image=image,
             bboxes=bboxes,
             masks=masks,
-            class_labels=class_labels
+            class_labels=class_labels,
+            bbox_ids=np.arange(len(bboxes))
         )
         image = transformed['image']
         bboxes = transformed['bboxes']
         masks = transformed['masks']
         class_labels = transformed['class_labels']
-        print("B:", len(bboxes))
-        print("M:", len(masks))
-        print("C:", len(class_labels))
+        bbox_ids = transformed['bbox_ids']
+
+        # Filter the masks that don't have a corresponding bbox anymore
+        masks = [masks[i] for i in bbox_ids]
+
         assert len(bboxes) == len(class_labels), \
             "The number of bounding boxes should be equal to the number of class labels"
         assert len(bboxes) == len(masks), \
