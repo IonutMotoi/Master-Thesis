@@ -51,9 +51,7 @@ class AlbumentationsMapper:
             A.RandomCrop(width=450, height=450),
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(p=0.2),
-        ], bbox_params=A.BboxParams(format='pascal_voc',
-                                    label_fields=['class_labels', 'bbox_ids'],
-                                    check_each_transform=False))
+        ], bbox_params=A.BboxParams(format='pascal_voc', label_fields=['class_labels', 'bbox_ids']))
 
     def __call__(self, dataset_dict):
         """
