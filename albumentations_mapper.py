@@ -142,6 +142,7 @@ def convert_pascal_voc_bbox_to_albumentations(bbox, height, width):
     x_min, x_max = x_min / width, x_max / width
     y_min, y_max = y_min / height, y_max / height
 
+    # Fix for floating point precision issue
     if -0.001 < x_min < 0.0:
         x_min = 0.0
     if -0.001 < y_min < 0.0:
