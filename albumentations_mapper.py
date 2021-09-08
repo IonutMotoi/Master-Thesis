@@ -102,16 +102,26 @@ class AlbumentationsMapper:
         assert len(bboxes) == len(masks), \
             "The number of bounding boxes should be equal to the number of masks"
 
-        objs = []
-        for mask, bbox, class_label in zip(masks, bboxes, class_labels):
-            obj = {
-                "bbox": bbox,
+        # objs = []
+        # for mask, bbox, class_label in zip(masks, bboxes, class_labels):
+        #     obj = {
+        #         "bbox": bbox,
+        #         "bbox_mode": bbox_mode,
+        #         "segmentation": mask,
+        #         "category_id": class_label,
+        #     }
+        #     objs.append(obj)
+        # dataset_dict["annotations"] = objs
+
+        dataset_dict["annotations"] = [
+            {
+                "bbox": bboxes[i],
                 "bbox_mode": bbox_mode,
-                "segmentation": mask,
-                "category_id": class_label,
+                "segmentation": masks[i],
+                "category_id": class_labels[i]
             }
-            objs.append(obj)
-        dataset_dict["annotations"] = objs
+            for i in range(len(bboxes))
+        ]
 
         # aug_input = T.AugInput(image)
         # transforms = T.AugmentationList(self.augmentations)(aug_input)
@@ -133,11 +143,6 @@ class AlbumentationsMapper:
                 else:
                     anno.pop("segmentation", None)
 
-            # annos = [
-            #     utils.transform_instance_annotations(obj, transforms, image_shape)
-            #     for obj in dataset_dict.pop("annotations")
-            #     if obj.get("iscrowd", 0) == 0
-            # ]
             annos = [anno for anno in dataset_dict.pop("annotations") if anno.get("iscrowd", 0) == 0]
 
             instances = utils.annotations_to_instances(
