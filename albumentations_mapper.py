@@ -93,7 +93,9 @@ class AlbumentationsMapper:
         bboxes = transformed['bboxes']
         masks = transformed['masks']
         class_labels = transformed['class_labels']
-
+        print("B:", len(bboxes))
+        print("M:", len(masks))
+        print("C:", len(class_labels))
         assert len(bboxes) == len(class_labels), \
             "The number of bounding boxes should be equal to the number of class labels"
         assert len(bboxes) == len(masks), \
