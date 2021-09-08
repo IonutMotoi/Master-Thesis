@@ -71,13 +71,18 @@ class AlbumentationsMapper:
         masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
         class_labels = [anno["category_id"] for anno in dataset_dict["annotations"]]
 
-        transformed = self.transform(
-            image=image,
-            bboxes=bboxes,
-            masks=masks,
-            class_labels=class_labels,
-            bbox_ids=np.arange(len(bboxes))
-        )
+        try:
+            transformed = self.transform(
+                image=image,
+                bboxes=bboxes,
+                masks=masks,
+                class_labels=class_labels,
+                bbox_ids=np.arange(len(bboxes))
+            )
+        except ValueError:
+            # TODO Check bboxes and clip them if not in range [0, 1]
+            pass
+
         image = transformed['image']
         bboxes = transformed['bboxes']
         masks = transformed['masks']
