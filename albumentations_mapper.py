@@ -80,7 +80,9 @@ class AlbumentationsMapper:
         bbox_mode = dataset_dict["annotations"][0]["bbox_mode"]
         masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
         class_labels = [anno["category_id"] for anno in dataset_dict["annotations"]]
-
+        print("B:",len(bboxes))
+        print("M:",len(masks))
+        print("C:",len(class_labels))
         transformed = self.transform(
             image=image,
             bboxes=bboxes,
