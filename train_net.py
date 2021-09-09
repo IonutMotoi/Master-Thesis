@@ -116,10 +116,10 @@ def setup(args):
 
 
 def main(args):
-    cfg = setup(args)
-
     # Init Weight & Biases and sync with Tensorboard
     wandb.init(project="Mask_RCNN", sync_tensorboard=True)
+
+    cfg = setup(args)
     # Save config
     wandb.save(os.path.join(cfg.OUTPUT_DIR, "config.yaml"))
 
