@@ -3,10 +3,10 @@ import logging
 import numpy as np
 import torch
 from pycocotools.mask import encode
+import cv2
+import albumentations as A
 
 from detectron2.data import detection_utils as utils
-
-import albumentations as A
 
 """
 This file contains the mapping with Albumentations augmentation.
@@ -130,8 +130,19 @@ class AlbumentationsMapper:
 def get_augmentations(cfg):
     augmentations = []
 
+    # Longest Max Size
     if cfg.ALBUMENTATIONS.LONGEST_MAX_SIZE.ENABLED:
         augmentations.append(A.LongestMaxSize(max_size=cfg.ALBUMENTATIONS.LONGEST_MAX_SIZE.VALUE))
+    # Pad
+    if cfg.ALBUMENTATION.PAD.ENABLED:
+        augmentations.append(A.PadIfNeeded(
+            min_height=cfg.ALBUMENTATION.PAD.TARGET_HEIGHT,
+            min_width=cfg.ALBUMENTATION.PAD.TARGET_WIDTH,
+            border_mode=cv2.BORDER_CONSTANT,
+            value=cfg.ALBUMENTATION.PAD.VALUE,
+            mask_value=cfg.ALBUMENTATION.PAD.MASK_VALUE
+        ))
+    # Horizontal Flip
     if cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.ENABLED:
         augmentations.append(A.HorizontalFlip(p=cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.PROBABILITY))
 
