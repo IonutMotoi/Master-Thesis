@@ -37,9 +37,12 @@ class AlbumentationsMapper:
 
         # Define augmentations
         augmentations = get_augmentations(cfg, is_train)
-        self.transform = A.Compose(
-            augmentations,
-            bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
+        if is_train:
+            self.transform = A.Compose(
+                augmentations,
+                bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
+        else:
+            self.transform = A.Compose(augmentations)
 
         # Log
         logger = logging.getLogger("detectron2")
@@ -149,7 +152,7 @@ def get_augmentations(cfg, is_train):
             mask_value=cfg.ALBUMENTATIONS.PAD.MASK_VALUE
         ))
 
-    # Return only transforms during evaluation
+    # Apply only Longest Max Size and Pad during evaluation
     if not is_train:
         return augmentations
 
