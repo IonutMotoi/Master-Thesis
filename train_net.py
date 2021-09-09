@@ -118,19 +118,22 @@ def setup(args):
 def main(args):
     cfg = setup(args)
 
+    # Init Weight & Biases and sync with Tensorboard
+    wandb.init(project="Mask_RCNN", sync_tensorboard=True)
+    # Save config
+    wandb.save(os.path.join(cfg.OUTPUT_DIR, "config.yaml"))
+
     model = build_model(cfg)
     logger.info("Model:\n{}".format(model))
 
-    # Register datasets
+    # Register dataset
     setup_wgisd()
-
-    # Init Weight & Biases and sync with Tensorboard
-    wandb.init(project="Mask_RCNN", sync_tensorboard=True)
 
     if args.eval_only:
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
+        # Evaluate
         return do_test(cfg, model)
 
     distributed = comm.get_world_size() > 1
@@ -139,9 +142,10 @@ def main(args):
             model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
         )
 
+    # Train
     do_train(cfg, model, resume=args.resume)
 
-    wandb.save(os.path.join(cfg.OUTPUT_DIR, "config.yaml"))
+    # Save final model
     wandb.save(os.path.join(cfg.OUTPUT_DIR, "model_final.pth"))
 
     return
