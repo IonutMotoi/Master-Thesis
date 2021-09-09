@@ -45,10 +45,9 @@ class AlbumentationsMapper:
         logger = logging.getLogger("detectron2")
         mode = "training" if is_train else "inference"
         logger.info("############# ALBUMENTATIONS #################")
-        # if cfg.ALBUMENTATIONS.PAD.ENABLED:
-        #     logger.info(f"Padding images to size {cfg.INPUT.PAD.TARGET_WIDTH} "
-        #                 f"x {cfg.INPUT.PAD.TARGET_HEIGHT} with value {cfg.INPUT.PAD.VALUE}")
-        logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}: {augmentations}")
+        logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}:")
+        for aug in augmentations:
+            logger.info(aug)
 
 
     def __call__(self, dataset_dict):
