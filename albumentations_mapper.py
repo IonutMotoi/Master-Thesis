@@ -133,13 +133,13 @@ def get_augmentations(cfg):
     if cfg.ALBUMENTATIONS.LONGEST_MAX_SIZE.ENABLED:
         augmentations.append(A.LongestMaxSize(max_size=cfg.ALBUMENTATIONS.LONGEST_MAX_SIZE.VALUE))
     # Pad
-    if cfg.ALBUMENTATION.PAD.ENABLED:
+    if cfg.ALBUMENTATIONS.PAD.ENABLED:
         augmentations.append(A.PadIfNeeded(
-            min_height=cfg.ALBUMENTATION.PAD.TARGET_HEIGHT,
-            min_width=cfg.ALBUMENTATION.PAD.TARGET_WIDTH,
+            min_height=cfg.ALBUMENTATIONS.PAD.TARGET_HEIGHT,
+            min_width=cfg.ALBUMENTATIONS.PAD.TARGET_WIDTH,
             border_mode=cv2.BORDER_CONSTANT,
-            value=cfg.ALBUMENTATION.PAD.VALUE,
-            mask_value=cfg.ALBUMENTATION.PAD.MASK_VALUE
+            value=cfg.ALBUMENTATIONS.PAD.VALUE,
+            mask_value=cfg.ALBUMENTATIONS.PAD.MASK_VALUE
         ))
     # Horizontal Flip
     if cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.ENABLED:
