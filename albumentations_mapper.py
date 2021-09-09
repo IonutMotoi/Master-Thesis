@@ -5,7 +5,6 @@ import torch
 from pycocotools.mask import encode
 
 from detectron2.data import detection_utils as utils
-from detectron2.data import transforms as T
 
 import albumentations as A
 
@@ -21,9 +20,8 @@ class AlbumentationsMapper:
 
     The callable does the following:
     1. Read the image from "file_name"
-    2. Apply augmentations with Albumentations
-    3. Applies cropping/geometric transforms to the image and annotations
-    4. Prepare data and annotations to Tensor and :class:`Instances`
+    2. Apply augmentations/transforms to the image and annotations with Albumentations
+    3. Prepare data and annotations to Tensor and :class:`Instances`
     """
 
     def __init__(self, cfg, is_train: bool = True):
@@ -37,21 +35,21 @@ class AlbumentationsMapper:
         self.use_instance_mask = cfg.MODEL.MASK_ON
         self.instance_mask_format = cfg.INPUT.MASK_FORMAT
 
+        # Define transforms
+        augmentations = get_augmentations(cfg)
+        self.transform = A.Compose(
+            augmentations,
+            bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
+
         # Log
         logger = logging.getLogger("detectron2")
-        # mode = "training" if is_train else "inference"
-        # logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}: {self.augmentations}")
-        if cfg.ALBUMENTATIONS.ENABLED:
-            logger.info("############# ALBUMENTATIONS #################")
-        if cfg.INPUT.PAD.ENABLED:
-            logger.info(f"Padding images to size {cfg.INPUT.PAD.TARGET_WIDTH} "
-                        f"x {cfg.INPUT.PAD.TARGET_HEIGHT} with value {cfg.INPUT.PAD.VALUE}")
+        mode = "training" if is_train else "inference"
+        logger.info("############# ALBUMENTATIONS #################")
+        # if cfg.ALBUMENTATIONS.PAD.ENABLED:
+        #     logger.info(f"Padding images to size {cfg.INPUT.PAD.TARGET_WIDTH} "
+        #                 f"x {cfg.INPUT.PAD.TARGET_HEIGHT} with value {cfg.INPUT.PAD.VALUE}")
+        logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}: {augmentations}")
 
-        # Define transforms
-        self.transform = A.Compose([
-            A.LongestMaxSize(max_size=1024),
-            A.HorizontalFlip(p=0.5),
-        ], bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
 
     def __call__(self, dataset_dict):
         """
@@ -127,6 +125,17 @@ class AlbumentationsMapper:
         dataset_dict["instances"] = utils.filter_empty_instances(instances)
 
         return dataset_dict
+
+
+def get_augmentations(cfg):
+    augmentations = []
+
+    if cfg.ALBUMENTATIONS.LONGEST_MAX_SIZE.ENABLED:
+        augmentations.append(A.LongestMaxSize(max_size=cfg.ALBUMENTATIONS.LONGEST_MAX_SIZE.VALUE))
+    if cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.ENABLED:
+        augmentations.append(A.HorizontalFlip(p=cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.PROBABILITY))
+
+    return augmentations
 
 
 def convert_pascal_voc_bbox_to_albumentations(bbox, height, width):
