@@ -48,7 +48,7 @@ class AlbumentationsMapper:
         logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}:")
         for aug in augmentations:
             logger.info(aug)
-
+        logger.info("##############################################")
 
     def __call__(self, dataset_dict):
         """
