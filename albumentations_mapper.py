@@ -47,10 +47,10 @@ class AlbumentationsMapper:
             logger.info(f"Padding images to size {cfg.INPUT.PAD.TARGET_WIDTH} "
                         f"x {cfg.INPUT.PAD.TARGET_HEIGHT} with value {cfg.INPUT.PAD.VALUE}")
 
+        # Define transforms
         self.transform = A.Compose([
-            A.RandomCrop(width=450, height=450),
+            A.LongestMaxSize(max_size=1024),
             A.HorizontalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=0.2),
         ], bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
 
     def __call__(self, dataset_dict):
@@ -74,6 +74,7 @@ class AlbumentationsMapper:
         # Convert bboxes from the pascal_voc to the albumentations format
         bboxes = convert_pascal_voc_bboxes_to_albumentations(bboxes, height=image.shape[0], width=image.shape[1])
 
+        # Apply transformations
         transformed = self.transform(
             image=image,
             bboxes=bboxes,
