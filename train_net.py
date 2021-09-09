@@ -99,7 +99,7 @@ def do_train(cfg, model, resume=False):
                 image = data[0]["image"]
                 image = image[[2, 1, 0], :, :]  # BGR to RGB
                 image = image[1, 2, 0]  # C,W,H to W,H,C
-                print(image.shape)
+                print("Image shape: ", image.shape)
                 visualizer = Visualizer(image)
                 out = visualizer.draw_dataset_dict(data[0])
                 image = out.get_image()[2, 0, 1]  # W,H,C to C,W,H
