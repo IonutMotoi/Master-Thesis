@@ -98,6 +98,7 @@ def do_train(cfg, model, resume=False):
             if examples_count < 3:
                 image = data[0]["image"]
                 image = image[[2, 1, 0], :, :]  # BGR to RGB
+                print("Image shape: ", image.shape)
                 image = image[1, 2, 0]  # C,W,H to W,H,C
                 print("Image shape: ", image.shape)
                 visualizer = Visualizer(image)
