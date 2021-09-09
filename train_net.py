@@ -3,6 +3,7 @@ import os
 from collections import OrderedDict
 
 import torch
+from detectron2.utils.visualizer import Visualizer
 from torch.nn.parallel import DistributedDataParallel
 
 from detectron2.checkpoint import DetectionCheckpointer
@@ -57,6 +58,7 @@ def do_train(cfg, model, resume=False):
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
     mapper = AlbumentationsMapper(cfg, is_train=True)
     data_loader = build_detection_train_loader(cfg, mapper=mapper)
+    examples_count = 0
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
@@ -89,16 +91,18 @@ def do_train(cfg, model, resume=False):
                 comm.synchronize()
 
             if iteration - start_iter > 5 and ((iteration + 1) % 20 == 0 or iteration == max_iter - 1):
-                # Visualization
-                print(data[0])
-                image = data[0]["image"]
-                image = image[[2, 1, 0], :, :]  # BGR to RGB
-                # mask = data[0]["instances"]["gt_masks"][0]
-                storage.put_image("Example image", image)
-                # storage.put_image("Example mask", mask)
-
                 for writer in writers:
                     writer.write()
+
+            # Visualize some examples of augmented images and annotations
+            if examples_count < 3:
+                image = data[0]["image"]
+                image = image[[2, 1, 0], :, :]  # BGR to RGB
+                visualizer = Visualizer(image[:, :, ::-1])
+                out = visualizer.draw_dataset_dict(data[0])
+                image = out.get_image()[:, :, ::-1]
+                storage.put_image("Example of augmented image", image)
+                examples_count += 1
 
             periodic_checkpointer.step(iteration)
 
