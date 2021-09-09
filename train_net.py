@@ -3,7 +3,6 @@ import os
 from collections import OrderedDict
 
 import torch
-from detectron2.utils.visualizer import Visualizer
 from torch.nn.parallel import DistributedDataParallel
 
 from detectron2.checkpoint import DetectionCheckpointer
@@ -19,6 +18,7 @@ from detectron2.utils.events import EventStorage
 import wandb
 from setup_wgisd import setup_wgisd
 from albumentations_mapper import AlbumentationsMapper
+from visualization import visualize_image_and_annotations
 
 logger = logging.getLogger("detectron2")
 
@@ -45,17 +45,6 @@ def do_test(cfg, model):
     if len(results) == 1:
         results = list(results.values())[0]
     return results
-
-
-def visualize_image_and_annotations(data):
-    image = data["image"]
-    image = image[[2, 1, 0], :, :]  # BGR to RGB
-    image = image.permute(1, 2, 0)  # torch.tensor C,W,H to W,H,C
-    visualizer = Visualizer(image)
-    out = visualizer.overlay_instances(boxes=data["instances"].gt_boxes, masks=data["instances"].gt_masks)
-    image = out.get_image()
-    image = image.transpose(2, 0, 1)  # ndarray W,H,C to C,W,H
-    return image
 
 
 def do_train(cfg, model, resume=False):
