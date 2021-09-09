@@ -98,9 +98,10 @@ def do_train(cfg, model, resume=False):
             if examples_count < 3:
                 image = data[0]["image"]
                 image = image[[2, 1, 0], :, :]  # BGR to RGB
-                visualizer = Visualizer(image[:, :, ::-1])
+                image = image[1, 2, 0]  # C,W,H to W,H,C
+                visualizer = Visualizer(image)
                 out = visualizer.draw_dataset_dict(data[0])
-                image = out.get_image()[:, :, ::-1]
+                image = out.get_image()[2, 0, 1]  # W,H,C to C,W,H
                 storage.put_image("Example of augmented image", image)
                 examples_count += 1
 
