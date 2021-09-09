@@ -35,7 +35,7 @@ class AlbumentationsMapper:
         self.use_instance_mask = cfg.MODEL.MASK_ON
         self.instance_mask_format = cfg.INPUT.MASK_FORMAT
 
-        # Define transforms
+        # Define augmentations
         augmentations = get_augmentations(cfg, is_train)
         self.transform = A.Compose(
             augmentations,
