@@ -99,11 +99,12 @@ def do_train(cfg, model, resume=False):
                 image = data[0]["image"]
                 image = image[[2, 1, 0], :, :]  # BGR to RGB
                 print("Image shape: ", image.shape)
-                image = image[1, 2, 0]  # C,W,H to W,H,C
+                image = image.permute(1, 2, 0)  # C,W,H to W,H,C
                 print("Image shape: ", image.shape)
                 visualizer = Visualizer(image)
                 out = visualizer.draw_dataset_dict(data[0])
-                image = out.get_image()[2, 0, 1]  # W,H,C to C,W,H
+                image = out.get_image()
+                image = image.permute(2, 0, 1)  # W,H,C to C,W,H
                 storage.put_image("Example of augmented image", image)
                 examples_count += 1
 
