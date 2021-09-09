@@ -36,7 +36,7 @@ class AlbumentationsMapper:
         self.instance_mask_format = cfg.INPUT.MASK_FORMAT
 
         # Define transforms
-        augmentations = get_augmentations(cfg)
+        augmentations = get_augmentations(cfg, is_train)
         self.transform = A.Compose(
             augmentations,
             bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
@@ -63,6 +63,17 @@ class AlbumentationsMapper:
         image = utils.read_image(dataset_dict["file_name"], format=self.image_format)
         utils.check_image_size(dataset_dict, image)
 
+        # Evaluation only
+        if not self.is_train:
+            dataset_dict.pop("annotations", None)
+            # Apply transformations only to the image
+            transformed = self.transform(image=image)
+            image = transformed["image"]
+            dataset_dict["height"] = image.shape[0]
+            dataset_dict["width"] = image.shape[1]
+            dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
+            return dataset_dict
+
         bboxes = [anno["bbox"] for anno in dataset_dict["annotations"]]
         bbox_mode = dataset_dict["annotations"][0]["bbox_mode"]
         masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
@@ -79,11 +90,11 @@ class AlbumentationsMapper:
             class_labels=class_labels,
             bbox_ids=np.arange(len(bboxes))
         )
-        image = transformed['image']
-        bboxes = transformed['bboxes']
-        masks = transformed['masks']
-        class_labels = transformed['class_labels']
-        bbox_ids = transformed['bbox_ids']
+        image = transformed["image"]
+        bboxes = transformed["bboxes"]
+        masks = transformed["masks"]
+        class_labels = transformed["class_labels"]
+        bbox_ids = transformed["bbox_ids"]
 
         # Filter the masks that don't have a corresponding bbox anymore
         # and convert uint8 masks of 0s and 1s into dicts in COCO’s compressed RLE format
@@ -112,10 +123,6 @@ class AlbumentationsMapper:
         dataset_dict["width"] = image_shape[1]
         dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
 
-        if not self.is_train:
-            dataset_dict.pop("annotations", None)
-            return dataset_dict
-
         annos = [anno for anno in dataset_dict.pop("annotations") if anno.get("iscrowd", 0) == 0]
 
         instances = utils.annotations_to_instances(
@@ -126,7 +133,7 @@ class AlbumentationsMapper:
         return dataset_dict
 
 
-def get_augmentations(cfg):
+def get_augmentations(cfg, is_train):
     augmentations = []
 
     # Longest Max Size
@@ -141,6 +148,11 @@ def get_augmentations(cfg):
             value=cfg.ALBUMENTATIONS.PAD.VALUE,
             mask_value=cfg.ALBUMENTATIONS.PAD.MASK_VALUE
         ))
+
+    # Return only transforms during evaluation
+    if not is_train:
+        return augmentations
+
     # Horizontal Flip
     if cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.ENABLED:
         augmentations.append(A.HorizontalFlip(p=cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.PROBABILITY))
