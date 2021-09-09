@@ -50,9 +50,7 @@ def do_test(cfg, model):
 def visualize_image_and_annotations(data):
     image = data["image"]
     image = image[[2, 1, 0], :, :]  # BGR to RGB
-    print("Image shape: ", image.shape)
     image = image.permute(1, 2, 0)  # torch.tensor C,W,H to W,H,C
-    print("Image shape: ", image.shape)
     visualizer = Visualizer(image)
     out = visualizer.draw_dataset_dict(data)
     image = out.get_image()
