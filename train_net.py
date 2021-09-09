@@ -47,6 +47,19 @@ def do_test(cfg, model):
     return results
 
 
+def visualize_image_and_annotations(data):
+    image = data["image"]
+    image = image[[2, 1, 0], :, :]  # BGR to RGB
+    print("Image shape: ", image.shape)
+    image = image.permute(1, 2, 0)  # torch.tensor C,W,H to W,H,C
+    print("Image shape: ", image.shape)
+    visualizer = Visualizer(image)
+    out = visualizer.draw_dataset_dict(data)
+    image = out.get_image()
+    image = image.transpose(2, 0, 1)  # ndarray W,H,C to C,W,H
+    return image
+
+
 def do_train(cfg, model, resume=False):
     model.train()
     optimizer = build_optimizer(cfg, model)
@@ -96,15 +109,7 @@ def do_train(cfg, model, resume=False):
 
             # Visualize some examples of augmented images and annotations
             if examples_count < 3:
-                image = data[0]["image"]
-                image = image[[2, 1, 0], :, :]  # BGR to RGB
-                print("Image shape: ", image.shape)
-                image = image.permute(1, 2, 0)  # C,W,H to W,H,C
-                print("Image shape: ", image.shape)
-                visualizer = Visualizer(image)
-                out = visualizer.draw_dataset_dict(data[0])
-                image = out.get_image()
-                image = image.permute(2, 0, 1)  # W,H,C to C,W,H
+                image = visualize_image_and_annotations(data[0])
                 storage.put_image("Example of augmented image", image)
                 examples_count += 1
 
