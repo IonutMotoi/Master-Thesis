@@ -18,7 +18,7 @@ from detectron2.utils.events import EventStorage
 import wandb
 from setup_wgisd import setup_wgisd
 from albumentations_mapper import AlbumentationsMapper
-from visualization import visualize_image_and_annotations
+from utils.visualization import visualize_image_and_annotations
 
 logger = logging.getLogger("detectron2")
 

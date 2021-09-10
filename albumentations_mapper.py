@@ -5,8 +5,9 @@ import torch
 from pycocotools.mask import encode
 import cv2
 import albumentations as A
+from detectron2.data import detection_utils
 
-from detectron2.data import detection_utils as utils
+from utils.bbox_conversion import pascal_voc_bboxes_to_albumentations, albumentations_bboxes_to_pascal_voc
 
 """
 This file contains the mapping with Albumentations augmentation.
@@ -31,7 +32,6 @@ class AlbumentationsMapper:
             is_train: whether it's used in training or inference
         """
         self.is_train = is_train
-        self.image_format = cfg.INPUT.FORMAT
         self.use_instance_mask = cfg.MODEL.MASK_ON
         self.instance_mask_format = cfg.INPUT.MASK_FORMAT
 
@@ -63,8 +63,8 @@ class AlbumentationsMapper:
         """
         dataset_dict = copy.deepcopy(dataset_dict)
 
-        image = utils.read_image(dataset_dict["file_name"], format=self.image_format)
-        utils.check_image_size(dataset_dict, image)
+        image = detection_utils.read_image(dataset_dict["file_name"], format="RGB")  # RGB required by albumentations
+        detection_utils.check_image_size(dataset_dict, image)
 
         # Evaluation only
         if not self.is_train:
@@ -72,8 +72,10 @@ class AlbumentationsMapper:
             # Apply transformations only to the image
             transformed = self.transform(image=image)
             image = transformed["image"]
+            image = image[:, :, ::-1]  # RGB to BGR required by the model
             dataset_dict["height"] = image.shape[0]
             dataset_dict["width"] = image.shape[1]
+            # Convert H,W,C image to C,H,W tensor
             dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
             return dataset_dict
 
@@ -83,7 +85,7 @@ class AlbumentationsMapper:
         class_labels = [anno["category_id"] for anno in dataset_dict["annotations"]]
 
         # Convert bboxes from the pascal_voc to the albumentations format
-        bboxes = convert_pascal_voc_bboxes_to_albumentations(bboxes, height=image.shape[0], width=image.shape[1])
+        bboxes = pascal_voc_bboxes_to_albumentations(bboxes, height=image.shape[0], width=image.shape[1])
 
         # Apply transformations
         transformed = self.transform(
@@ -104,7 +106,7 @@ class AlbumentationsMapper:
         masks = [encode(np.asarray(masks[i], order="F")) for i in bbox_ids]
 
         # Convert bboxes from the albumentations format to the pascal_voc format
-        bboxes = convert_albumentations_bboxes_to_pascal_voc(bboxes, height=image.shape[0], width=image.shape[1])
+        bboxes = albumentations_bboxes_to_pascal_voc(bboxes, height=image.shape[0], width=image.shape[1])
 
         assert len(bboxes) == len(class_labels), \
             "The number of bounding boxes should be equal to the number of class labels"
@@ -121,17 +123,20 @@ class AlbumentationsMapper:
             for i in range(len(bboxes))
         ]
 
-        image_shape = image.shape[:2]  # h, w
+        image_shape = image.shape[:2]  # H, W
         dataset_dict["height"] = image_shape[0]
         dataset_dict["width"] = image_shape[1]
+        # RGB to BGR required by the model
+        image = image[:, :, ::-1]
+        # Convert H,W,C image to C,H,W tensor
         dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
 
         annos = [anno for anno in dataset_dict.pop("annotations") if anno.get("iscrowd", 0) == 0]
 
-        instances = utils.annotations_to_instances(
+        instances = detection_utils.annotations_to_instances(
             annos, image_shape, mask_format=self.instance_mask_format
         )
-        dataset_dict["instances"] = utils.filter_empty_instances(instances)
+        dataset_dict["instances"] = detection_utils.filter_empty_instances(instances)
 
         return dataset_dict
 
@@ -161,73 +166,3 @@ def get_augmentations(cfg, is_train):
         augmentations.append(A.HorizontalFlip(p=cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.PROBABILITY))
 
     return augmentations
-
-
-def convert_pascal_voc_bbox_to_albumentations(bbox, height, width):
-    """
-    Convert a bounding box from the pascal_voc format to the albumentations format:
-    normalized coordinates of top-left and bottom-right corners of the bounding box in a form of
-    `(x_min, y_min, x_max, y_max)` e.g. `(0.15, 0.27, 0.67, 0.5)`.
-    :param bbox: (tuple) Denormalized (pascal_voc format) bounding box `(x_min, y_min, x_max, y_max)`.
-    :param height: (int) Image height.
-    :param width: (int) Image width.
-    :return: (tuple) Normalized (albumentations format) bounding box `(x_min, y_min, x_max, y_max)`.
-    """
-    x_min, y_min, x_max, y_max = bbox
-    x_min, x_max = x_min / width, x_max / width
-    y_min, y_max = y_min / height, y_max / height
-
-    # Fix for floating point precision issue
-    if -0.001 < x_min < 0.0:
-        x_min = 0.0
-    if -0.001 < y_min < 0.0:
-        y_min = 0.0
-    if 1 < x_max < 1.001:
-        x_max = 1.0
-    if 1 < y_max < 1.001:
-        y_max = 1.0
-
-    # Check that the bbox is in the range [0.0, 1.0]
-    assert 0 <= x_min <= 1, "Expected bbox to be in the range [0.0, 1.0], got x_min = {x_min}.".format(x_min=x_min)
-    assert 0 <= y_min <= 1, "Expected bbox to be in the range [0.0, 1.0], got y_min = {y_min}.".format(y_min=y_min)
-    assert 0 <= x_max <= 1, "Expected bbox to be in the range [0.0, 1.0], got x_max = {x_max}.".format(x_max=x_max)
-    assert 0 <= y_max <= 1, "Expected bbox to be in the range [0.0, 1.0], got y_max = {y_max}.".format(y_max=y_max)
-
-    return x_min, y_min, x_max, y_max
-
-
-def convert_albumentations_bbox_to_pascal_voc(bbox, height, width):
-    """
-    Convert a bounding box from the albumentations format to the pascal_voc format:
-    denormalized coordinates of top-left and bottom-right corners of the bounding box in a form of
-    `(x_min, y_min, x_max, y_max)`.
-    :param bbox: (tuple) Normalized (albumentations format) bounding box `(x_min, y_min, x_max, y_max)`.
-    :param height: (int) Image height.
-    :param width: (int) Image width.
-    :return: (tuple) Denormalized (pascal_voc format) bounding box `(x_min, y_min, x_max, y_max)`.
-    """
-    x_min, y_min, x_max, y_max = bbox
-    x_min, x_max = x_min * width, x_max * width
-    y_min, y_max = y_min * height, y_max * height
-
-    # Check that the bbox is in the range [0.0, 0.0, height, width]
-    assert 0 <= x_min <= x_max, \
-        "Expected x_min to be in the range [0.0, x_max], got x_min = {x_min}.".format(x_min=x_min)
-    assert 0 <= y_min <= y_max, \
-        "Expected y_min to be in the range [0.0, y_max], got y_min = {y_min}.".format(y_min=y_min)
-    assert x_min <= x_max <= width, \
-        "Expected x_max to be in the range [x_min, width], got x_max = {x_max}.".format(x_max=x_max)
-    assert y_min <= y_max <= height, \
-        "Expected y_max to be in the range [y_min, height], got y_max = {y_max}.".format(y_max=y_max)
-
-    return x_min, y_min, x_max, y_max
-
-
-def convert_pascal_voc_bboxes_to_albumentations(bboxes, height, width):
-    """Convert a list of bounding boxes from the pascal_voc format to the albumentations format"""
-    return [convert_pascal_voc_bbox_to_albumentations(bbox, height, width) for bbox in bboxes]
-
-
-def convert_albumentations_bboxes_to_pascal_voc(bboxes, height, width):
-    """Convert a list of bounding boxes from the albumentations format to the pascal_voc format"""
-    return [convert_albumentations_bbox_to_pascal_voc(bbox, height, width) for bbox in bboxes]
