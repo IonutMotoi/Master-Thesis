@@ -7,7 +7,7 @@ from detectron2.structures import BoxMode
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
 
-# Dataset (with masks)
+# Dataset
 def get_wgisd_dicts(root, source):
     # Load the dataset subset defined by source
     assert source in ('train', 'valid', 'test'), \
@@ -26,40 +26,36 @@ def get_wgisd_dicts(root, source):
         # Recover the items ids, removing the \n at the end
         ids = [l.rstrip() for l in lines]
 
-    imgs = [os.path.join(root, 'data', f'{id}.jpg') for id in ids]
-    masks = [os.path.join(root, 'data', f'{id}.npz') for id in ids]
-    boxes = [os.path.join(root, 'data', f'{id}.txt') for id in ids]
-
     dataset_dicts = []
-    for id in ids:
+    for img_id in ids:
         record = {}
 
-        filename = os.path.join(root, 'data', f'{id}.jpg')
+        filename = os.path.join(root, 'data', f'{img_id}.jpg')
         height, width = cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
-        record["image_id"] = id
+        record["image_id"] = img_id
         record["height"] = height
         record["width"] = width
 
-        box_path = os.path.join(root, 'data', f'{id}.txt')
-        mask_path = os.path.join(root, 'data', f'{id}.npz')
+        box_path = os.path.join(root, 'data', f'{img_id}.txt')
+        bboxes = np.loadtxt(box_path, delimiter=" ", dtype=np.float32)
+        bboxes = bboxes[:, 1:]
 
-        wgisd_masks = np.load(mask_path)['arr_0'].astype(np.uint8)
-        num_objs = wgisd_masks.shape[2]
+        mask_path = os.path.join(root, 'data', f'{img_id}.npz')
+        masks = np.load(mask_path)['arr_0'].astype(np.uint8)
 
-        boxes_text = np.loadtxt(box_path, delimiter=" ", dtype=np.float32)
-        wgisd_boxes = boxes_text[:, 1:]
-        assert (wgisd_boxes.shape[0] == num_objs)
+        num_objs = masks.shape[2]
+        assert (bboxes.shape[0] == num_objs)
 
         objs = []
         for i in range(num_objs):
-            box = wgisd_boxes[i]
-            mask = wgisd_masks[:, :, i]
+            box = bboxes[i]
+            mask = masks[:, :, i]
 
-            # Boxes (x0, y0, w, h) in range [0, 1]
+            # Boxes (x0, y0, w, h) in range [0, 1] (yolo format)
             # They are relative to the size of the image
-            # Convert to (x0, y0, x1, y1) in absolute floating points coordinates
+            # Convert to (x0, y0, x1, y1) in absolute floating points coordinates (pascal_voc format)
             x1 = box[0] - box[2] / 2
             x2 = box[0] + box[2] / 2
             y1 = box[1] - box[3] / 2
