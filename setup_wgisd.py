@@ -10,15 +10,22 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 # Dataset
 def get_wgisd_dicts(root, source):
     # Load the dataset subset defined by source
-    assert source in ('train', 'valid', 'test'), \
-        'source should be "train", "valid" or "test"'
+    assert source in ['train', 'valid', 'test', 'augmented_valid', 'augmented_test'], \
+        'source should be "train", "valid", "test", "augmented_valid" or "augmented_test"'
 
-    if source == 'train':
+    if source == "train":
         source_path = os.path.join(root, 'train_split_masked.txt')
-    elif source == 'valid':
+    elif source in ["valid", "augmented_valid"]:
         source_path = os.path.join(root, 'valid_split_masked.txt')
-    else:
+    elif source in ["test", "augmented_test"]:
         source_path = os.path.join(root, 'test_masked.txt')
+
+    if source == "augmented_valid":
+        root = os.path.join(root, "augmented", "valid_masked")
+    elif source == "augmented_test":
+        root = os.path.join(root, "augmented", "test_masked")
+    else:
+        root = os.path.join(root, "data")
 
     with open(source_path, 'r') as fp:
         # Read all lines in file
@@ -30,7 +37,7 @@ def get_wgisd_dicts(root, source):
     for img_id in ids:
         record = {}
 
-        filename = os.path.join(root, 'data', f'{img_id}.jpg')
+        filename = os.path.join(root, f'{img_id}.jpg')
         height, width = cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
@@ -38,11 +45,11 @@ def get_wgisd_dicts(root, source):
         record["height"] = height
         record["width"] = width
 
-        box_path = os.path.join(root, 'data', f'{img_id}.txt')
+        box_path = os.path.join(root, f'{img_id}.txt')
         bboxes = np.loadtxt(box_path, delimiter=" ", dtype=np.float32)
         bboxes = bboxes[:, 1:]
 
-        mask_path = os.path.join(root, 'data', f'{img_id}.npz')
+        mask_path = os.path.join(root, f'{img_id}.npz')
         masks = np.load(mask_path)['arr_0'].astype(np.uint8)
 
         num_objs = masks.shape[2]
@@ -78,7 +85,7 @@ def get_wgisd_dicts(root, source):
 def setup_wgisd():
     data_path = "/thesis/wgisd"
 
-    for d in ["train", "valid", "test"]:
+    for d in ["train", "augmented_valid"]:
         dataset_name = "wgisd_" + d
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
@@ -86,5 +93,5 @@ def setup_wgisd():
         DatasetCatalog.register(dataset_name, lambda d=d: get_wgisd_dicts(data_path, d))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
 
-    MetadataCatalog.get("wgisd_valid").set(evaluator_type="coco")
-    MetadataCatalog.get("wgisd_test").set(evaluator_type="coco")
+        if dataset_name in ["wgisd_valid", "wgisd_test", "wgisd_augmented_valid", "wgisd_augmented_test"]:
+            MetadataCatalog.get(dataset_name).set(evaluator_type="coco")
