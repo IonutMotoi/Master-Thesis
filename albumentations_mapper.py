@@ -161,6 +161,18 @@ def get_augmentations(cfg, is_train):
 
     # Horizontal Flip
     if cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.ENABLED:
-        augmentations.append(A.HorizontalFlip(p=cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.PROBABILITY))
+        augmentations.append(A.HorizontalFlip())
+
+    # Gaussian Blur
+    if cfg.ALBUMENTATIONS.GAUSSIAN_BLUR.ENABLED:
+        augmentations.append(A.GaussianBlur())
+
+    # Gaussian Noise
+    if cfg.ALBUMENTATIONS.GAUSSIAN_NOISE.ENABLED:
+        augmentations.append(A.GaussNoise())
+
+    # Random Brightness Contrast
+    if cfg.ALBUMENTATIONS.RANDOM_BRIGHTNESS_CONTRAST.ENABLED:
+        augmentations.append(A.RandomBrightnessContrast())
 
     return augmentations
