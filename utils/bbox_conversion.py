@@ -70,6 +70,16 @@ def yolo_bbox_to_albumentations(bbox):
     y_min = y_0 - box_height / 2.0
     y_max = y_0 + box_height / 2.0
 
+    # Fix for floating point precision issue
+    if -0.001 < x_min < 0.0:
+        x_min = 0.0
+    if -0.001 < y_min < 0.0:
+        y_min = 0.0
+    if 1 < x_max < 1.001:
+        x_max = 1.0
+    if 1 < y_max < 1.001:
+        y_max = 1.0
+
     # Check that the bbox is in the range [0.0, 1.0]
     assert 0 <= x_min <= 1, "Expected bbox to be in the range [0.0, 1.0], got x_min = {x_min}.".format(x_min=x_min)
     assert 0 <= y_min <= 1, "Expected bbox to be in the range [0.0, 1.0], got y_min = {y_min}.".format(y_min=y_min)
