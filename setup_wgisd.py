@@ -2,6 +2,7 @@
 import os
 import cv2
 import numpy as np
+from pycocotools.mask import encode
 
 from detectron2.structures import BoxMode
 from detectron2.data import MetadataCatalog, DatasetCatalog
@@ -68,6 +69,10 @@ def get_wgisd_dicts(root, source):
             y1 = box[1] - box[3] / 2
             y2 = box[1] + box[3] / 2
             box = [x1 * width, y1 * height, x2 * width, y2 * height]
+
+            if source in ["augmented_valid", "augmented_test"]:
+                # Validation and test masks have to be encoded here for coco evaluator
+                mask = encode(np.asarray(mask, order="F"))
 
             obj = {
                 "bbox": box,
