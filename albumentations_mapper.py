@@ -42,7 +42,7 @@ class AlbumentationsMapper:
                 augmentations,
                 bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
         else:
-            self.transform = A.Compose(augmentations)
+            self.transform = None
 
         # Log
         logger = logging.getLogger("detectron2")
@@ -63,21 +63,18 @@ class AlbumentationsMapper:
         """
         dataset_dict = copy.deepcopy(dataset_dict)
 
-        image = detection_utils.read_image(dataset_dict["file_name"], format="RGB")  # RGB required by albumentations
-        detection_utils.check_image_size(dataset_dict, image)
-
-        # Evaluation only
+        # Evaluation
         if not self.is_train:
+            image = detection_utils.read_image(dataset_dict["file_name"], format="BGR")
+            detection_utils.check_image_size(dataset_dict, image)
             dataset_dict.pop("annotations", None)
-            # Apply transformations only to the image
-            transformed = self.transform(image=image)
-            image = transformed["image"]
-            image = image[:, :, ::-1]  # RGB to BGR required by the model
-            dataset_dict["height"] = image.shape[0]
-            dataset_dict["width"] = image.shape[1]
             # Convert H,W,C image to C,H,W tensor
             dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
             return dataset_dict
+
+        # Training
+        image = detection_utils.read_image(dataset_dict["file_name"], format="RGB")  # RGB required by albumentations
+        detection_utils.check_image_size(dataset_dict, image)
 
         bboxes = [anno["bbox"] for anno in dataset_dict["annotations"]]
         bbox_mode = dataset_dict["annotations"][0]["bbox_mode"]
@@ -157,7 +154,8 @@ def get_augmentations(cfg, is_train):
             mask_value=cfg.ALBUMENTATIONS.PAD.MASK_VALUE
         ))
 
-    # Apply only Longest Max Size and Pad during evaluation
+    # Only Longest Max Size and Pad during evaluation
+    # Those transformations were already applied, here are returned for print purposes
     if not is_train:
         return augmentations
 
