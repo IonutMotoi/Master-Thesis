@@ -28,7 +28,7 @@ MODEL:
     NUM_CLASSES : 1
 TEST:
   EVAL_PERIOD: 88
-OUTPUT_DIR: "./output/wgisd_paper"
+OUTPUT_DIR: "./output/wgisd_paper_augmentations"
 SEED: 42
 ALBUMENTATIONS:
   LONGEST_MAX_SIZE:
