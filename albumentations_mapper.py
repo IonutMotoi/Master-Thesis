@@ -138,8 +138,12 @@ class AlbumentationsMapper:
         return dataset_dict
 
 
-def pixel_dropout(image, **kwargs):
-    print(image.shape)
+def pixel_dropout(image, p, **kwargs):
+    print(p)
+    height = image.shape[0]
+    width = image.shape[1]
+    print(height)
+    print(width)
     return image
 
 
@@ -182,6 +186,9 @@ def get_augmentations(cfg, is_train):
 
     # Pixel Dropout
     if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
-        augmentations.append(A.Lambda(name="pixel_dropout", image=pixel_dropout, p=0.5))
+        augmentations.append(A.Lambda(
+            name="pixel_dropout",
+            image=lambda image, p, **kwargs: pixel_dropout(image, p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROP_PROBABILITY),
+            p=0.5))
 
     return augmentations
