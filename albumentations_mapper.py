@@ -155,13 +155,15 @@ def pixel_dropout(image, p, **kwargs):
             f"Expected p to be given as a tuple containing exactly 2 values "
             f"(a, b) with a < b. Got {p[0]:.4f} and {p[1]:.4f}.")
     assert 0 <= p[0] <= 1.0 and 0 <= p[1] <= 1.0, (
-            "Expected p given as tuple to only contain values in the "
-            "interval [0.0, 1.0], got {p[0]:.4f} and {p[1]:.4f}.")
+            f"Expected p given as tuple to only contain values in the "
+            f"interval [0.0, 1.0], got {p[0]:.4f} and {p[1]:.4f}.")
 
     height = image.shape[0]
     width = image.shape[1]
-    p = np.random.uniform(p[0], p[1])
-    dropouts = np.random.choice([0, 1], size=(height, width), p=[p, 1.0 - p])
+    # Dropout probability
+    prob = np.random.uniform(p[0], p[1])
+    # Pixels to dropout
+    dropouts = np.random.choice([0, 1], size=(height, width), p=[prob, 1.0 - prob])
     image = image * dropouts[:, :, np.newaxis]
     return image
 
@@ -207,7 +209,7 @@ def get_augmentations(cfg, is_train):
     if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
         augmentations.append(A.Lambda(
             name="pixel_dropout",
-            image=lambda image, **kwargs: pixel_dropout(image, p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROP_PROBABILITY),
+            image=lambda image, **kwargs: pixel_dropout(image, p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY),
             p=0.5))
 
     return augmentations
