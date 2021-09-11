@@ -147,9 +147,6 @@ def pixel_dropout(image, p, **kwargs):
     :param kwargs:
     :return: augmented image
     """
-    height = image.shape[0]
-    width = image.shape[1]
-
     assert isinstance(p, tuple), f"Expected p to be given as a tuple, got {type(p)}."
     assert len(p) == 2, (
             f"Expected p to be given as a tuple containing exactly 2 values, "
@@ -161,6 +158,11 @@ def pixel_dropout(image, p, **kwargs):
             "Expected p given as tuple to only contain values in the "
             "interval [0.0, 1.0], got {p[0]:.4f} and {p[1]:.4f}.")
 
+    height = image.shape[0]
+    width = image.shape[1]
+    p = np.random.uniform(p[0], p[1])
+    dropouts = np.random.choice([0, 1], size=(height, width), p=[p, 1.0 - p])
+    image = image * dropouts[:, :, np.newaxis]
     return image
 
 
