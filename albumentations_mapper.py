@@ -182,6 +182,6 @@ def get_augmentations(cfg, is_train):
 
     # Pixel Dropout
     if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
-        augmentations.append(A.Lambda(image=pixel_dropout(), name="pixel_dropout", p=0.5))
+        augmentations.append(A.Lambda(image=pixel_dropout, name="pixel_dropout", p=0.5))
 
     return augmentations
