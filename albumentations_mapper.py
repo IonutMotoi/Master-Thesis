@@ -151,9 +151,9 @@ def pixel_dropout(image, p, **kwargs):
     assert len(p) == 2, (
             f"Expected p to be given as a list containing exactly 2 values, "
             f"got {len(p)} values.")
-    assert p[0] < p[1], (
+    assert p[0] <= p[1], (
             f"Expected p to be given as a list containing exactly 2 values "
-            f"[a, b] with a < b. Got {p[0]:.4f} and {p[1]:.4f}.")
+            f"[a, b] with a <= b. Got {p[0]:.4f} and {p[1]:.4f}.")
     assert 0 <= p[0] <= 1.0 and 0 <= p[1] <= 1.0, (
             f"Expected p given as list to only contain values in the "
             f"interval [0.0, 1.0], got {p[0]:.4f} and {p[1]:.4f}.")
