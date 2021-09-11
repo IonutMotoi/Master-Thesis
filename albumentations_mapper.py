@@ -139,11 +139,28 @@ class AlbumentationsMapper:
 
 
 def pixel_dropout(image, p, **kwargs):
-    print(p)
+    """
+    Set a fraction of pixels in images to zero.
+    :param image:
+    :param p: (tuple) a value ``p`` will be sampled from the interval ``[a, b]``
+              per image and be used as the pixel's dropout probability.
+    :param kwargs:
+    :return: augmented image
+    """
     height = image.shape[0]
     width = image.shape[1]
-    print(height)
-    print(width)
+
+    assert isinstance(p, tuple), f"Expected p to be given as a tuple, got {type(p)}."
+    assert len(p) == 2, (
+            f"Expected p to be given as a tuple containing exactly 2 values, "
+            f"got {len(p)} values.")
+    assert p[0] < p[1], (
+            f"Expected p to be given as a tuple containing exactly 2 values "
+            f"(a, b) with a < b. Got {p[0]:.4f} and {p[1]:.4f}.")
+    assert 0 <= p[0] <= 1.0 and 0 <= p[1] <= 1.0, (
+            "Expected p given as tuple to only contain values in the "
+            "interval [0.0, 1.0], got {p[0]:.4f} and {p[1]:.4f}.")
+
     return image
 
 
