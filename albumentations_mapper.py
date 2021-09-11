@@ -138,7 +138,7 @@ class AlbumentationsMapper:
         return dataset_dict
 
 
-def pixel_dropout(image, p, **kwargs):
+def pixel_dropout(image, p=(1.0, 1.0), **kwargs):
     """
     Set a fraction of pixels in images to zero.
     :param image:
@@ -161,9 +161,9 @@ def pixel_dropout(image, p, **kwargs):
     height = image.shape[0]
     width = image.shape[1]
     # Dropout probability
-    prob = np.random.uniform(p[0], p[1])
+    p = np.random.uniform(p[0], p[1])
     # Pixels to dropout
-    dropouts = np.random.choice([0, 1], size=(height, width), p=[prob, 1.0 - prob])
+    dropouts = np.random.choice([0, 1], size=(height, width), p=[p, 1.0 - p])
     image = image * dropouts[:, :, np.newaxis]
     return image
 
