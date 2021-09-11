@@ -208,6 +208,7 @@ def get_augmentations(cfg, is_train):
     # Pixel Dropout
     p = cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY
     print(type(p))
+    print(type(cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED))
     if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
         augmentations.append(A.Lambda(
             name="pixel_dropout",
