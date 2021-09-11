@@ -138,7 +138,7 @@ class AlbumentationsMapper:
         return dataset_dict
 
 
-def pixel_dropout(image, cols, rows, **kwargs):
+def pixel_dropout(image, rows, cols, **kwargs):
     for key, value in kwargs.items():
         print("%s == %s" % (key, value))
     print("COLS: ", cols)
