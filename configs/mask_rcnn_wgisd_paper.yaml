@@ -28,7 +28,7 @@ MODEL:
     NUM_CLASSES : 1
 TEST:
   EVAL_PERIOD: 88
-OUTPUT_DIR: "./output/wgisd_paper_augmentations"
+OUTPUT_DIR: "./output/wgisd_paper"
 SEED: 42
 ALBUMENTATIONS:
   LONGEST_MAX_SIZE:
@@ -41,13 +41,13 @@ ALBUMENTATIONS:
     VALUE: 0
     MASK_VALUE: 0
   HORIZONTAL_FLIP:
-    ENABLED: True
+    ENABLED: False
   GAUSSIAN_BLUR:
-    ENABLED: True
+    ENABLED: False
   GAUSSIAN_NOISE:
-    ENABLED: True
+    ENABLED: False
   RANDOM_BRIGHTNESS_CONTRAST:
-    ENABLED: True
+    ENABLED: False
   PIXEL_DROPOUT:
-    ENABLED: True
+    ENABLED: False
     DROPOUT_PROBABILITY: [0.0, 0.05]
