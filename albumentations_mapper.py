@@ -138,7 +138,7 @@ class AlbumentationsMapper:
         return dataset_dict
 
 
-def pixel_dropout(image):
+def pixel_dropout(image, **kwargs):
 
     return image
 
