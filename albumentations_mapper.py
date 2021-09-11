@@ -139,7 +139,8 @@ class AlbumentationsMapper:
 
 
 def pixel_dropout(image, **kwargs):
-
+    for key, value in kwargs.items():
+        print("%s == %s" % (key, value))
     return image
 
 
