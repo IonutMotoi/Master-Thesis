@@ -206,10 +206,12 @@ def get_augmentations(cfg, is_train):
         augmentations.append(A.RandomBrightnessContrast())
 
     # Pixel Dropout
+    p = cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY
+    print(type(p))
     if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
         augmentations.append(A.Lambda(
             name="pixel_dropout",
-            image=lambda image, **kwargs: pixel_dropout(image, p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY),
+            image=lambda image, **kwargs: pixel_dropout(image, p=p),
             p=0.5))
 
     return augmentations
