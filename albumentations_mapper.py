@@ -138,6 +138,11 @@ class AlbumentationsMapper:
         return dataset_dict
 
 
+def pixel_dropout(image):
+
+    return image
+
+
 def get_augmentations(cfg, is_train):
     augmentations = []
 
@@ -174,5 +179,9 @@ def get_augmentations(cfg, is_train):
     # Random Brightness Contrast
     if cfg.ALBUMENTATIONS.RANDOM_BRIGHTNESS_CONTRAST.ENABLED:
         augmentations.append(A.RandomBrightnessContrast())
+
+    # Pixel Dropout
+    if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
+        augmentations.append(A.Lambda(image=pixel_dropout(), name="pixel_dropout", p=0.5))
 
     return augmentations
