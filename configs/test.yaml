@@ -3,7 +3,7 @@ DATASETS:
   TRAIN : ("wgisd_train",)
   TEST : ("wgisd_augmented_valid",)
 DATALOADER:
-  NUM_WORKERS : 9ì8
+  NUM_WORKERS : 8
 INPUT:
   MASK_FORMAT : "bitmask"
   MIN_SIZE_TRAIN: (1024,)
