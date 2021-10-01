@@ -18,7 +18,7 @@ def get_wgisd_dicts(root, source):
         source_path = os.path.join(root, 'train_split_masked.txt')
     elif source in ["valid", "augmented_valid"]:
         source_path = os.path.join(root, 'valid_split_masked.txt')
-    elif source in ["test", "augmented_test"]:
+    else:  # source in ["test", "augmented_test"]
         source_path = os.path.join(root, 'test_masked.txt')
 
     if source == "augmented_valid":
@@ -97,6 +97,3 @@ def setup_wgisd():
 
         DatasetCatalog.register(dataset_name, lambda d=d: get_wgisd_dicts(data_path, d))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
-
-        if dataset_name in ["wgisd_valid", "wgisd_test", "wgisd_augmented_valid", "wgisd_augmented_test"]:
-            MetadataCatalog.get(dataset_name).set(evaluator_type="coco")
