@@ -23,7 +23,7 @@ MODEL:
   MASK_ON: True
   RESNETS:
     DEPTH: 50
-  WEIGHTS: "/thesis/detectron2_baseline/model_final_f10217.pkl"
+  WEIGHTS: "/thesis/detectron2_baseline/R50-FPN/model_final_f10217.pkl"
   ROI_HEADS:
     NUM_CLASSES : 1
 TEST:

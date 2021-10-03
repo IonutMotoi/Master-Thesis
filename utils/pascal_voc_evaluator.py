@@ -27,12 +27,22 @@ from detectron2.evaluation.evaluator import DatasetEvaluator
 
 
 class PascalVOCEvaluator(DatasetEvaluator):
+    def __init__(self):
+        self._cpu_device = torch.device("cpu")
+        self._predictions = []
+
     def reset(self):
-        pass
+        self._predictions = []
 
     def process(self, inputs, outputs):
         for input, output in zip(inputs, outputs):
-            pass
+            prediction = {"image_id": input["image_id"]}
+            instances = output["instances"].to(self._cpu_device)
+
+            boxes = instances.pred_boxes.tensor.numpy()
+            masks = instances.pred_masks
+            scores = instances.scores.tolist()
+            classes = instances.pred_classes.tolist()
 
     def evaluate(self):
         pass
