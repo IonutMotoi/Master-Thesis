@@ -69,9 +69,12 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
         self._results = OrderedDict()
 
+        all_instances = list(itertools.chain(*[prediction["instances"] for prediction in predictions]))
+        print(len(all_instances))
+
         # Get tasks from predictions
         tasks = ["bbox"]
-        if "segmentation" in predictions[0]:
+        if "segmentation" in predictions[0]["instances"]:
             tasks.append("segm")
         print(tasks)
 
