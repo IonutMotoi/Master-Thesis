@@ -60,8 +60,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
                         instance["segmentation"] = instances.pred_masks[k]
                     prediction["instances"].append(instance)
             print(input)
-            break
             self._predictions.append(prediction)
+            break
 
     def evaluate(self):
         predictions = self._predictions
