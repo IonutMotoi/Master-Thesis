@@ -67,7 +67,7 @@ class AlbumentationsMapper:
         if not self.is_train:
             image = detection_utils.read_image(dataset_dict["file_name"], format="BGR")
             detection_utils.check_image_size(dataset_dict, image)
-            dataset_dict.pop("annotations", None)
+            # dataset_dict.pop("annotations", None)
             # Convert H,W,C image to C,H,W tensor
             dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
             return dataset_dict
