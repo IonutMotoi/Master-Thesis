@@ -27,8 +27,8 @@ logger = logging.getLogger("detectron2")
 def get_evaluator(cfg, dataset_name, output_folder=None):
     if output_folder is None:
         output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
-    return COCOEvaluator(dataset_name, output_dir=output_folder)
-    # return PascalVOCEvaluator()
+    # return COCOEvaluator(dataset_name, output_dir=output_folder)
+    return PascalVOCEvaluator()
 
 
 def do_test(cfg, model):
