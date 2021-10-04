@@ -59,9 +59,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
                     if instances.has("pred_masks"):
                         instance["segmentation"] = instances.pred_masks[k]
                     prediction["instances"].append(instance)
-            print(input)
+
             self._predictions.append(prediction)
-            break
 
     def evaluate(self):
         predictions = self._predictions
@@ -73,7 +72,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
         # Get tasks from predictions
         tasks = ["bbox"]
-        if "segmentation" in predictions[0]["instances"]:
+        if "segmentation" in all_instances[0]:
             tasks.append("segm")
         print(tasks)
 
