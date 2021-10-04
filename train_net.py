@@ -19,6 +19,7 @@ import wandb
 from setup_wgisd import setup_wgisd
 from albumentations_mapper import AlbumentationsMapper
 from utils.visualization import visualize_image_and_annotations
+from utils.pascal_voc_evaluator import PascalVOCEvaluator
 
 logger = logging.getLogger("detectron2")
 
@@ -26,7 +27,8 @@ logger = logging.getLogger("detectron2")
 def get_evaluator(cfg, dataset_name, output_folder=None):
     if output_folder is None:
         output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
-    return COCOEvaluator(dataset_name, output_dir=output_folder)
+    # return COCOEvaluator(dataset_name, output_dir=output_folder)
+    return PascalVOCEvaluator()
 
 
 def do_test(cfg, model):
