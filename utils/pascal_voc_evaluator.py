@@ -30,6 +30,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
     def __init__(self):
         self._cpu_device = torch.device("cpu")
         self._predictions = []
+        self._results = OrderedDict()
 
     def reset(self):
         self._predictions = []
@@ -60,7 +61,19 @@ class PascalVOCEvaluator(DatasetEvaluator):
                     prediction["instances"].append(instance)
 
             self._predictions.append(prediction)
-            print(num_instance)
 
     def evaluate(self):
-        print(len(self._predictions))
+        # print(len(self._predictions))
+
+        predictions = self._predictions
+
+        self._results = OrderedDict()
+
+        # Get tasks from predictions
+        tasks = ["bbox"]
+        if "segmentation" in predictions[0]:
+            tasks.append("segm")
+        print(tasks)
+
+        # Copy so the caller can do whatever with results
+        return copy.deepcopy(self._results)
