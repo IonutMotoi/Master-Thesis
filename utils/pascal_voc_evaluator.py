@@ -36,13 +36,30 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def process(self, inputs, outputs):
         for input, output in zip(inputs, outputs):
-            prediction = {"image_id": input["image_id"]}
+            prediction = {
+                "image_id": input["image_id"],
+                "instances": []
+            }
             instances = output["instances"].to(self._cpu_device)
 
-            boxes = instances.pred_boxes.tensor.numpy()
-            masks = instances.pred_masks
-            scores = instances.scores.tolist()
-            classes = instances.pred_classes.tolist()
+            num_instance = len(instances)
+            if num_instance != 0:
+                boxes = instances.pred_boxes.tensor.numpy()
+                scores = instances.scores.tolist()
+                classes = instances.pred_classes.tolist()
+
+                for k in range(num_instance):
+                    instance = {
+                        "image_id": input["image_id"],
+                        "category_id": classes[k],
+                        "bbox": boxes[k],
+                        "score": scores[k]
+                    }
+                    if instances.has("pred_masks"):
+                        instance["segmentation"] = instances.pred_masks[k]
+                    prediction["instances"].append(instance)
+
+            self._predictions.append(prediction)
 
     def evaluate(self):
-        pass
+        print(len(self._predictions))
