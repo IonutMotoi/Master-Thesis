@@ -64,17 +64,21 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def evaluate(self):
         predictions = self._predictions
-
         self._results = OrderedDict()
 
         all_instances = list(itertools.chain(*[prediction["instances"] for prediction in predictions]))
-        print(len(all_instances))
 
         # Get tasks from predictions
         tasks = ["bbox"]
         if "segmentation" in all_instances[0]:
             tasks.append("segm")
-        print(tasks)
+
+        for task in tasks:
+            self._results[task] = _evaluate_predictions(all_instances)
 
         # Copy so the caller can do whatever with results
         return copy.deepcopy(self._results)
+
+
+def _evaluate_predictions(all_instances):
+    return []
