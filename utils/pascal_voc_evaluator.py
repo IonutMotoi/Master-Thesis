@@ -59,12 +59,11 @@ class PascalVOCEvaluator(DatasetEvaluator):
                     if instances.has("pred_masks"):
                         instance["segmentation"] = instances.pred_masks[k]
                     prediction["instances"].append(instance)
-
+            print(input)
+            break
             self._predictions.append(prediction)
 
     def evaluate(self):
-        # print(len(self._predictions))
-
         predictions = self._predictions
 
         self._results = OrderedDict()
