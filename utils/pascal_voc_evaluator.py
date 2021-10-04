@@ -60,7 +60,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
                     prediction["instances"].append(instance)
 
             self._predictions.append(prediction)
-            print(prediction)
+            print(num_instance)
 
     def evaluate(self):
         print(len(self._predictions))
