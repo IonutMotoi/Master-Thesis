@@ -41,7 +41,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def reset(self):
         self.predictions = defaultdict(list)  # class name -> list of predictions
-        self.annotations = {}  # image id -> dict with annotations (ground truth)
+        self.annotations = {}  # image id -> list of annotations (ground truth)
 
     def process(self, inputs, outputs):
         for input_, output in zip(inputs, outputs):
@@ -83,8 +83,9 @@ class PascalVOCEvaluator(DatasetEvaluator):
     def voc_eval(self, class_id, overlap_threshold=0.5):
         """rec, prec, ap = voc_eval(classname, [ovthresh])"""
         class_annotations = {}
-        for image_id, annotation in self.annotations.items():
-            if annotation["category_id"] == class_id:
-                class_annotations[image_id] = annotation
-                print("AYOOOO")
+        for image_id, image_annotations in self.annotations.items():
+            image_class_annotations = [annotation for annotation in image_annotations
+                                       if annotation["category_id"] == class_id]
+            class_annotations[image_id] = image_class_annotations
+        print(class_annotations)
         return 0, 0, 0
