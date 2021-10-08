@@ -50,7 +50,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
             boxes = instances.pred_boxes.tensor.numpy()
             print("Type of instances scores:", type(instances.scores))
             scores = instances.scores.tolist()
-            print("Type of scores:", type(instances.scores))
+            print("Type of scores:", type(scores))
             classes = instances.pred_classes.tolist()
 
             prediction = {
