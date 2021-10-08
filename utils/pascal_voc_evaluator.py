@@ -46,7 +46,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
     def process(self, inputs, outputs):
         for input_, output in zip(inputs, outputs):
             image_id = input_["image_id"]
-            instances = output["instances"].to(self._cpu_device)
+            instances = output["instances"].to(self.cpu_device)
             boxes = instances.pred_boxes.tensor.numpy()
             scores = instances.scores.tolist()
             classes = instances.pred_classes.tolist()
