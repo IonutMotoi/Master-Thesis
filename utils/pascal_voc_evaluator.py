@@ -40,25 +40,24 @@ class PascalVOCEvaluator(DatasetEvaluator):
         self.annotations = None
 
     def reset(self):
-        self.predictions = defaultdict(list)  # class name -> list of prediction strings
+        self.predictions = defaultdict(list)  # class name -> list of predictions
         self.annotations = {}  # image id -> dict with annotations (ground truth)
 
     def process(self, inputs, outputs):
         for input_, output in zip(inputs, outputs):
             image_id = input_["image_id"]
+
+            # Get annotations ground truth
+            self.annotations[image_id] = input_["annotations"]
+
+            # Get predictions for each class
             instances = output["instances"].to(self.cpu_device)
             boxes = instances.pred_boxes.tensor.numpy()
-            print("Type of instances scores:", type(instances.scores))
-            scores = instances.scores.tolist()
-            print("Type of scores:", type(scores))
+            scores = instances.scores.numpy()
             classes = instances.pred_classes.tolist()
+            print(classes)
+            # for k in range(len(instances)):
 
-            prediction = {
-
-            }
-            # why not just append all predictions in a list self.predictions?
-
-            self.annotations[image_id] = input_["annotations"]
 
             # prediction = {
             #     "image_id": input["image_id"],
