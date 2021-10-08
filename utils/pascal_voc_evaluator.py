@@ -40,8 +40,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
         self.annotations = None
 
     def reset(self):
-        self.predictions = defaultdict(list)  # class name -> list of predictions
-        self.annotations = {}  # image id -> list of annotations (ground truth)
+        self.predictions = defaultdict(list)  # class id -> (list of dicts) predictions
+        self.annotations = {}  # image id -> (list of dicts) annotations - ground truth
 
     def process(self, inputs, outputs):
         for input_, output in zip(inputs, outputs):
@@ -57,7 +57,6 @@ class PascalVOCEvaluator(DatasetEvaluator):
             classes = instances.pred_classes.tolist()  # category id
 
             for k in range(len(instances)):
-                class_name = self.class_names[classes[k]]
                 prediction = {
                     "image_id": image_id,
                     "category_id": classes[k],
@@ -66,11 +65,12 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 }
                 #    if instances.has("pred_masks"):
                 #        prediction["segmentation"] = instances.pred_masks[k]
-                self.predictions[class_name].append(prediction)
+                self.predictions[classes[k]].append(prediction)
 
     def evaluate(self):
         aps = defaultdict(list)  # iou -> ap per class
-        for class_id, class_name in enumerate(self.class_names):
+        for class_id in range(len(self.class_names)):
+            print("EVALUATE")
             for threshold in range(50, 100, 5):
                 recall, precision, ap = self.voc_eval(class_id, threshold)
                 aps[threshold].append(ap * 100)
@@ -82,10 +82,10 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def voc_eval(self, class_id, overlap_threshold=0.5):
         """rec, prec, ap = voc_eval(class_id, [ovthresh])"""
-        class_annotations = {}
+        class_annotations = {}  # image id -> (list of dicts) annotations of class_id
         for image_id, image_annotations in self.annotations.items():
             image_class_annotations = [annotation for annotation in image_annotations
                                        if annotation["category_id"] == class_id]
             class_annotations[image_id] = image_class_annotations
-        print(class_annotations)
+
         return 0, 0, 0
