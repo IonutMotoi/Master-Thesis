@@ -72,7 +72,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         aps = defaultdict(list)  # iou -> ap per class
         for class_id, class_name in enumerate(self.class_names):
             for threshold in range(50, 100, 5):
-                recall, precision, ap = self.voc_eval(class_name, threshold)
+                recall, precision, ap = self.voc_eval(class_id, threshold)
                 aps[threshold].append(ap * 100)
 
         ret = OrderedDict()
@@ -81,7 +81,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         return ret
 
     def voc_eval(self, class_id, overlap_threshold=0.5):
-        """rec, prec, ap = voc_eval(classname, [ovthresh])"""
+        """rec, prec, ap = voc_eval(class_id, [ovthresh])"""
         class_annotations = {}
         for image_id, image_annotations in self.annotations.items():
             image_class_annotations = [annotation for annotation in image_annotations
