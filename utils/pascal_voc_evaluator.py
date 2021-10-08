@@ -48,7 +48,9 @@ class PascalVOCEvaluator(DatasetEvaluator):
             image_id = input_["image_id"]
             instances = output["instances"].to(self.cpu_device)
             boxes = instances.pred_boxes.tensor.numpy()
+            print("Type of instances scores:", type(instances.scores))
             scores = instances.scores.tolist()
+            print("Type of scores:", type(instances.scores))
             classes = instances.pred_classes.tolist()
 
             prediction = {
@@ -57,8 +59,6 @@ class PascalVOCEvaluator(DatasetEvaluator):
             # why not just append all predictions in a list self.predictions?
 
             self.annotations[image_id] = input_["annotations"]
-            print(self.annotations)
-
 
             # prediction = {
             #     "image_id": input["image_id"],
