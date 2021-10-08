@@ -33,7 +33,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def __init__(self, dataset_name):
         meta = MetadataCatalog.get(dataset_name)
-        self.class_names = meta.thing_classes
+        self.num_of_classes = len(meta.thing_classes)
         self.cpu_device = torch.device("cpu")
         self.results = OrderedDict()
         self.predictions = None  # initialized inside reset()
@@ -69,8 +69,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def evaluate(self):
         aps = defaultdict(list)  # iou -> ap per class
-        for class_id in range(len(self.class_names)):
-            print("EVALUATE")
+        for class_id in range(self.num_of_classes):
             for threshold in range(50, 100, 5):
                 recall, precision, ap = self.voc_eval(class_id, threshold)
                 aps[threshold].append(ap * 100)
@@ -82,10 +81,15 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def voc_eval(self, class_id, overlap_threshold=0.5):
         """rec, prec, ap = voc_eval(class_id, [ovthresh])"""
+        npos = 0
         class_annotations = {}  # image id -> (list of dicts) annotations of class_id
         for image_id, image_annotations in self.annotations.items():
             image_class_annotations = [annotation for annotation in image_annotations
                                        if annotation["category_id"] == class_id]
-            class_annotations[image_id] = image_class_annotations
+            bboxes = np.array(annotation["bbox"] for annotation in image_class_annotations)
+            det = [False] * len(image_class_annotations)
+            npos += len(image_class_annotations)
+            class_annotations[image_id] = {"bboxes": bboxes, "det": det}
 
+        # TODO: Get detections, get TPs and FPs. compute precision and recall, compute ap
         return 0, 0, 0
