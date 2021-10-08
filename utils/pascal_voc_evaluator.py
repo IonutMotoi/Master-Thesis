@@ -54,9 +54,18 @@ class PascalVOCEvaluator(DatasetEvaluator):
             instances = output["instances"].to(self.cpu_device)
             boxes = instances.pred_boxes.tensor.numpy()
             scores = instances.scores.numpy()
-            classes = instances.pred_classes.tolist()
-            print(classes)
-            # for k in range(len(instances)):
+            classes = instances.pred_classes.tolist()  # category id
+
+            for k in range(len(instances)):
+                class_name = self.class_names[classes[k]]
+                prediction = {
+                    "image_id": image_id,
+                    "category_id": classes[k],
+                    "bbox": boxes[k],
+                    "score": scores[k]
+                }
+                self.predictions[class_name].append(prediction)
+                print("Length:", class_name, len(self.predictions[class_name]))
 
 
             # prediction = {
