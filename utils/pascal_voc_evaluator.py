@@ -50,7 +50,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
             # Get annotations ground truth
             self.annotations[image_id] = input_["annotations"]
 
-            # Get predictions for each class
+            # Get predictions
             instances = output["instances"].to(self.cpu_device)
             boxes = instances.pred_boxes.tensor.numpy()
             scores = instances.scores.numpy()
@@ -64,53 +64,27 @@ class PascalVOCEvaluator(DatasetEvaluator):
                     "bbox": boxes[k],
                     "score": scores[k]
                 }
+                #    if instances.has("pred_masks"):
+                #        prediction["segmentation"] = instances.pred_masks[k]
                 self.predictions[class_name].append(prediction)
-                print("Length:", class_name, len(self.predictions[class_name]))
-
-
-            # prediction = {
-            #     "image_id": input["image_id"],
-            #     "instances": []
-            # }
-            # instances = output["instances"].to(self._cpu_device)
-            #
-            # num_instance = len(instances)
-            # if num_instance != 0:
-            #     boxes = instances.pred_boxes.tensor.numpy()
-            #     scores = instances.scores.tolist()
-            #     classes = instances.pred_classes.tolist()
-            #
-            #     for k in range(num_instance):
-            #         instance = {
-            #             "image_id": input["image_id"],
-            #             "category_id": classes[k],
-            #             "bbox": boxes[k],
-            #             "score": scores[k]
-            #         }
-            #         if instances.has("pred_masks"):
-            #             instance["segmentation"] = instances.pred_masks[k]
-            #         prediction["instances"].append(instance)
-            #
-            # self._predictions.append(prediction)
 
     def evaluate(self):
-        # predictions = self._predictions
-        # self._results = OrderedDict()
-        #
-        # all_instances = list(itertools.chain(*[prediction["instances"] for prediction in predictions]))
-        #
-        # # Get tasks from predictions
-        # tasks = ["bbox"]
-        # if "segmentation" in all_instances[0]:
-        #     tasks.append("segm")
-        #
-        # for task in tasks:
-        #     self._results[task] = _evaluate_predictions(all_instances)
-        #
-        # # Copy so the caller can do whatever with results
-        # return copy.deepcopy(self._results)
-        pass
+        aps = defaultdict(list)  # iou -> ap per class
+        for class_id, class_name in enumerate(self.class_names):
+            for threshold in range(50, 100, 5):
+                recall, precision, ap = self.voc_eval(class_name, threshold)
+                aps[threshold].append(ap * 100)
 
+        ret = OrderedDict()
+        mAP = {iou: np.mean(x) for iou, x in aps.items()}
+        ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
+        return ret
 
-def mean_average_precision(pred_boxes, pred_classes, pred_scores, true_boxes, iou_threshold=0.5):
-    average_precisions = []
+    def voc_eval(self, class_id, overlap_threshold=0.5):
+        """rec, prec, ap = voc_eval(classname, [ovthresh])"""
+        class_annotations = {}
+        for image_id, annotation in self.annotations.items():
+            if annotation["category_id"] == class_id:
+                class_annotations[image_id] = annotation
+                print("AYOOOO")
+        return 0, 0, 0
