@@ -101,14 +101,20 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
         # Sort by confidence (descending)
         sorted_indices = np.argsort(confidence)[::-1]
-        print(sorted_indices)
         bboxes = bboxes[sorted_indices, :]
-        print(bboxes)
-        print(bboxes.shape)
         image_ids = [image_ids[x] for x in sorted_indices]
-        print(image_ids)
-        sys.exit()
-        # TODO: Get TPs and FPs
+
+        # Get TPs and FPs
+        num_of_predictions = len(image_ids)
+        tp = np.zeros(num_of_predictions)
+        fp = np.zeros(num_of_predictions)
+        for i in range(num_of_predictions):
+            img_annotations = annotations[image_ids[i]]
+            bbox_gt = img_annotations["bbox"]
+            print(type(bbox_gt))
+            bbox = bboxes[i, :]
+            print(type(bbox))
+            overlap_max = -np.inf
 
         # TODO: Compute precision and recall
 
