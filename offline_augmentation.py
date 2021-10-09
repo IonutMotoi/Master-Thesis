@@ -2,11 +2,15 @@ import albumentations as A
 import os
 import cv2
 import numpy as np
+from pathlib import Path
 
 from utils.bbox_conversion import yolo_bboxes_to_albumentations, albumentations_bboxes_to_yolo
 
 
 def save_augmented(dest_folder, img_id, image, bboxes, masks, count, tot_imgs):
+    # Create destination folder
+    Path(dest_folder).mkdir(parents=True, exist_ok=True)
+
     # Save image
     image_path = os.path.join(dest_folder, f'{img_id}.jpg')
     cv2.imwrite(image_path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
@@ -78,25 +82,9 @@ def offline_augmentation(ids_txt, data_folder, dest_folder, augmentations, augme
         save_augmented(dest_folder, img_id, image, bboxes, masks, count, tot_imgs)
 
 
-# ids_txt = "./wgisd/valid_split_masked.txt"
-# data_folder = "./wgisd/data"
-# dest_folder = "./wgisd/augmented/valid_masked"
-# augment_masks = True
-#
-# offline_augmentation(
-#     ids_txt=ids_txt,
-#     data_folder=data_folder,
-#     dest_folder=dest_folder,
-#     augmentations=A.Compose([
-#         A.LongestMaxSize(max_size=1024),
-#         A.PadIfNeeded(min_height=1024, min_width=1024, border_mode=cv2.BORDER_CONSTANT, value=0, mask_value=0)
-#     ], bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels'])),
-#     augment_masks=augment_masks)
-
-
 ids_txt = "./wgisd/test.txt"
 data_folder = "./wgisd/data"
-dest_folder = "./wgisd/augmented/test_detection"
+dest_folder = "./wgisd/augmented/test_auto_folder"
 augment_masks = False
 
 offline_augmentation(
