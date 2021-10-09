@@ -88,7 +88,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         for image_id, image_annotations in self.annotations.items():
             image_class_annotations = [annotation for annotation in image_annotations
                                        if annotation["category_id"] == class_id]
-            print(annotation)
+            print(image_class_annotations)
             sys.exit()
             bboxes = np.array(annotation["bbox"] for annotation in image_class_annotations)
             det = [False] * len(image_class_annotations)
