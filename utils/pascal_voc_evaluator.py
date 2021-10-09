@@ -146,6 +146,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 fp[i] = 1.0
 
         # Compute precision and recall
+        print("tp:", tp)
+        print("fp:", fp)
         tp = np.cumsum(tp)
         fp = np.cumsum(fp)
         recall = tp / float(npos)
