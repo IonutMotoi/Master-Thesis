@@ -135,7 +135,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 overlaps = inters / uni
                 overlap_max = np.max(overlaps)
                 j_max = np.argmax(overlaps)
-            print("OVERLAP MAX:", overlap_max)
+
             if overlap_max > overlap_threshold:
                 if not img_annotations["det"][j_max]:
                     tp[i] = 1.0
