@@ -1,2 +1,0 @@
-_BASE_: "./mask_rcnn_wgisd_paper_augmentations_test.yaml"
-OUTPUT_DIR: "./output/wgisd_paper_augmentations_test_pascal"

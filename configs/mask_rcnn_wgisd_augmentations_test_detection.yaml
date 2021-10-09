@@ -1,5 +1,4 @@
 _BASE_: "./mask_rcnn_wgisd_augmentations_test.yaml"
 DATASETS:
-  TRAIN : ("wgisd_train",)
   TEST : ("wgisd_augmented_test_detection",)
-OUTPUT_DIR: "./output/test"
+OUTPUT_DIR: "./output/wgisd_paper_augmentations_test_detection"

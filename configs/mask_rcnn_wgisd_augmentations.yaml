@@ -1,0 +1,23 @@
+_BASE_: "./mask_rcnn_wgisd.yaml"
+OUTPUT_DIR: "./output/wgisd_paper_augmentations"
+ALBUMENTATIONS:
+  LONGEST_MAX_SIZE:
+    ENABLED: True
+    VALUE: 1024
+  PAD:
+    ENABLED: True
+    TARGET_HEIGHT: 1024
+    TARGET_WIDTH: 1024
+    VALUE: 0
+    MASK_VALUE: 0
+  HORIZONTAL_FLIP:
+    ENABLED: True
+  GAUSSIAN_BLUR:
+    ENABLED: True
+  GAUSSIAN_NOISE:
+    ENABLED: True
+  RANDOM_BRIGHTNESS_CONTRAST:
+    ENABLED: True
+  PIXEL_DROPOUT:
+    ENABLED: True
+    DROPOUT_PROBABILITY: [0.0, 0.05]
