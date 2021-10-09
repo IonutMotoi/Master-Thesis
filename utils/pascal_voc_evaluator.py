@@ -84,16 +84,17 @@ class PascalVOCEvaluator(DatasetEvaluator):
         """rec, prec, ap = voc_eval(class_id, [ovthresh])"""
         npos = 0
         # Get annotations of class_id
-        annotationsa = {}  # image id -> (dict) annotations of class_id
+        annotations = {}  # image id -> (dict) annotations of class_id
         for image_id, image_annotations in self.annotations.items():
             image_class_annotations = [annotation for annotation in image_annotations
                                        if annotation["category_id"] == class_id]
+            print(annotation)
+            sys.exit()
             bboxes = np.array(annotation["bbox"] for annotation in image_class_annotations)
             det = [False] * len(image_class_annotations)
             npos += len(image_class_annotations)
-            annotationsa[image_id] = {"bboxes": bboxes, "det": det}
-        print(annotationsa)
-        sys.exit()
+            annotations[image_id] = {"bboxes": bboxes, "det": det}
+
 
         # Get predictions of class_id
         predictions = self.predictions[class_id]
