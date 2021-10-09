@@ -11,20 +11,24 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 # Dataset
 def get_wgisd_dicts(root, source):
     # Load the dataset subset defined by source
-    assert source in ['train', 'valid', 'test', 'augmented_valid', 'augmented_test'], \
-        'source should be "train", "valid", "test", "augmented_valid" or "augmented_test"'
+    assert source in ['train', 'valid', 'test', 'augmented_valid', 'augmented_test', 'augmented_test_detection'], \
+        'source should be "train", "valid", "test", "augmented_valid", "augmented_test" or "augmented_test_detection"'
 
     if source == "train":
         source_path = os.path.join(root, 'train_split_masked.txt')
     elif source in ["valid", "augmented_valid"]:
         source_path = os.path.join(root, 'valid_split_masked.txt')
-    else:  # source in ["test", "augmented_test"]
+    elif source in ["test", "augmented_test"]:
         source_path = os.path.join(root, 'test_masked.txt')
+    else:  # source == "augmented_test_detection"
+        source_path = os.path.join(root, 'test.txt')
 
     if source == "augmented_valid":
         root = os.path.join(root, "augmented", "valid_masked")
     elif source == "augmented_test":
         root = os.path.join(root, "augmented", "test_masked")
+    elif source == "augmented_test_detection":
+        root = os.path.join(root, "augmented", "test_detection")
     else:
         root = os.path.join(root, "data")
 
@@ -90,7 +94,7 @@ def get_wgisd_dicts(root, source):
 def setup_wgisd():
     data_path = "/thesis/wgisd"
 
-    for d in ["train", "augmented_valid", "augmented_test"]:
+    for d in ["train", "augmented_valid", "augmented_test", "augmented_test_detection"]:
         dataset_name = "wgisd_" + d
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)

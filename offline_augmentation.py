@@ -69,7 +69,10 @@ def offline_augmentation(ids_txt, data_folder, dest_folder, augmentations, augme
         # Add object classes again
         bboxes = np.hstack((np.array(class_labels)[:, None], bboxes))
 
-        masks = np.array(masks).transpose((1, 2, 0))  # n x H x W -> H x W x n
+        if augment_masks:
+            masks = np.array(masks).transpose((1, 2, 0))  # n x H x W -> H x W x n
+        else:
+            masks = None
 
         # Save augmented image and annotations
         save_augmented(dest_folder, img_id, image, bboxes, masks, count, tot_imgs)
@@ -89,3 +92,19 @@ def offline_augmentation(ids_txt, data_folder, dest_folder, augmentations, augme
 #         A.PadIfNeeded(min_height=1024, min_width=1024, border_mode=cv2.BORDER_CONSTANT, value=0, mask_value=0)
 #     ], bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels'])),
 #     augment_masks=augment_masks)
+
+
+ids_txt = "./wgisd/test.txt"
+data_folder = "./wgisd/data"
+dest_folder = "./wgisd/augmented/test_detection"
+augment_masks = False
+
+offline_augmentation(
+    ids_txt=ids_txt,
+    data_folder=data_folder,
+    dest_folder=dest_folder,
+    augmentations=A.Compose([
+        A.LongestMaxSize(max_size=1024),
+        A.PadIfNeeded(min_height=1024, min_width=1024, border_mode=cv2.BORDER_CONSTANT, value=0, mask_value=0)
+    ], bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels'])),
+    augment_masks=augment_masks)
