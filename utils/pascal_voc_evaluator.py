@@ -80,8 +80,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
         ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
         return ret
 
-    def voc_eval(self, class_id, overlap_threshold=0.5):
-        """rec, prec, ap = voc_eval(class_id, [ovthresh])"""
+    def voc_eval(self, class_id, overlap_threshold):
+        """recall, precision, ap = voc_eval(class_id, overlap_threshold)"""
         npos = 0
         # Get annotations of class_id
         annotations = {}  # image id -> (dict) annotations of class_id
@@ -112,14 +112,50 @@ class PascalVOCEvaluator(DatasetEvaluator):
         for i in range(num_of_predictions):
             img_annotations = annotations[image_ids[i]]
             bboxes_gt = img_annotations["bboxes"]
-            print(bboxes_gt)
             bbox = bboxes[i, :]
-            print(bbox)
             overlap_max = -np.inf
-            sys.exit()
 
-        # TODO: Compute precision and recall
+            if bboxes_gt.size > 0:
+                # compute overlaps
 
-        # TODO: Compute AP
+                # intersection
+                ixmin = np.maximum(bboxes[:, 0], bbox[0])
+                iymin = np.maximum(bboxes[:, 1], bbox[1])
+                ixmax = np.minimum(bboxes[:, 2], bbox[2])
+                iymax = np.minimum(bboxes[:, 3], bbox[3])
+                iw = np.maximum(ixmax - ixmin + 1.0, 0.0)
+                ih = np.maximum(iymax - iymin + 1.0, 0.0)
+                inters = iw * ih
 
-        return 0, 0, 0
+                # union
+                uni = ((bbox[2] - bbox[0] + 1.0) * (bbox[3] - bbox[1] + 1.0)
+                       + (bboxes_gt[:, 2] - bboxes_gt[:, 0] + 1.0) * (bboxes_gt[:, 3] - bboxes_gt[:, 1] + 1.0)
+                       - inters)
+
+                overlaps = inters / uni
+                overlap_max = np.max(overlaps)
+                j_max = np.argmax(overlaps)
+
+            if overlap_max > overlap_threshold:
+                if not img_annotations["det"][j_max]:
+                    tp[i] = 1.0
+                    img_annotations["det"][j_max] = 1
+                else:
+                    fp[i] = 1.0
+            else:
+                fp[i] = 1.0
+
+        # Compute precision and recall
+        tp = np.cumsum(tp)
+        fp = np.cumsum(fp)
+        recall = tp / float(npos)
+        precision = tp / (tp + fp)
+        print("NPOS", npos)
+
+        # Compute AP
+        ap = self.voc_ap(recall, precision)
+
+        return recall, precision, ap
+
+    def voc_ap(self, recall, precision):
+        return 0.0
