@@ -13,6 +13,7 @@ import torch
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 from tabulate import tabulate
+import sys
 
 import detectron2.utils.comm as comm
 from detectron2.config import CfgNode
@@ -82,14 +83,35 @@ class PascalVOCEvaluator(DatasetEvaluator):
     def voc_eval(self, class_id, overlap_threshold=0.5):
         """rec, prec, ap = voc_eval(class_id, [ovthresh])"""
         npos = 0
-        class_annotations = {}  # image id -> (list of dicts) annotations of class_id
+        # Get annotations of class_id
+        annotations = {}  # image id -> (dict) annotations of class_id
         for image_id, image_annotations in self.annotations.items():
             image_class_annotations = [annotation for annotation in image_annotations
                                        if annotation["category_id"] == class_id]
             bboxes = np.array(annotation["bbox"] for annotation in image_class_annotations)
             det = [False] * len(image_class_annotations)
             npos += len(image_class_annotations)
-            class_annotations[image_id] = {"bboxes": bboxes, "det": det}
+            annotations[image_id] = {"bboxes": bboxes, "det": det}
 
-        # TODO: Get detections, get TPs and FPs. compute precision and recall, compute ap
+        # Get predictions of class_id
+        predictions = self.predictions[class_id]
+        image_ids = [prediction["image_id"] for prediction in predictions]
+        confidence = np.array([prediction["score"] for prediction in predictions])
+        bboxes = np.array([prediction["bbox"] for prediction in predictions])
+
+        # Sort by confidence (descending)
+        sorted_indices = np.argsort(confidence)[::-1]
+        print(sorted_indices)
+        bboxes = bboxes[sorted_indices, :]
+        print(bboxes)
+        print(bboxes.shape)
+        image_ids = [image_ids[x] for x in sorted_indices]
+        print(image_ids)
+        sys.exit()
+        # TODO: Get TPs and FPs
+
+        # TODO: Compute precision and recall
+
+        # TODO: Compute AP
+
         return 0, 0, 0
