@@ -111,11 +111,11 @@ class PascalVOCEvaluator(DatasetEvaluator):
         for i in range(num_of_predictions):
             img_annotations = annotations[image_ids[i]]
             bboxes_gt = img_annotations["bboxes"]
-            print(type(bboxes_gt))
+            print(bboxes_gt)
             bbox = bboxes[i, :]
-            print(type(bbox))
+            print(bbox)
             overlap_max = -np.inf
-        sys.exit()
+            sys.exit()
 
         # TODO: Compute precision and recall
 
