@@ -81,7 +81,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         return ret
 
     def voc_eval(self, class_id, overlap_threshold):
-        """recall, precision, ap = voc_eval(class_id, overlap_threshold)"""
+        """ recall, precision, ap = voc_eval(class_id, overlap_threshold) """
         npos = 0
         # Get annotations of class_id
         annotations = {}  # image id -> (dict) annotations of class_id
@@ -157,4 +157,15 @@ class PascalVOCEvaluator(DatasetEvaluator):
         return recall, precision, ap
 
     def voc_ap(self, recall, precision):
-        return 0.0
+        """
+        Compute VOC AP given precision and recall using the VOC 07 11-point method.
+        """
+        # 11 point metric
+        ap = 0.0
+        for t in np.arange(0.0, 1.1, 0.1):
+            if np.sum(recall >= t) == 0:
+                p = 0
+            else:
+                p = np.max(precision[recall >= t])
+            ap = ap + p / 11.0
+        return ap
