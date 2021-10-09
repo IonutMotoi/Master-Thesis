@@ -72,7 +72,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         aps = defaultdict(list)  # iou -> ap per class
         for class_id in range(self.num_of_classes):
             for threshold in range(50, 100, 5):
-                recall, precision, ap = self.voc_eval(class_id, threshold)
+                recall, precision, ap = self.voc_eval(class_id, threshold / 100.0)
                 aps[threshold].append(ap * 100)
 
         ret = OrderedDict()
