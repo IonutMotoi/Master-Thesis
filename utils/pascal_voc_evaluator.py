@@ -119,10 +119,10 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 # compute overlaps
 
                 # intersection
-                ixmin = np.maximum(bboxes[:, 0], bbox[0])
-                iymin = np.maximum(bboxes[:, 1], bbox[1])
-                ixmax = np.minimum(bboxes[:, 2], bbox[2])
-                iymax = np.minimum(bboxes[:, 3], bbox[3])
+                ixmin = np.maximum(bboxes_gt[:, 0], bbox[0])
+                iymin = np.maximum(bboxes_gt[:, 1], bbox[1])
+                ixmax = np.minimum(bboxes_gt[:, 2], bbox[2])
+                iymax = np.minimum(bboxes_gt[:, 3], bbox[3])
                 iw = np.maximum(ixmax - ixmin + 1.0, 0.0)
                 ih = np.maximum(iymax - iymin + 1.0, 0.0)
                 inters = iw * ih
