@@ -31,7 +31,6 @@ def get_evaluator(cfg, dataset_name, output_folder=None):
         task = "detection"
     else:
         task = "segmentation"
-    # return COCOEvaluator(dataset_name, output_dir=output_folder)
     return PascalVOCEvaluator(dataset_name, task)
 
 
