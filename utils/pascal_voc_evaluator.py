@@ -11,13 +11,14 @@ class PascalVOCEvaluator(DatasetEvaluator):
     Evaluate Pascal VOC 2007 style AP for detections and instance segmentation on a custom dataset.
     """
 
-    def __init__(self, dataset_name):
+    def __init__(self, dataset_name, task):
         meta = MetadataCatalog.get(dataset_name)
         self.num_of_classes = len(meta.thing_classes)
         self.cpu_device = torch.device("cpu")
         self.results = OrderedDict()
         self.predictions = None  # initialized inside reset()
         self.annotations = None
+        self.task = task
 
     def reset(self):
         self.predictions = defaultdict(list)  # class id -> (list of dicts) predictions
@@ -48,7 +49,11 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 self.predictions[classes[k]].append(prediction)
 
     def evaluate(self):
-        ious = list(range(30, 85, 10))
+        if self.task == "detection":
+            ious = list(range(30, 85, 10))
+        else:
+            ious = list(range(30, 95, 10))
+
         aps = defaultdict(list)  # iou -> ap per class
         precisions = defaultdict(list)
         recalls = defaultdict(list)
@@ -174,6 +179,11 @@ class PascalVOCEvaluator(DatasetEvaluator):
         return ap
 
     def print_results(self, ret):
+        if self.task == "detection":
+            print("Results for detection:", '\n')
+        else:
+            print("Results for instance segmentation", '\n')
+
         print("IoU:")
         print(ret["bbox"]["IoU"], '\n')
 

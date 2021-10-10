@@ -27,8 +27,12 @@ logger = logging.getLogger("detectron2")
 def get_evaluator(cfg, dataset_name, output_folder=None):
     if output_folder is None:
         output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
+    if "detection" in dataset_name:
+        task = "detection"
+    else:
+        task = "segmentation"
     # return COCOEvaluator(dataset_name, output_dir=output_folder)
-    return PascalVOCEvaluator(dataset_name)
+    return PascalVOCEvaluator(dataset_name, task)
 
 
 def do_test(cfg, model):
@@ -43,7 +47,7 @@ def do_test(cfg, model):
         results[dataset_name] = results_i
         # if comm.is_main_process():
         #     logger.info("Evaluation results for {} in csv format:".format(dataset_name))
-            # print_csv_format(results_i)
+        #     print_csv_format(results_i)
     if len(results) == 1:
         results = list(results.values())[0]
     return results
