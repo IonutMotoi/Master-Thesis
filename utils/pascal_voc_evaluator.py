@@ -49,10 +49,16 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def evaluate(self):
         aps = defaultdict(list)  # iou -> ap per class
+        precisions = defaultdict(list)
+        recalls = defaultdict(list)
+        f1s = defaultdict(list)
         for class_id in range(self.num_of_classes):
-            for threshold in range(50, 100, 5):
-                recall, precision, ap = self.voc_eval(class_id, threshold / 100.0)
-                aps[threshold].append(ap * 100)
+            for threshold in range(30, 85, 5):
+                ap, precision, recall, f1 = self.voc_eval(class_id, threshold / 100.0)
+                aps[threshold].append(ap)
+                precisions[threshold].append(precision)
+                recalls[threshold].append(recall)
+                f1s[threshold].append(f1)
 
         ret = OrderedDict()
         mAP = {iou: np.mean(x) for iou, x in aps.items()}
@@ -71,7 +77,6 @@ class PascalVOCEvaluator(DatasetEvaluator):
             det = [False] * len(image_class_annotations)
             npos += len(image_class_annotations)
             annotations[image_id] = {"bboxes": bboxes, "det": det}
-
 
         # Get predictions of class_id
         predictions = self.predictions[class_id]
@@ -125,19 +130,18 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 fp[i] = 1.0
 
         # Compute precision and recall
-        print("tp:", tp)
-        print("fp:", fp)
         tp = np.cumsum(tp)
         fp = np.cumsum(fp)
-        recall = tp / float(npos)
+        recall = tp / float(npos)  # npos == tp + fn
         precision = tp / (tp + fp)
-        print("Precision:", precision)
-        print("Recall:", recall)
+
+        # Compute F1
+        f1 = 2 * precision * recall / (precision + recall)
 
         # Compute AP
         ap = self.voc_ap(recall, precision)
 
-        return recall, precision, ap
+        return ap, precision, recall, f1
 
     def voc_ap(self, recall, precision):
         """
