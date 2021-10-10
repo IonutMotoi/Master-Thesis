@@ -9,7 +9,7 @@ from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import build_detection_test_loader, build_detection_train_loader
 from detectron2.engine import launch, default_argument_parser, default_setup, PeriodicCheckpointer, default_writers
-from detectron2.evaluation import COCOEvaluator, inference_on_dataset, print_csv_format
+from detectron2.evaluation import inference_on_dataset, print_csv_format
 from detectron2.modeling import build_model
 from detectron2.solver import build_optimizer, build_lr_scheduler
 from detectron2.utils import comm
@@ -17,7 +17,7 @@ from detectron2.utils.events import EventStorage
 
 import wandb
 from setup_wgisd import setup_wgisd
-from albumentations_mapper import AlbumentationsMapper
+from utils.albumentations_mapper import AlbumentationsMapper
 from utils.visualization import visualize_image_and_annotations
 from utils.pascal_voc_evaluator import PascalVOCEvaluator
 
