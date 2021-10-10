@@ -183,7 +183,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
             print("Results for instance segmentation", '\n')
 
         print("IoU:")
-        print([f"{x:4}" for x in ret["bbox"]["IoU"]], '\n')
+        print(ret["bbox"]["IoU"], '\n')
 
         print("AP:")
         print([x for x in ret["bbox"]["AP"].values()], '\n')
