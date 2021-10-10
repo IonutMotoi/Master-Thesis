@@ -48,7 +48,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 self.predictions[classes[k]].append(prediction)
 
     def evaluate(self):
-        ious = np.arange(30, 85, 10)
+        ious = list(range(30, 85, 10))
         aps = defaultdict(list)  # iou -> ap per class
         precisions = defaultdict(list)
         recalls = defaultdict(list)
@@ -63,6 +63,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
         ret = OrderedDict()
         mAP = {iou: np.mean(x) for iou, x in aps.items()}
+        print(mAP[40])
+        print(mAP[45])
         # ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
         print(ious)
         # ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
