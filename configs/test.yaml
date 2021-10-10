@@ -2,5 +2,5 @@ _BASE_: "./mask_rcnn_wgisd_augmentations_test.yaml"
 DATASETS:
   TEST : ("wgisd_augmented_test_detection",)
 MODEL:
-  MASK_ON: False
+  MASK_ON: True
 OUTPUT_DIR: "./output/test"
