@@ -174,4 +174,4 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def print_results(self, ret):
         print(ret["bbox"]["IoU"])
-        print(ret["bbox"]["Precision"].values())
+        print([x for x in ret["bbox"]["Precision"].values()])
