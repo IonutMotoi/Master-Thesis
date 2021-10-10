@@ -71,6 +71,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
         # ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
         ret["bbox"] = {"IOU": ious}
 
+        self.print_results(ret)
+
         return ret
 
     def voc_eval(self, class_id, overlap_threshold):
@@ -164,3 +166,6 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 p = np.max(precision[recall >= t])
             ap = ap + p / 11.0
         return ap
+
+    def print_results(self, ret):
+        print(ret["bbox"])
