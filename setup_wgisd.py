@@ -57,12 +57,12 @@ def get_wgisd_dicts(root, source):
         bboxes = np.loadtxt(box_path, delimiter=" ", dtype=np.float32)
         bboxes = bboxes[:, 1:]
 
+        num_objs = bboxes.shape[0]
+
         if mask_on:
             mask_path = os.path.join(root, f'{img_id}.npz')
             masks = np.load(mask_path)['arr_0'].astype(np.uint8)
-
-        num_objs = masks.shape[2]
-        assert (bboxes.shape[0] == num_objs)
+            assert (masks.shape[2] == num_objs)
 
         objs = []
         for i in range(num_objs):
