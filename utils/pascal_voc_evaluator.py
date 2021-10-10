@@ -69,7 +69,12 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
         ret = OrderedDict()
         # ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
-        ret["bbox"] = {"IOU": ious}
+        ret["bbox"] = {
+            "IoU": ious,
+            "Precision": precisions,
+            "Recall": recalls,
+            "F1": f1s
+        }
 
         self.print_results(ret)
 
