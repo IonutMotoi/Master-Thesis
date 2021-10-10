@@ -186,7 +186,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         print([f"{x:4}" for x in ret["bbox"]["IoU"]], '\n')
 
         print("AP:")
-        print([x for x in ret["bbox"]["AP"].values()].__format__(), '\n')
+        print([x for x in ret["bbox"]["AP"].values()], '\n')
 
         print("Precision:")
         print([x for x in ret["bbox"]["Precision"].values()], '\n')
