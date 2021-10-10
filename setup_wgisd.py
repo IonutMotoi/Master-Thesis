@@ -14,6 +14,8 @@ def get_wgisd_dicts(root, source):
     assert source in ['train', 'valid', 'test', 'augmented_valid', 'augmented_test', 'augmented_test_detection'], \
         'source should be "train", "valid", "test", "augmented_valid", "augmented_test" or "augmented_test_detection"'
 
+    mask_on = True
+
     if source == "train":
         source_path = os.path.join(root, 'train_split_masked.txt')
     elif source in ["valid", "augmented_valid"]:
@@ -29,6 +31,7 @@ def get_wgisd_dicts(root, source):
         root = os.path.join(root, "augmented", "test_masked")
     elif source == "augmented_test_detection":
         root = os.path.join(root, "augmented", "test_detection")
+        mask_on = False
     else:
         root = os.path.join(root, "data")
 
@@ -54,8 +57,9 @@ def get_wgisd_dicts(root, source):
         bboxes = np.loadtxt(box_path, delimiter=" ", dtype=np.float32)
         bboxes = bboxes[:, 1:]
 
-        mask_path = os.path.join(root, f'{img_id}.npz')
-        masks = np.load(mask_path)['arr_0'].astype(np.uint8)
+        if mask_on:
+            mask_path = os.path.join(root, f'{img_id}.npz')
+            masks = np.load(mask_path)['arr_0'].astype(np.uint8)
 
         num_objs = masks.shape[2]
         assert (bboxes.shape[0] == num_objs)
@@ -63,7 +67,9 @@ def get_wgisd_dicts(root, source):
         objs = []
         for i in range(num_objs):
             box = bboxes[i]
-            mask = masks[:, :, i]
+
+            if mask_on:
+                mask = masks[:, :, i]
 
             # Boxes (x0, y0, w, h) in range [0, 1] (yolo format)
             # They are relative to the size of the image
@@ -81,9 +87,10 @@ def get_wgisd_dicts(root, source):
             obj = {
                 "bbox": box,
                 "bbox_mode": BoxMode.XYXY_ABS,
-                "segmentation": mask,
                 "category_id": 0,
             }
+            if mask_on:
+                obj["segmentation"] = mask
             objs.append(obj)
 
         record["annotations"] = objs
