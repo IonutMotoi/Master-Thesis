@@ -61,13 +61,15 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 recalls[threshold].append(recall)
                 f1s[threshold].append(f1)
 
-        ret = OrderedDict()
+        # Average over all classes
         mAP = {iou: np.mean(x) for iou, x in aps.items()}
-        print(mAP[40])
-        print(mAP[45])
+        precisions = {iou: np.mean(x) for iou, x in precisions.items()}
+        recalls = {iou: np.mean(x) for iou, x in recalls.items()}
+        f1s = {iou: np.mean(x) for iou, x in f1s.items()}
+
+        ret = OrderedDict()
         # ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
-        print(ious)
-        # ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
+        ret["bbox"] = {"IOU": ious}
 
         return ret
 
