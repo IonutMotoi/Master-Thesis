@@ -82,8 +82,6 @@ class PascalVOCEvaluator(DatasetEvaluator):
             "F1": f1s
         }
 
-        self.print_results(ret)
-
         return ret
 
     def voc_eval(self, class_id, overlap_threshold):
