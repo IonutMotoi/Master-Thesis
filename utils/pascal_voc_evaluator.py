@@ -62,7 +62,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 f1s[threshold].append(f1)
 
         # Average over all classes
-        mAP = {iou: np.mean(x) for iou, x in aps.items()}
+        aps = {iou: np.mean(x) for iou, x in aps.items()}
         precisions = {iou: np.mean(x) for iou, x in precisions.items()}
         recalls = {iou: np.mean(x) for iou, x in recalls.items()}
         f1s = {iou: np.mean(x) for iou, x in f1s.items()}
@@ -71,6 +71,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         # ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
         ret["bbox"] = {
             "IoU": ious,
+            "AP": aps,
             "Precision": precisions,
             "Recall": recalls,
             "F1": f1s
@@ -173,7 +174,17 @@ class PascalVOCEvaluator(DatasetEvaluator):
         return ap
 
     def print_results(self, ret):
-        print(ret["bbox"]["IoU"])
-        print([x for x in ret["bbox"]["Precision"].values()])
-        print([x for x in ret["bbox"]["Recall"].values()])
-        print([x for x in ret["bbox"]["F1"].values()])
+        print("IoU:")
+        print(ret["bbox"]["IoU"], '\n')
+
+        print("AP:")
+        print([x for x in ret["bbox"]["AP"].values()], '\n')
+
+        print("Precision:")
+        print([x for x in ret["bbox"]["Precision"].values()], '\n')
+
+        print("Recall:")
+        print([x for x in ret["bbox"]["Recall"].values()], '\n')
+
+        print("F1:")
+        print([x for x in ret["bbox"]["F1"].values()], '\n')
