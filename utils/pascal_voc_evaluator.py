@@ -48,12 +48,13 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 self.predictions[classes[k]].append(prediction)
 
     def evaluate(self):
+        ious = np.arange(30, 85, 10)
         aps = defaultdict(list)  # iou -> ap per class
         precisions = defaultdict(list)
         recalls = defaultdict(list)
         f1s = defaultdict(list)
         for class_id in range(self.num_of_classes):
-            for threshold in range(30, 85, 5):
+            for threshold in ious:
                 ap, precision, recall, f1 = self.voc_eval(class_id, threshold / 100.0)
                 aps[threshold].append(ap)
                 precisions[threshold].append(precision)
@@ -63,6 +64,9 @@ class PascalVOCEvaluator(DatasetEvaluator):
         ret = OrderedDict()
         mAP = {iou: np.mean(x) for iou, x in aps.items()}
         ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
+        print(ious)
+        # ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
+
         return ret
 
     def voc_eval(self, class_id, overlap_threshold):
