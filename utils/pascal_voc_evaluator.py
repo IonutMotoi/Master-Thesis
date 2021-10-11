@@ -103,6 +103,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
             npos += len(image_class_annotations)
             annotations[image_id] = {"bboxes": bboxes, "det": det}
 
+        print("NPOS:", npos)
+
         # Get predictions of class_id
         predictions = self.predictions[class_id]
         image_ids = [prediction["image_id"] for prediction in predictions]
