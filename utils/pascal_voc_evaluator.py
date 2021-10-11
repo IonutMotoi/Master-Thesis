@@ -8,7 +8,7 @@ from detectron2.evaluation.evaluator import DatasetEvaluator
 
 class PascalVOCEvaluator(DatasetEvaluator):
     """
-    Evaluate Pascal VOC 2007 style AP for detections and instance segmentation on a custom dataset.
+    Evaluate Pascal VOC 2007 style AP for detection and instance segmentation on a custom dataset.
     """
 
     def __init__(self, dataset_name, task):
@@ -188,7 +188,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
         # Sort by confidence (descending)
         sorted_indices = np.argsort(confidence)[::-1]
-        masks = masks[sorted_indices, :]
+        masks = masks[sorted_indices]
         image_ids = [image_ids[x] for x in sorted_indices]
 
     def voc_ap(self, recall, precision):
