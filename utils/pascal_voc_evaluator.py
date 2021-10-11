@@ -169,7 +169,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         return ap, precision, recall, f1
 
     def voc_eval_instance_segmentation(self, class_id, overlap_threshold):
-        tp_plus_fn = 0
+        npos = 0
         # Get annotations of class_id
         annotations = {}  # image id -> (dict) annotations of class_id
         for image_id, image_annotations in self.annotations.items():
@@ -177,8 +177,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
                                        if annotation["category_id"] == class_id]
             masks = np.array([annotation["segmentation"] for annotation in image_class_annotations])
             det = [False] * len(image_class_annotations)
-            tp_plus_fn += np.sum(masks > 0)
-            print(tp_plus_fn)
+            npos += len(image_class_annotations)
             annotations[image_id] = {"masks": masks, "det": det}
 
         # Get predictions of class_id
@@ -226,7 +225,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         # Compute precision and recall
         tp = np.cumsum(tp)
         fp = np.cumsum(fp)
-        recall = tp / float(tp_plus_fn)
+        recall = tp / float(npos)  # npos == tp + fn
         precision = tp / (tp + fp)
 
         # Compute F1
