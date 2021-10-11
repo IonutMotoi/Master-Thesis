@@ -22,8 +22,8 @@ SOLVER:
 MODEL:
   MASK_ON: True
   RESNETS:
-    DEPTH: 50
-  WEIGHTS: "/thesis/detectron2_baseline/R50-FPN/model_final_f10217.pkl"
+    DEPTH: 101
+  WEIGHTS: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
   ROI_HEADS:
     NUM_CLASSES : 1
 TEST:
