@@ -14,7 +14,7 @@ def get_wgisd_dicts(root, source):
     assert source in ['train', 'valid', 'test', 'augmented_valid', 'augmented_test', 'augmented_test_detection'], \
         'source should be "train", "valid", "test", "augmented_valid", "augmented_test" or "augmented_test_detection"'
 
-    mask_on = True
+    has_masks = True
 
     if source == "train":
         source_path = os.path.join(root, 'train_split_masked.txt')
@@ -31,7 +31,7 @@ def get_wgisd_dicts(root, source):
         root = os.path.join(root, "augmented", "test_masked")
     elif source == "augmented_test_detection":
         root = os.path.join(root, "augmented", "test_detection")
-        mask_on = False
+        has_masks = False
     else:
         root = os.path.join(root, "data")
 
@@ -59,7 +59,7 @@ def get_wgisd_dicts(root, source):
 
         num_objs = bboxes.shape[0]
 
-        if mask_on:
+        if has_masks:
             mask_path = os.path.join(root, f'{img_id}.npz')
             masks = np.load(mask_path)['arr_0'].astype(np.uint8)
             assert (masks.shape[2] == num_objs)
@@ -68,7 +68,7 @@ def get_wgisd_dicts(root, source):
         for i in range(num_objs):
             box = bboxes[i]
 
-            if mask_on:
+            if has_masks:
                 mask = masks[:, :, i]
 
             # Boxes (x0, y0, w, h) in range [0, 1] (yolo format)
@@ -89,7 +89,7 @@ def get_wgisd_dicts(root, source):
                 "bbox_mode": BoxMode.XYXY_ABS,
                 "category_id": 0,
             }
-            if mask_on:
+            if has_masks:
                 obj["segmentation"] = mask
             objs.append(obj)
 
