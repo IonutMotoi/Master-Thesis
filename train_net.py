@@ -9,7 +9,7 @@ from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import build_detection_test_loader, build_detection_train_loader
 from detectron2.engine import launch, default_argument_parser, default_setup, PeriodicCheckpointer, default_writers
-from detectron2.evaluation import inference_on_dataset, print_csv_format
+from detectron2.evaluation import inference_on_dataset, print_csv_format, COCOEvaluator
 from detectron2.modeling import build_model
 from detectron2.solver import build_optimizer, build_lr_scheduler
 from detectron2.utils import comm
@@ -27,11 +27,14 @@ logger = logging.getLogger("detectron2")
 def get_evaluator(cfg, dataset_name, output_folder=None):
     if output_folder is None:
         output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
-    if "detection" in dataset_name:
-        task = "detection"
+    if cfg.EVALUATOR == "pascal":
+        if "detection" in dataset_name:
+            task = "detection"
+        else:
+            task = "segmentation"
+        return PascalVOCEvaluator(dataset_name, task)
     else:
-        task = "segmentation"
-    return PascalVOCEvaluator(dataset_name, task)
+        return COCOEvaluator(dataset_name, output_dir=output_folder)
 
 
 def do_test(cfg, model):
@@ -45,7 +48,11 @@ def do_test(cfg, model):
         results_i = inference_on_dataset(model, data_loader, evaluator)
         results[dataset_name] = results_i
         if comm.is_main_process():
-            evaluator.print_results(results_i)
+            if cfg.EVALUATOR == "pascal":
+                evaluator.print_results(results_i)
+            else:
+                logger.info("Evaluation results for {} in csv format:".format(dataset_name))
+                print_csv_format(results_i)
     if len(results) == 1:
         results = list(results.values())[0]
     return results
