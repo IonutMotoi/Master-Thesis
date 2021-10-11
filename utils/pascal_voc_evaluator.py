@@ -112,7 +112,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         bboxes = np.array([prediction["bbox"] for prediction in predictions])
 
         # Sort by confidence (descending)
-        sorted_indices = np.argsort(confidence)
+        sorted_indices = np.argsort(confidence)[::-1]
         bboxes = bboxes[sorted_indices, :]
         image_ids = [image_ids[x] for x in sorted_indices]
 
