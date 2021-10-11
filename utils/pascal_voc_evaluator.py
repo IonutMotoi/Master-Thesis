@@ -178,6 +178,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
             masks = np.array([annotation["segmentation"] for annotation in image_class_annotations])
             det = [False] * len(image_class_annotations)
             tp_plus_fn += np.sum(masks > 0)
+            print(tp_plus_fn)
             annotations[image_id] = {"masks": masks, "det": det}
 
         # Get predictions of class_id
@@ -196,7 +197,6 @@ class PascalVOCEvaluator(DatasetEvaluator):
         tp = np.zeros(num_of_predictions)
         fp = np.zeros(num_of_predictions)
         for i in range(num_of_predictions):
-            print(i+1, "out of", num_of_predictions, "predictions")
             img_annotations = annotations[image_ids[i]]
             masks_gt = img_annotations["masks"]
             mask = masks[i]
