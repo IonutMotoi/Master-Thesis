@@ -67,10 +67,6 @@ def get_wgisd_dicts(root, source):
         objs = []
         for i in range(num_objs):
             box = bboxes[i]
-
-            if has_masks:
-                mask = masks[:, :, i]
-
             # Boxes (x0, y0, w, h) in range [0, 1] (yolo format)
             # They are relative to the size of the image
             # Convert to (x0, y0, x1, y1) in absolute floating points coordinates (pascal_voc format)
@@ -80,17 +76,19 @@ def get_wgisd_dicts(root, source):
             y2 = box[1] + box[3] / 2
             box = [x1 * width, y1 * height, x2 * width, y2 * height]
 
-            # if source in ["augmented_valid", "augmented_test", "valid", "test"]:
-            #     # Validation and test masks have to be encoded here for coco evaluator
-            #     mask = encode(np.asarray(mask, order="F"))
-
             obj = {
                 "bbox": box,
                 "bbox_mode": BoxMode.XYXY_ABS,
                 "category_id": 0,
             }
+
             if has_masks:
+                mask = masks[:, :, i]
+                # Validation masks have to be encoded here for coco evaluator
+                if source == "augmented_valid":
+                    mask = encode(np.asarray(mask, order="F"))
                 obj["segmentation"] = mask
+
             objs.append(obj)
 
         record["annotations"] = objs
