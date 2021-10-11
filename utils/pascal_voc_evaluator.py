@@ -160,13 +160,16 @@ class PascalVOCEvaluator(DatasetEvaluator):
         recall = tp / float(npos)  # npos == tp + fn
         precision = tp / (tp + fp)
 
-        # Compute F1
-        f1 = 2 * precision[-1] * recall[-1] / (precision[-1] + recall[-1])
-
         # Compute AP
         ap = self.voc_ap(recall, precision)
 
-        return ap, precision[-1], recall[-1], f1
+        recall = recall[-1]
+        precision = precision[-1]
+
+        # Compute F1
+        f1 = 2 * precision * recall / (precision + recall)
+
+        return ap, precision, recall, f1
 
     def voc_eval_instance_segmentation(self, class_id, overlap_threshold):
         npos = 0
@@ -228,11 +231,14 @@ class PascalVOCEvaluator(DatasetEvaluator):
         recall = tp / float(npos)  # npos == tp + fn
         precision = tp / (tp + fp)
 
-        # Compute F1
-        f1 = 2 * precision * recall / (precision + recall)
-
         # Compute AP
         ap = self.voc_ap(recall, precision)
+
+        recall = recall[-1]
+        precision = precision[-1]
+
+        # Compute F1
+        f1 = 2 * precision * recall / (precision + recall)
 
         return ap, precision, recall, f1
 
