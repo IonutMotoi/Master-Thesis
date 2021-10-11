@@ -203,7 +203,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
             if masks_gt.size > 0:
                 # compute overlaps
-
+                print(masks_gt.shape)
                 # intersection
                 inters = masks_gt * mask
                 print(inters.shape)
