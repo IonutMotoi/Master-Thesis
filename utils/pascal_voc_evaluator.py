@@ -205,10 +205,10 @@ class PascalVOCEvaluator(DatasetEvaluator):
                 # compute overlaps
                 print(masks_gt.shape)
                 # intersection
-                inters = masks_gt * mask
+                inters = (masks_gt * mask) > 0
                 print(inters.shape)
                 # union
-                uni = masks_gt + mask - inters
+                uni = (masks_gt + mask - inters) > 0
                 print(uni.shape)
                 break
         #         overlaps = inters / uni
