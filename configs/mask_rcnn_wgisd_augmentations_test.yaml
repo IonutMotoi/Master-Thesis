@@ -4,6 +4,6 @@ DATASETS:
 MODEL:
   WEIGHTS: "./output/wgisd_augmentations/model_final.pth"
   ROI_HEADS:
-    SCORE_THRESH_TEST: 0.0
+    SCORE_THRESH_TEST: 0.05
 OUTPUT_DIR: "./output/wgisd_augmentations_test"
 EVALUATOR: "pascal"
