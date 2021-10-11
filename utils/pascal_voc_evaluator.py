@@ -196,6 +196,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         tp = np.zeros(num_of_predictions)
         fp = np.zeros(num_of_predictions)
         for i in range(num_of_predictions):
+            print(i+1, "out of", num_of_predictions, "predictions")
             img_annotations = annotations[image_ids[i]]
             masks_gt = img_annotations["masks"]
             mask = masks[i]
