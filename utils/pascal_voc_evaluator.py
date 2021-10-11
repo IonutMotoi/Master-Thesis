@@ -191,7 +191,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         masks = masks[sorted_indices]
         image_ids = [image_ids[x] for x in sorted_indices]
 
-        print(type(masks[0]))
+        print(masks[0].shape)
 
     def voc_ap(self, recall, precision):
         """
