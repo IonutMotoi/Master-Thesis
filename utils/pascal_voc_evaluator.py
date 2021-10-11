@@ -44,8 +44,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
                     "bbox": boxes[k],
                     "score": scores[k]
                 }
-                #    if instances.has("pred_masks"):
-                #        prediction["segmentation"] = instances.pred_masks[k]
+                if instances.has("pred_masks"):
+                    prediction["mask"] = instances.pred_masks[k]
                 self.predictions[classes[k]].append(prediction)
 
     def evaluate(self):
@@ -85,6 +85,12 @@ class PascalVOCEvaluator(DatasetEvaluator):
         return ret
 
     def voc_eval(self, class_id, overlap_threshold):
+        if self.task == "detection":
+            return self.voc_eval_detection(class_id, overlap_threshold)
+        else:
+            return self.voc_eval_instance_segmentation(class_id, overlap_threshold)
+
+    def voc_eval_detection(self, class_id, overlap_threshold):
         """ recall, precision, ap = voc_eval(class_id, overlap_threshold) """
         npos = 0
         # Get annotations of class_id
@@ -161,6 +167,29 @@ class PascalVOCEvaluator(DatasetEvaluator):
         ap = self.voc_ap(recall, precision)
 
         return ap, precision, recall, f1
+
+    def voc_eval_instance_segmentation(self, class_id, overlap_threshold):
+        npos = 0
+        # Get annotations of class_id
+        annotations = {}  # image id -> (dict) annotations of class_id
+        for image_id, image_annotations in self.annotations.items():
+            image_class_annotations = [annotation for annotation in image_annotations
+                                       if annotation["category_id"] == class_id]
+            masks = np.array([annotation["segmentation"] for annotation in image_class_annotations])
+            det = [False] * len(image_class_annotations)
+            npos += len(image_class_annotations)
+            annotations[image_id] = {"masks": masks, "det": det}
+
+        # Get predictions of class_id
+        predictions = self.predictions[class_id]
+        image_ids = [prediction["image_id"] for prediction in predictions]
+        confidence = np.array([prediction["score"] for prediction in predictions])
+        masks = np.array([prediction["mask"] for prediction in predictions])
+
+        # Sort by confidence (descending)
+        sorted_indices = np.argsort(confidence)[::-1]
+        masks = masks[sorted_indices, :]
+        image_ids = [image_ids[x] for x in sorted_indices]
 
     def voc_ap(self, recall, precision):
         """
