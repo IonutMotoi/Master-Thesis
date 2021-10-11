@@ -191,6 +191,8 @@ class PascalVOCEvaluator(DatasetEvaluator):
         masks = masks[sorted_indices]
         image_ids = [image_ids[x] for x in sorted_indices]
 
+        print(type(masks[0]))
+
     def voc_ap(self, recall, precision):
         """
         Compute VOC AP given precision and recall using the VOC 07 11-point method.
