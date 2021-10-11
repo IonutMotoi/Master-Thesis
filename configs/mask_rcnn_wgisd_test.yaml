@@ -1,8 +1,8 @@
 _BASE_: "./mask_rcnn_wgisd.yaml"
 DATASETS:
-  TEST : ("wgisd_augmented_test",)
+  TEST : ("wgisd_augmented_test", "wgisd_augmented_test_detection")
 MODEL:
-  WEIGHTS: "./output/wgisd_paper/model_final.pth"
+  WEIGHTS: "./output/wgisd/model_final.pth"
   ROI_HEADS:
     SCORE_THRESH_TEST: 0.9
-OUTPUT_DIR: "./output/wgisd_paper_test"
+OUTPUT_DIR: "./output/wgisd_test"
