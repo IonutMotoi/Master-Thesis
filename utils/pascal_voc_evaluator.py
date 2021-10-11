@@ -45,7 +45,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
                     "score": scores[k]
                 }
                 if instances.has("pred_masks"):
-                    prediction["mask"] = instances.pred_masks[k]
+                    prediction["mask"] = instances.pred_masks[k].numpy()
                 self.predictions[classes[k]].append(prediction)
 
     def evaluate(self):
