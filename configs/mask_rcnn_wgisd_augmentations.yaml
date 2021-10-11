@@ -1,5 +1,5 @@
 _BASE_: "./mask_rcnn_wgisd.yaml"
-OUTPUT_DIR: "./output/wgisd_paper_augmentations"
+OUTPUT_DIR: "./output/wgisd_augmentations"
 ALBUMENTATIONS:
   LONGEST_MAX_SIZE:
     ENABLED: True
