@@ -206,10 +206,11 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
                 # intersection
                 inters = np.sum(masks_gt * mask)
-                print(inters)
+                print(inters.shape)
                 # union
                 uni = np.sum(masks_gt + mask - inters)
-                print(uni)
+                print(uni.shape)
+                break
         #         overlaps = inters / uni
         #         overlap_max = np.max(overlaps)
         #         j_max = np.argmax(overlaps)
