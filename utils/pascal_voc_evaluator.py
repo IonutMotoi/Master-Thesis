@@ -103,8 +103,6 @@ class PascalVOCEvaluator(DatasetEvaluator):
             npos += len(image_class_annotations)
             annotations[image_id] = {"bboxes": bboxes, "det": det}
 
-        print("NPOS:", npos)
-
         # Get predictions of class_id
         predictions = self.predictions[class_id]
         image_ids = [prediction["image_id"] for prediction in predictions]
@@ -163,12 +161,12 @@ class PascalVOCEvaluator(DatasetEvaluator):
         precision = tp / (tp + fp)
 
         # Compute F1
-        f1 = 2 * precision * recall / (precision + recall)
+        f1 = 2 * precision[-1] * recall[-1] / (precision[-1] + recall[-1])
 
         # Compute AP
         ap = self.voc_ap(recall, precision)
 
-        return ap, precision, recall, f1
+        return ap, precision[-1], recall[-1], f1
 
     def voc_eval_instance_segmentation(self, class_id, overlap_threshold):
         npos = 0
