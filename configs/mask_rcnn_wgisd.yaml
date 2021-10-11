@@ -21,6 +21,8 @@ SOLVER:
   WARMUP_ITERS : 0
 MODEL:
   MASK_ON: True
+  BACKBONE:
+    FREEZE_AT: 0
   RESNETS:
     DEPTH: 101
   WEIGHTS: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
