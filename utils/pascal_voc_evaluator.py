@@ -191,7 +191,51 @@ class PascalVOCEvaluator(DatasetEvaluator):
         masks = masks[sorted_indices]
         image_ids = [image_ids[x] for x in sorted_indices]
 
-        print(masks[0].shape)
+        # Get TPs and FPs
+        num_of_predictions = len(image_ids)
+        tp = np.zeros(num_of_predictions)
+        fp = np.zeros(num_of_predictions)
+        for i in range(num_of_predictions):
+            img_annotations = annotations[image_ids[i]]
+            masks_gt = img_annotations["masks"]
+            mask = masks[i]
+            overlap_max = -np.inf
+
+            if masks_gt.size > 0:
+                # compute overlaps
+
+                # intersection
+                inters = np.sum(masks_gt * mask)
+                print(inters)
+                # union
+                uni = np.sum(masks_gt + mask - inters)
+                print(uni)
+        #         overlaps = inters / uni
+        #         overlap_max = np.max(overlaps)
+        #         j_max = np.argmax(overlaps)
+        #
+        #     if overlap_max > overlap_threshold:
+        #         if not img_annotations["det"][j_max]:
+        #             tp[i] = 1.0
+        #             img_annotations["det"][j_max] = 1
+        #         else:
+        #             fp[i] = 1.0
+        #     else:
+        #         fp[i] = 1.0
+        #
+        # # Compute precision and recall
+        # tp = np.cumsum(tp)
+        # fp = np.cumsum(fp)
+        # recall = tp / float(npos)  # npos == tp + fn
+        # precision = tp / (tp + fp)
+        #
+        # # Compute F1
+        # f1 = 2 * precision * recall / (precision + recall)
+        #
+        # # Compute AP
+        # ap = self.voc_ap(recall, precision)
+        #
+        # return ap, precision, recall, f1
 
     def voc_ap(self, recall, precision):
         """
