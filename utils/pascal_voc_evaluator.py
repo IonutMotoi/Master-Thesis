@@ -169,7 +169,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         return ap, precision, recall, f1
 
     def voc_eval_instance_segmentation(self, class_id, overlap_threshold):
-        npos = 0
+        tp_plus_fn = 0
         # Get annotations of class_id
         annotations = {}  # image id -> (dict) annotations of class_id
         for image_id, image_annotations in self.annotations.items():
@@ -177,7 +177,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
                                        if annotation["category_id"] == class_id]
             masks = np.array([annotation["segmentation"] for annotation in image_class_annotations])
             det = [False] * len(image_class_annotations)
-            npos += len(image_class_annotations)
+            tp_plus_fn += np.sum(masks > 0)
             annotations[image_id] = {"masks": masks, "det": det}
 
         # Get predictions of class_id
@@ -202,41 +202,39 @@ class PascalVOCEvaluator(DatasetEvaluator):
             overlap_max = -np.inf
 
             if masks_gt.size > 0:
-                # compute overlaps
-                print(masks_gt.shape)
                 # intersection
                 inters = np.sum((masks_gt * mask) > 0, axis=(1, 2))
-                print(inters.shape)
+
                 # union
                 uni = np.sum((masks_gt + mask) > 0, axis=(1, 2))
-                print(uni.shape)
-                break
-        #         overlaps = inters / uni
-        #         overlap_max = np.max(overlaps)
-        #         j_max = np.argmax(overlaps)
-        #
-        #     if overlap_max > overlap_threshold:
-        #         if not img_annotations["det"][j_max]:
-        #             tp[i] = 1.0
-        #             img_annotations["det"][j_max] = 1
-        #         else:
-        #             fp[i] = 1.0
-        #     else:
-        #         fp[i] = 1.0
-        #
-        # # Compute precision and recall
-        # tp = np.cumsum(tp)
-        # fp = np.cumsum(fp)
-        # recall = tp / float(npos)  # npos == tp + fn
-        # precision = tp / (tp + fp)
-        #
-        # # Compute F1
-        # f1 = 2 * precision * recall / (precision + recall)
-        #
-        # # Compute AP
-        # ap = self.voc_ap(recall, precision)
-        #
-        # return ap, precision, recall, f1
+
+                # compute overlaps
+                overlaps = inters / uni
+                overlap_max = np.max(overlaps)
+                j_max = np.argmax(overlaps)
+
+            if overlap_max > overlap_threshold:
+                if not img_annotations["det"][j_max]:
+                    tp[i] = 1.0
+                    img_annotations["det"][j_max] = 1
+                else:
+                    fp[i] = 1.0
+            else:
+                fp[i] = 1.0
+
+        # Compute precision and recall
+        tp = np.cumsum(tp)
+        fp = np.cumsum(fp)
+        recall = tp / float(tp_plus_fn)
+        precision = tp / (tp + fp)
+
+        # Compute F1
+        f1 = 2 * precision * recall / (precision + recall)
+
+        # Compute AP
+        ap = self.voc_ap(recall, precision)
+
+        return ap, precision, recall, f1
 
     def voc_ap(self, recall, precision):
         """
