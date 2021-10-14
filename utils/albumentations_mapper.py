@@ -192,9 +192,13 @@ def get_augmentations(cfg, is_train):
     if cfg.ALBUMENTATIONS.HORIZONTAL_FLIP.ENABLED:
         augmentations.append(A.HorizontalFlip())
 
-    # Gaussian Blur
-    if cfg.ALBUMENTATIONS.GAUSSIAN_BLUR.ENABLED:
-        augmentations.append(A.GaussianBlur())
+    # Pixel Dropout
+    if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
+        augmentations.append(A.Lambda(
+            name="pixel_dropout",
+            image=lambda image, **kwargs: pixel_dropout(image,
+                                                        p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY),
+            p=0.5))
 
     # Gaussian Noise
     if cfg.ALBUMENTATIONS.GAUSSIAN_NOISE.ENABLED:
@@ -204,11 +208,10 @@ def get_augmentations(cfg, is_train):
     if cfg.ALBUMENTATIONS.RANDOM_BRIGHTNESS_CONTRAST.ENABLED:
         augmentations.append(A.RandomBrightnessContrast())
 
-    # Pixel Dropout
-    if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
-        augmentations.append(A.Lambda(
-            name="pixel_dropout",
-            image=lambda image, **kwargs: pixel_dropout(image, p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY),
-            p=0.5))
+    # Gaussian Blur
+    if cfg.ALBUMENTATIONS.GAUSSIAN_BLUR.ENABLED:
+        augmentations.append(A.GaussianBlur())
+
+
 
     return augmentations
