@@ -16,7 +16,7 @@ from detectron2.utils import comm
 from detectron2.utils.events import EventStorage
 
 import wandb
-from setup_wgisd import setup_wgisd
+from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
 from utils.visualization import visualize_image_and_annotations
 from utils.pascal_voc_evaluator import PascalVOCEvaluator
