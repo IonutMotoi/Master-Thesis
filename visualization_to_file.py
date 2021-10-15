@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     cfg = setup(args)
 
-    visualization_demo = Visualization(cfg)
+    visualization = Visualization(cfg)
 
     if len(args.input) == 1:
         args.input = glob.glob(os.path.expanduser(args.input[0]))
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         # use PIL, to be consistent with evaluation
         img = read_image(path, format="BGR")
         start_time = time.time()
-        predictions, visualized_output = visualization_demo.run_on_image(img)
+        predictions, visualized_output = visualization.run_on_image(img)
         logger.info(
             "{}: {} in {:.2f}s".format(
                 path,
