@@ -55,7 +55,7 @@ class Predictor:
             predictions (dict):
                 the output of the model for one image only.
                 See :doc:`/tutorials/models` for details about the format.
-            image
+            image: transformed image returned for visualization (H, W, C) (BGR format)
         """
         with torch.no_grad():
             # Albumentations expects to receive an image in the RGB format
@@ -67,9 +67,8 @@ class Predictor:
             image = image[:, :, ::-1]
             height, width = image.shape[:2]
             # Convert H,W,C image to C,H,W tensor
-            image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
+            tensor_image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
 
-            inputs = {"image": image, "height": height, "width": width}
+            inputs = {"image": tensor_image, "height": height, "width": width}
             predictions = self.model([inputs])[0]
-            print(predictions)
             return predictions, image
