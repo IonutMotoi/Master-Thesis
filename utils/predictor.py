@@ -55,6 +55,7 @@ class Predictor:
             predictions (dict):
                 the output of the model for one image only.
                 See :doc:`/tutorials/models` for details about the format.
+            image
         """
         with torch.no_grad():
             # Albumentations expects to receive an image in the RGB format
@@ -71,4 +72,4 @@ class Predictor:
             inputs = {"image": image, "height": height, "width": width}
             predictions = self.model([inputs])[0]
             print(predictions)
-            return predictions
+            return predictions, image
