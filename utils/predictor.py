@@ -41,7 +41,7 @@ class Predictor:
         checkpointer = DetectionCheckpointer(self.model)
         checkpointer.load(cfg.MODEL.WEIGHTS)
 
-        self.aug = A.Compose(get_augmentations(cfg, is_train=False))
+        self.transform = A.Compose(get_augmentations(cfg, is_train=False))
 
         self.input_format = cfg.INPUT.FORMAT
         assert self.input_format in ["RGB", "BGR"], self.input_format
