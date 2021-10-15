@@ -76,4 +76,5 @@ class VisualizationDemo(object):
         frame_gen = self._frame_from_video(video)
 
         for frame in frame_gen:
-            yield process_predictions(frame, self.predictor(frame))
+            predictions, frame = self.predictor(frame)
+            yield process_predictions(frame, predictions)
