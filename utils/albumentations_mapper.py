@@ -212,6 +212,4 @@ def get_augmentations(cfg, is_train):
     if cfg.ALBUMENTATIONS.GAUSSIAN_BLUR.ENABLED:
         augmentations.append(A.GaussianBlur())
 
-
-
     return augmentations
