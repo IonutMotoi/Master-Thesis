@@ -64,9 +64,10 @@ class Predictor:
             image = transformed["image"]
             # The model expects BGR inputs
             image = image[:, :, ::-1]
+            height, width = image.shape[:2]
             # Convert H,W,C image to C,H,W tensor
             image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
-            inputs = {"image": image}
+            inputs = {"image": image, "height": height, "width": width}
 
             predictions = self.model([inputs])[0]
             return predictions
