@@ -70,5 +70,5 @@ class Predictor:
 
             inputs = {"image": image, "height": height, "width": width}
             predictions = self.model([inputs])[0]
-            print(len(predictions))
+            print("LEN:", len(predictions))
             return predictions
