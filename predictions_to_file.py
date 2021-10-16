@@ -10,7 +10,7 @@ from detectron2.utils.logger import setup_logger
 
 from utils.inference_setup import setup, get_parser
 from utils.predictor import Predictor
-from offline_augmentation import save_image_and_labels
+from utils.save import save_image_and_labels
 
 
 if __name__ == "__main__":
