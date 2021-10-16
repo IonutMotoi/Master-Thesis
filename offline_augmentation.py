@@ -57,7 +57,7 @@ def offline_augmentation(ids_txt, data_folder, dest_folder, augmentations, augme
             masks = None
 
         # Save augmented image and annotations
-        save_image_and_labels(dest_folder, img_id, image, class_labels, bboxes, masks, img_format="BGR")
+        save_image_and_labels(dest_folder, img_id, image, class_labels, bboxes, masks)
         print(f"[{count:2}/{tot_imgs:2}] {img_id} saved successfully.")
 
 

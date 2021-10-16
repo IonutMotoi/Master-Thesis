@@ -59,5 +59,6 @@ if __name__ == "__main__":
             image=image,
             class_labels=classes,
             bboxes=boxes,
-            masks=masks
+            masks=masks,
+            img_format="BGR"
         )
