@@ -17,4 +17,4 @@ ALBUMENTATIONS:
 DATASETS:
   TEST: ()
 LABELS: ["Grapes"]
-COLORS: [(240, 50, 200)]
+COLORS: [tuple(240, 50, 200)]
