@@ -16,6 +16,7 @@ class Visualization(object):
         self.metadata = Metadata()
         self.metadata.set(thing_classes=cfg.LABELS)
         self.metadata.set(thing_colors=cfg.COLORS)
+        print("TYPE OF CFG.COLORS", type(cfg.COLORS))
 
         self.cpu_device = torch.device("cpu")
         self.instance_mode = instance_mode
