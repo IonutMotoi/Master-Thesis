@@ -1,6 +1,6 @@
 import torch
 
-from detectron2.data import MetadataCatalog
+from detectron2.data import MetadataCatalog, Metadata
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
 from utils.predictor import Predictor
@@ -13,9 +13,10 @@ class Visualization(object):
             cfg (CfgNode):
             instance_mode (ColorMode):
         """
-        self.metadata = MetadataCatalog.get(
-            cfg.DATASETS.TEST[0] if len(cfg.DATASETS.TEST) else "__unused"
-        )
+        self.metadata = Metadata()
+        self.metadata.set(thing_classes=cfg.LABELS)
+        self.metadata.set(thing_colors=cfg.COLORS)
+
         self.cpu_device = torch.device("cpu")
         self.instance_mode = instance_mode
         self.detection_only = detection_only
