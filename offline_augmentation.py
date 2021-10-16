@@ -7,13 +7,16 @@ from pathlib import Path
 from utils.bbox_conversion import yolo_bboxes_to_albumentations, albumentations_bboxes_to_yolo
 
 
-def save_augmented(dest_folder, img_id, image, bboxes, masks, count, tot_imgs):
+def save_image_and_labels(dest_folder, img_id, image, class_labels, bboxes, masks):
     # Create destination folder
     Path(dest_folder).mkdir(parents=True, exist_ok=True)
 
     # Save image
     image_path = os.path.join(dest_folder, f'{img_id}.jpg')
     cv2.imwrite(image_path, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+
+    # Add object classes to bounding boxes
+    bboxes = np.hstack((np.array(class_labels)[:, None], bboxes))
 
     # Save bboxes
     bboxes_path = os.path.join(dest_folder, f'{img_id}.txt')
@@ -23,8 +26,6 @@ def save_augmented(dest_folder, img_id, image, bboxes, masks, count, tot_imgs):
         # Save masks
         masks_path = os.path.join(dest_folder, f'{img_id}.npz')
         np.savez_compressed(masks_path, masks)
-
-    print(f"[{count:2}/{tot_imgs:2}] {img_id} saved successfully.")
 
 
 def offline_augmentation(ids_txt, data_folder, dest_folder, augmentations, augment_masks):
@@ -70,8 +71,6 @@ def offline_augmentation(ids_txt, data_folder, dest_folder, augmentations, augme
 
         # Convert bboxes back to yolo format
         bboxes = albumentations_bboxes_to_yolo(bboxes)
-        # Add object classes again
-        bboxes = np.hstack((np.array(class_labels)[:, None], bboxes))
 
         if augment_masks:
             masks = np.array(masks).transpose((1, 2, 0))  # n x H x W -> H x W x n
@@ -79,7 +78,8 @@ def offline_augmentation(ids_txt, data_folder, dest_folder, augmentations, augme
             masks = None
 
         # Save augmented image and annotations
-        save_augmented(dest_folder, img_id, image, bboxes, masks, count, tot_imgs)
+        save_image_and_labels(dest_folder, img_id, image, class_labels, bboxes, masks)
+        print(f"[{count:2}/{tot_imgs:2}] {img_id} saved successfully.")
 
 
 ids_txt = "./wgisd/test.txt"
