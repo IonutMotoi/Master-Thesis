@@ -11,14 +11,16 @@ from utils.inference_setup import setup, get_parser
 
 
 if __name__ == "__main__":
-    args = get_parser().parse_args()
+    parser = get_parser()
+    parser.add_argument("--detection-only", action='store_true', help="Show only the bounding boxes")
+    args = parser.parse_args()
     setup_logger(name="fvcore")
     logger = setup_logger()
     logger.info("Arguments: " + str(args))
 
     cfg = setup(args)
 
-    visualization = Visualization(cfg)
+    visualization = Visualization(cfg, detection_only=args.detection_only)
 
     if len(args.input) == 1:
         args.input = glob.glob(os.path.expanduser(args.input[0]))

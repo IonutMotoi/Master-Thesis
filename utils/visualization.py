@@ -7,7 +7,7 @@ from utils.predictor import Predictor
 
 
 class Visualization(object):
-    def __init__(self, cfg, instance_mode=ColorMode.IMAGE):
+    def __init__(self, cfg, instance_mode=ColorMode.IMAGE, detection_only=False):
         """
         Args:
             cfg (CfgNode):
@@ -18,6 +18,7 @@ class Visualization(object):
         )
         self.cpu_device = torch.device("cpu")
         self.instance_mode = instance_mode
+        self.detection_only = detection_only
 
         self.predictor = Predictor(cfg)
 
@@ -36,6 +37,8 @@ class Visualization(object):
         image = image[:, :, ::-1]
         visualizer = Visualizer(image, self.metadata, instance_mode=self.instance_mode)
         instances = predictions["instances"].to(self.cpu_device)
+        if self.detection_only:
+            instances.remove("pred_masks")
         vis_output = visualizer.draw_instance_predictions(predictions=instances)
 
         return predictions, vis_output
