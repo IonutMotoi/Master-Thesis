@@ -7,7 +7,7 @@ from utils.predictor import Predictor
 
 
 class Visualization(object):
-    def __init__(self, cfg, instance_mode=ColorMode.IMAGE, detection_only=False):
+    def __init__(self, cfg, instance_mode=ColorMode.SEGMENTATION, detection_only=False):
         """
         Args:
             cfg (CfgNode):
