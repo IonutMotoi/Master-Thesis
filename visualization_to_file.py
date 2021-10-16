@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     cfg = setup(args)
 
-    if cfg.RANDOM_COLORS:
+    if args.random_colors:
         instance_mode = ColorMode.IMAGE
     else:
         instance_mode = ColorMode.SEGMENTATION
