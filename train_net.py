@@ -1,7 +1,7 @@
 import logging
 import os
 from collections import OrderedDict
-
+import wandb
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
@@ -15,9 +15,10 @@ from detectron2.solver import build_optimizer, build_lr_scheduler
 from detectron2.utils import comm
 from detectron2.utils.events import EventStorage
 
-import wandb
+
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
+from utils.validation_loss_eval import ValidationLossEval
 from utils.visualization import visualize_image_and_annotations
 from utils.pascal_voc_evaluator import PascalVOCEvaluator
 
@@ -70,6 +71,7 @@ def do_train(cfg, model, resume=False):
     mapper = AlbumentationsMapper(cfg, is_train=True)
     data_loader = build_detection_train_loader(cfg, mapper=mapper)
     examples_count = 0
+    validation_loss_eval = ValidationLossEval(cfg, model)
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
@@ -83,7 +85,8 @@ def do_train(cfg, model, resume=False):
             loss_dict_reduced = {k: v.item() for k, v in comm.reduce_dict(loss_dict).items()}
             losses_reduced = sum(loss for loss in loss_dict_reduced.values())
             if comm.is_main_process():
-                storage.put_scalars(total_loss=losses_reduced, **loss_dict_reduced)
+                with storage.name_scope("Train losses"):
+                    storage.put_scalars(total_loss=losses_reduced, **loss_dict_reduced)
 
             optimizer.zero_grad()
             losses.backward()
@@ -99,6 +102,13 @@ def do_train(cfg, model, resume=False):
                 for name, results in test_results.items():
                     with storage.name_scope(name):
                         storage.put_scalars(**results)
+
+                validation_loss_dict = validation_loss_eval.get_loss()
+                validation_loss = sum(loss for loss in validation_loss_dict.values())
+                with storage.name_scope("Validation losses"):
+                    storage.put_scalars(total_validation_loss=validation_loss, **validation_loss_dict)
+                logger.info("Validation loss: {}".format(validation_loss))
+
                 comm.synchronize()
 
             if iteration - start_iter > 5 and ((iteration + 1) % 20 == 0 or iteration == max_iter - 1):
