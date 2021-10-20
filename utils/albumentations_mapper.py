@@ -162,10 +162,8 @@ def pixel_dropout(image, p, **kwargs):
     # Dropout probability
     p = np.random.uniform(p[0], p[1])
     # Pixels to dropout
-    print("Image type before multiplication", image.dtype)
-    dropouts = np.random.choice([0, 1], size=(height, width), p=[p, 1.0 - p])
+    dropouts = np.random.choice([0, 1], size=(height, width), p=[p, 1.0 - p]).astype('uint8')
     image = image * dropouts[:, :, np.newaxis]
-    print("Image type after multiplication", image.dtype)
     return image
 
 
