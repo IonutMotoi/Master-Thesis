@@ -14,9 +14,9 @@ def _dict_mean(dict_list):
 class ValidationLossEval:
     def __init__(self, cfg, model):
         self.model = model
-        dataset_name = cfg.DATASETS.TEST
+        dataset_name = cfg.DATASETS.TEST[0]
         mapper = AlbumentationsMapper(cfg, is_train=False)
-        self.data_loader = build_detection_test_loader(cfg, dataset=dataset_name, mapper=mapper)
+        self.data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
 
     def get_loss(self):
         losses = []
