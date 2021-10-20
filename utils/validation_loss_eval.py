@@ -17,9 +17,12 @@ class ValidationLossEval:
         dataset_name = cfg.DATASETS.TEST[0]
         mapper = AlbumentationsMapper(cfg, is_train=False)
         self.data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
+        self.count = 0
 
     def get_loss(self):
         losses = []
+        self.count += 1
+        print("GET LOSS COUNTER:", self.count)
         for idx, inputs in enumerate(self.data_loader):
             with torch.no_grad():
                 loss_dict = self.model(inputs)
