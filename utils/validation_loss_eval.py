@@ -1,5 +1,5 @@
 import torch
-from detectron2.data import build_detection_test_loader
+from detectron2.data import build_detection_test_loader, build_detection_train_loader
 
 from utils.albumentations_mapper import AlbumentationsMapper
 
@@ -16,7 +16,7 @@ class ValidationLossEval:
         self.model = model
         dataset_name = cfg.DATASETS.TEST[0]
         mapper = AlbumentationsMapper(cfg, is_train=False)
-        self.data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
+        self.data_loader = build_detection_train_loader(cfg, dataset_name, mapper=mapper)
         self.count = 0
 
     def get_loss(self):
