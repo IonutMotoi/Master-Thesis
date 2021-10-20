@@ -162,7 +162,7 @@ def pixel_dropout(image, p, **kwargs):
     # Dropout probability
     p = np.random.uniform(p[0], p[1])
     # Pixels to dropout
-    dropouts = np.random.choice([0, 1], size=(height, width), p=[p, 1.0 - p])
+    dropouts = np.random.choice([0, 1], size=(height, width), p=[p, 1.0 - p]).astype('uint8')
     image = image * dropouts[:, :, np.newaxis]
     return image
 
@@ -196,8 +196,9 @@ def get_augmentations(cfg, is_train):
     if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
         augmentations.append(A.Lambda(
             name="pixel_dropout",
-            image=lambda image, **kwargs: pixel_dropout(image,
-                                                        p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY),
+            image=lambda image, **kwargs: pixel_dropout(
+                image,
+                p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY),
             p=0.5))
 
     # Gaussian Noise
