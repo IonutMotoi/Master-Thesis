@@ -25,13 +25,14 @@ class AlbumentationsMapper:
     3. Prepare data and annotations to Tensor and :class:`Instances`
     """
 
-    def __init__(self, cfg, is_train: bool = True):
+    def __init__(self, cfg, is_train: bool = True, is_valid: bool = False):
         """
         Args:
             cfg: configuration
             is_train: whether it's used in training or inference
         """
         self.is_train = is_train
+        self.is_valid = is_valid
         self.use_instance_mask = cfg.MODEL.MASK_ON
         self.instance_mask_format = cfg.INPUT.MASK_FORMAT
 
@@ -69,6 +70,14 @@ class AlbumentationsMapper:
             detection_utils.check_image_size(dataset_dict, image)
             # Convert H,W,C image to C,H,W tensor
             dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
+
+            if self.is_valid:
+                image_shape = image.shape[1:]  # H, W
+                annos = [anno for anno in dataset_dict.pop("annotations") if anno.get("iscrowd", 0) == 0]
+                instances = detection_utils.annotations_to_instances(
+                    annos, image_shape, mask_format=self.instance_mask_format
+                )
+                dataset_dict["instances"] = detection_utils.filter_empty_instances(instances)
             return dataset_dict
 
         # Training

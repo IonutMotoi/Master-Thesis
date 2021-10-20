@@ -103,7 +103,7 @@ def do_train(cfg, model, resume=False):
                     with storage.name_scope(name):
                         storage.put_scalars(**results)
 
-                validation_loss_dict = validation_loss_eval.get_loss(model)
+                validation_loss_dict = validation_loss_eval.get_loss()
                 validation_loss = sum(loss for loss in validation_loss_dict.values())
                 with storage.name_scope("Validation losses"):
                     storage.put_scalars(total_validation_loss=validation_loss, **validation_loss_dict)

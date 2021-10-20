@@ -15,14 +15,14 @@ class ValidationLossEval:
     def __init__(self, cfg, model):
         self.model = model
         dataset_name = cfg.DATASETS.TEST[0]
-        mapper = AlbumentationsMapper(cfg, is_train=False)
+        mapper = AlbumentationsMapper(cfg, is_train=False, is_valid=True)
         self.data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
 
-    def get_loss(self, model):
+    def get_loss(self):
         losses = []
         for idx, inputs in enumerate(self.data_loader):
             with torch.no_grad():
-                loss_dict = model(inputs)
+                loss_dict = self.model(inputs)
                 loss_dict = {k: v.item() for k, v in loss_dict.items()}
             losses.append(loss_dict)
         mean_loss_dict = _dict_mean(losses)
