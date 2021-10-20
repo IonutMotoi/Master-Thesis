@@ -1,20 +1,10 @@
-_BASE_: "./mask_rcnn_wgisd.yaml"
+_BASE_: "./wgisd_R101.yaml"
+DATASETS:
+  TEST: ()
 MODEL:
-  WEIGHTS: "./output/wgisd_augmentations/model_final.pth"
+  WEIGHTS: "./output/wgisd_R101_aug/model_final.pth"
   ROI_HEADS:
     SCORE_THRESH_TEST: 0.9
 OUTPUT_DIR: "./output/inference"
-ALBUMENTATIONS:
-  LONGEST_MAX_SIZE:
-    ENABLED: True
-    VALUE: 1024
-  PAD:
-    ENABLED: True
-    TARGET_HEIGHT: 1024
-    TARGET_WIDTH: 1024
-    VALUE: 0
-    MASK_VALUE: 0
-DATASETS:
-  TEST: ()
 LABELS: ["Grapes"]
 COLORS: [[240, 50, 200]]

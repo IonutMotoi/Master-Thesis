@@ -1,0 +1,6 @@
+_BASE_: "./wgisd_R101.yaml"
+MODEL:
+  RESNETS:
+    DEPTH: 50
+  WEIGHTS: "/thesis/detectron2_baseline/R50-FPN/model_final_f10217.pkl"
+OUTPUT_DIR: "./output/wgisd_R50"
