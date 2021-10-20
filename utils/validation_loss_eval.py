@@ -21,7 +21,7 @@ class ValidationLossEval:
     def get_loss(self):
         losses = []
         for idx, inputs in enumerate(self.data_loader):
-            with torch.no_grad:
+            with torch.no_grad():
                 loss_dict = self.model(inputs)
                 loss_dict = {k: v.item() for k, v in loss_dict.items()}
             losses.append(loss_dict)
