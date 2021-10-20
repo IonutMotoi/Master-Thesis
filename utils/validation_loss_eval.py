@@ -16,7 +16,7 @@ class ValidationLossEval:
         self.model = model
         dataset_name = cfg.DATASETS.TEST
         mapper = AlbumentationsMapper(cfg, is_train=False)
-        self.dataloader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
+        self.data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
 
     def get_loss(self):
         losses = []
