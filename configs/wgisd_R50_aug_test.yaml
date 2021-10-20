@@ -1,4 +1,4 @@
-_BASE_: "./wgisd_R50_aug.yaml"
+_BASE_: "./wgisd_R50.yaml"
 DATASETS:
   TEST : ("wgisd_augmented_test", "wgisd_augmented_test_detection")
 MODEL:
