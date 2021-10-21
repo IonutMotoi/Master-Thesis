@@ -30,6 +30,7 @@ class AlbumentationsMapper:
         Args:
             cfg: configuration
             is_train: whether it's used in training or inference
+            is_valid: whether it's used for computing the validation loss
         """
         self.is_train = is_train
         self.is_valid = is_valid
