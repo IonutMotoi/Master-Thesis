@@ -60,7 +60,7 @@ def albumentations_bbox_to_pascal_voc(bbox, height, width):
 
 def yolo_bbox_to_albumentations(bbox):
     """
-    Convert a bounding box from the albumentations format to the yolo format.
+    Convert a bounding box from the yolo format to the albumentations format.
     :param bbox: Normalized (yolo format) bounding box `(x_0, y_0, box_width, box_height)`.
     :return: Normalized (albumentations format) bounding box `(x_min, y_min, x_max, y_max)`.
     """
@@ -92,7 +92,7 @@ def yolo_bbox_to_albumentations(bbox):
 
 def albumentations_bbox_to_yolo(bbox):
     """
-    Convert a bounding box from the yolo format to the albumentations format.
+    Convert a bounding box from the albumentations format to the yolo format.
     :param bbox: Normalized (albumentations format) bounding box `(x_min, y_min, x_max, y_max)`.
     :return: Normalized (yolo format) bounding box `(x_0, y_0, box_width, box_height)`.
     """
