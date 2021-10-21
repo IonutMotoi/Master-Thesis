@@ -107,7 +107,7 @@ def do_train(cfg, model, resume=False):
                 validation_loss = sum(loss for loss in validation_loss_dict.values())
                 with storage.name_scope("Validation losses"):
                     storage.put_scalars(total_validation_loss=validation_loss, **validation_loss_dict)
-                logger.info("Validation loss: {}".format(validation_loss))
+                logger.info("Total validation loss: {}".format(validation_loss))
 
                 comm.synchronize()
 
