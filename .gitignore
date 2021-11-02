@@ -1,3 +1,4 @@
 wgisd
 detectron2_baseline
 .idea
+__pycache__
