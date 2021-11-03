@@ -28,15 +28,13 @@ class AlbumentationsMapper:
     4. Prepare data and annotations and convert them to Tensor and :class:`Instances`
     """
 
-    def __init__(self, cfg, is_train: bool = True, is_valid: bool = False):
+    def __init__(self, cfg, is_train: bool = True):
         """
         Args:
             cfg: configuration
             is_train: whether it's used in training or inference
-            is_valid: whether it's used for computing the validation loss
         """
         self.is_train = is_train
-        self.is_valid = is_valid
         self.instance_mask_format = cfg.INPUT.MASK_FORMAT
 
         # Define transforms (Detectron2)
