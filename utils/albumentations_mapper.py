@@ -65,7 +65,7 @@ class AlbumentationsMapper:
             logger.info("##############################################")
 
         else:
-            augmentations = A.NoOp()
+            augmentations = None
         self.augmentations = A.Compose(
             augmentations,
             bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
