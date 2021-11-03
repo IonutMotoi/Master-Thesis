@@ -215,7 +215,7 @@ def get_augmentations(cfg, is_train):
             image=lambda image, **kwargs: pixel_dropout(
                 image,
                 p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY),
-            p=0.5))
+            p=1))
 
     # Gaussian Noise
     if cfg.ALBUMENTATIONS.GAUSSIAN_NOISE.ENABLED:
