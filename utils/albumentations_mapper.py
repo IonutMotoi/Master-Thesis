@@ -40,19 +40,19 @@ class AlbumentationsMapper:
         self.instance_mask_format = cfg.INPUT.MASK_FORMAT
 
         # Define transforms (Detectron2)
-        self.transforms = detection_utils.build_augmentation(cfg, is_train)
+        transforms = detection_utils.build_augmentation(cfg, is_train)
         if cfg.INPUT.CROP.ENABLED and is_train:
-            self.transforms.insert(0, T.RandomCrop(cfg.INPUT.CROP.TYPE, cfg.INPUT.CROP.SIZE))
+            transforms.insert(0, T.RandomCrop(cfg.INPUT.CROP.TYPE, cfg.INPUT.CROP.SIZE))
             self.recompute_boxes = cfg.MODEL.MASK_ON
         else:
             self.recompute_boxes = False
-        self.transforms = T.AugmentationList(self.transforms)
+        self.transforms = T.AugmentationList(transforms)
 
         logger = logging.getLogger("detectron2")
         mode = "training" if is_train else "inference"
         logger.info("############# TRANSFORMS #################")
         logger.info(f"Transforms used in {mode}:")
-        for transform in self.transforms:
+        for transform in transforms:
             logger.info(transform)
         logger.info("##############################################")
 
