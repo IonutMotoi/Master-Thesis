@@ -2,7 +2,7 @@ import copy
 import logging
 import numpy as np
 import torch
-from pycocotools.mask import encode
+from pycocotools.mask import encode, decode
 import cv2
 import albumentations as A
 
@@ -38,29 +38,37 @@ class AlbumentationsMapper:
         self.is_train = is_train
         self.is_valid = is_valid
         self.instance_mask_format = cfg.INPUT.MASK_FORMAT
-        self.resize_gen = detection_utils.build_transform_gen(cfg, is_train)
+
+        # Define transforms (Detectron2)
+        self.transforms = detection_utils.build_augmentation(cfg, is_train)
         if cfg.INPUT.CROP.ENABLED and is_train:
-            self.crop_gen = T.RandomCrop(cfg.INPUT.CROP.TYPE, cfg.INPUT.CROP.SIZE)
+            self.transforms.insert(0, T.RandomCrop(cfg.INPUT.CROP.TYPE, cfg.INPUT.CROP.SIZE))
+            self.recompute_boxes = cfg.MODEL.MASK_ON
         else:
-            self.crop_gen = None
+            self.recompute_boxes = False
 
-        # Define augmentations
-        augmentations = get_augmentations(cfg, is_train)
-        if is_train:
-            self.augmentations = A.Compose(
-                augmentations,
-                bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
-        else:
-            self.augmentations = None
-
-        # Log
         logger = logging.getLogger("detectron2")
         mode = "training" if is_train else "inference"
-        logger.info("############# ALBUMENTATIONS #################")
-        logger.info(f"[AlbumentationsMapper] Augmentations used in {mode}:")
-        for aug in augmentations:
-            logger.info(aug)
+        logger.info("############# TRANSFORMS #################")
+        logger.info(f"Transforms used in {mode}:")
+        for transform in self.transforms:
+            logger.info(transform)
         logger.info("##############################################")
+
+        # Define augmentations (Albumentations) (only training)
+        if is_train:
+            augmentations = get_augmentations(cfg)
+            logger.info("############# AUGMENTATIONS #################")
+            logger.info("Augmentations used in training:")
+            for aug in augmentations:
+                logger.info(aug)
+            logger.info("##############################################")
+
+        else:
+            augmentations = A.NoOp()
+        self.augmentations = A.Compose(
+            augmentations,
+            bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
 
     def __call__(self, dataset_dict):
         """
@@ -72,100 +80,84 @@ class AlbumentationsMapper:
         """
         dataset_dict = copy.deepcopy(dataset_dict)
 
-        # Evaluation
-        if not self.is_train:
-            image = detection_utils.read_image(dataset_dict["file_name"], format="BGR")
-            detection_utils.check_image_size(dataset_dict, image)
-            # Convert H,W,C image to C,H,W tensor
-            dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
-
-            if self.is_valid:
-                image_shape = image.shape[1:]  # H, W
-                annos = [anno for anno in dataset_dict.pop("annotations") if anno.get("iscrowd", 0) == 0]
-                instances = detection_utils.annotations_to_instances(
-                    annos, image_shape, mask_format=self.instance_mask_format
-                )
-                dataset_dict["instances"] = detection_utils.filter_empty_instances(instances)
-            return dataset_dict
-
-        # Training
-        image = detection_utils.read_image(dataset_dict["file_name"], format="RGB")  # RGB required by albumentations
+        image = detection_utils.read_image(dataset_dict["file_name"], format="BGR")
         detection_utils.check_image_size(dataset_dict, image)
 
-        bboxes = [anno["bbox"] for anno in dataset_dict["annotations"]]
-        bbox_mode = dataset_dict["annotations"][0]["bbox_mode"]
-        masks = [anno["segmentation"] for anno in dataset_dict["annotations"]]
-        class_labels = [anno["category_id"] for anno in dataset_dict["annotations"]]
+        if self.is_train:
+            # BGR to RGB format required by albumentations
+            image = image[:, :, ::-1]
 
-        # Convert bboxes from the pascal_voc to the albumentations format
-        bboxes = pascal_voc_bboxes_to_albumentations(bboxes, height=image.shape[0], width=image.shape[1])
+            bboxes = [anno["bbox"] for anno in dataset_dict["annotations"]]
+            bbox_mode = dataset_dict["annotations"][0]["bbox_mode"]
+            masks = [decode(anno["segmentation"]) for anno in dataset_dict["annotations"]]
+            class_labels = [anno["category_id"] for anno in dataset_dict["annotations"]]
 
-        # Apply transformations
-        transformed = self.augmentations(
-            image=image,
-            bboxes=bboxes,
-            masks=masks,
-            class_labels=class_labels,
-            bbox_ids=np.arange(len(bboxes))
-        )
-        image = transformed["image"]
-        bboxes = transformed["bboxes"]
-        masks = transformed["masks"]
-        class_labels = transformed["class_labels"]
-        bbox_ids = transformed["bbox_ids"]
+            # Convert bboxes from the pascal_voc to the albumentations format
+            bboxes = pascal_voc_bboxes_to_albumentations(bboxes, height=image.shape[0], width=image.shape[1])
 
-        # Filter the masks that don't have a corresponding bbox anymore
-        # and convert uint8 masks of 0s and 1s into dicts in COCO’s compressed RLE format
-        masks = [encode(np.asarray(masks[i], order="F")) for i in bbox_ids]
-
-        # Convert bboxes from the albumentations format to the pascal_voc format
-        bboxes = albumentations_bboxes_to_pascal_voc(bboxes, height=image.shape[0], width=image.shape[1])
-
-        assert len(bboxes) == len(class_labels), \
-            "The number of bounding boxes should be equal to the number of class labels"
-        assert len(bboxes) == len(masks), \
-            "The number of bounding boxes should be equal to the number of masks"
-
-        dataset_dict["annotations"] = [
-            {
-                "bbox": bboxes[i],
-                "bbox_mode": bbox_mode,
-                "segmentation": masks[i],
-                "category_id": class_labels[i]
-            }
-            for i in range(len(bboxes))
-        ]
-
-        if self.crop_gen:
-            # image crop using detectron2 tools
-            crop_tfm = detection_utils.gen_crop_transform_with_instance(
-                self.crop_gen.get_crop_size(image.shape[:2]),
-                image.shape[:2],
-                np.random.choice(dataset_dict["annotations"])
+            # if self.is_train:
+            # Apply augmentations
+            augmented = self.augmentations(
+                image=image,
+                bboxes=bboxes,
+                masks=masks,
+                class_labels=class_labels,
+                bbox_ids=np.arange(len(bboxes))
             )
-            image = crop_tfm.apply_image(image)
+            image = augmented["image"]
+            bboxes = augmented["bboxes"]
+            masks = augmented["masks"]
+            class_labels = augmented["class_labels"]
+            bbox_ids = augmented["bbox_ids"]
 
-        # image resize using detectron2 tools
-        image, transforms = T.apply_transform_gens(self.resize_gen, image)
-        if self.crop_gen:
-            transforms = crop_tfm + transforms
+            # Filter the masks that don't have a corresponding bbox anymore
+            # and convert uint8 masks of 0s and 1s into dicts in COCO’s compressed RLE format
+            masks = [encode(np.asarray(masks[i], order="F")) for i in bbox_ids]
 
-        annos = [
+            # Convert bboxes from the albumentations format to the pascal_voc format
+            bboxes = albumentations_bboxes_to_pascal_voc(bboxes, height=image.shape[0], width=image.shape[1])
+
+            assert len(bboxes) == len(class_labels), \
+                "The number of bounding boxes should be equal to the number of class labels"
+            assert len(bboxes) == len(masks), \
+                "The number of bounding boxes should be equal to the number of masks"
+
+            dataset_dict["annotations"] = [
+                {
+                    "bbox": bboxes[i],
+                    "bbox_mode": bbox_mode,
+                    "segmentation": masks[i],
+                    "category_id": class_labels[i]
+                }
+                for i in range(len(bboxes))
+            ]
+
+            # RGB to BGR required by the model
+            image = image[:, :, ::-1]
+
+        # Apply transforms
+        aug_input = T.AugInput(image)
+        transforms = self.transforms(aug_input)
+        image = aug_input.image
+
+        annotations = [
             detection_utils.transform_instance_annotations(obj, transforms, image.shape[:2])
             for obj in dataset_dict.pop("annotations")
             if obj.get("iscrowd", 0) == 0
         ]
-        dataset_dict['annotations'] = annos
+        dataset_dict['annotations'] = annotations
 
         instances = detection_utils.annotations_to_instances(
-            annos, image.shape[:2], mask_format=self.instance_mask_format
+            annotations, image.shape[:2], mask_format=self.instance_mask_format
         )
+        # If cropping is applied, the bounding box may no longer tightly bound the object
+        if self.recompute_boxes:
+            instances.gt_boxes = instances.gt_masks.get_bounding_boxes()
         dataset_dict["instances"] = detection_utils.filter_empty_instances(instances)
 
         dataset_dict["height"] = image.shape[0]
         dataset_dict["width"] = image.shape[1]
-        # RGB to BGR required by the model
-        image = image[:, :, ::-1]
+
         # Convert H,W,C image to C,H,W tensor
         dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
 
@@ -202,11 +194,8 @@ def pixel_dropout(image, p, **kwargs):
     return image
 
 
-def get_augmentations(cfg, is_train):
+def get_augmentations(cfg):
     augmentations = []
-
-    if not is_train:
-        return augmentations
 
     # Pixel Dropout
     if cfg.ALBUMENTATIONS.PIXEL_DROPOUT.ENABLED:
@@ -215,7 +204,7 @@ def get_augmentations(cfg, is_train):
             image=lambda image, **kwargs: pixel_dropout(
                 image,
                 p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY),
-            p=1))
+            p=0.5))
 
     # Gaussian Noise
     if cfg.ALBUMENTATIONS.GAUSSIAN_NOISE.ENABLED:
