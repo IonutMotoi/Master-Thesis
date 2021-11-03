@@ -81,13 +81,8 @@ def get_wgisd_dicts(root, source):
                 "bbox_mode": BoxMode.XYXY_ABS,
                 "category_id": 0,
             }
-
             if has_masks:
-                mask = masks[:, :, i]
-                # Validation masks have to be encoded here for coco evaluator
-                if source == "augmented_valid":
-                    mask = encode(np.asarray(mask, order="F"))
-                obj["segmentation"] = mask
+                obj["segmentation"] = encode(np.asarray(masks[:, :, i], order="F"))
 
             objs.append(obj)
 
