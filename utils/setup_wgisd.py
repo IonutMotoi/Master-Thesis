@@ -11,29 +11,22 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 # Dataset
 def get_wgisd_dicts(root, source):
     # Load the dataset subset defined by source
-    assert source in ['train', 'valid', 'test', 'augmented_valid', 'augmented_test', 'augmented_test_detection'], \
-        'source should be "train", "valid", "test", "augmented_valid", "augmented_test" or "augmented_test_detection"'
+    assert source in ['train', 'valid', 'test', 'test_detection'], \
+        'source should be "train", "valid", "test", "test_detection"'
 
     has_masks = True
 
     if source == "train":
         source_path = os.path.join(root, 'train_split_masked.txt')
-    elif source in ["valid", "augmented_valid"]:
+    elif source == "valid":
         source_path = os.path.join(root, 'valid_split_masked.txt')
-    elif source in ["test", "augmented_test"]:
+    elif source == "test":
         source_path = os.path.join(root, 'test_masked.txt')
-    else:  # source == "augmented_test_detection"
+    else:  # source == "test_detection"
         source_path = os.path.join(root, 'test.txt')
-
-    if source == "augmented_valid":
-        root = os.path.join(root, "augmented", "valid_masked")
-    elif source == "augmented_test":
-        root = os.path.join(root, "augmented", "test_masked")
-    elif source == "augmented_test_detection":
-        root = os.path.join(root, "augmented", "test_detection")
         has_masks = False
-    else:
-        root = os.path.join(root, "data")
+
+    root = os.path.join(root, "data")
 
     with open(source_path, 'r') as fp:
         # Read all lines in file
@@ -94,7 +87,7 @@ def get_wgisd_dicts(root, source):
 def setup_wgisd():
     data_path = "/thesis/wgisd"
 
-    for d in ["train", "augmented_valid", "augmented_test", "augmented_test_detection"]:
+    for d in ["train", "valid", "test", "est_detection"]:
         dataset_name = "wgisd_" + d
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
