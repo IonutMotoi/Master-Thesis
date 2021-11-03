@@ -46,6 +46,7 @@ class AlbumentationsMapper:
             self.recompute_boxes = cfg.MODEL.MASK_ON
         else:
             self.recompute_boxes = False
+        self.transforms = T.AugmentationList(self.transforms)
 
         logger = logging.getLogger("detectron2")
         mode = "training" if is_train else "inference"
