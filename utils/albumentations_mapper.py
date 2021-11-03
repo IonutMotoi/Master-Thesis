@@ -57,16 +57,14 @@ class AlbumentationsMapper:
         # Define augmentations (Albumentations) (only training)
         if is_train:
             augmentations = get_augmentations(cfg)
+            self.augmentations = A.Compose(
+                augmentations,
+                bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
             logger.info("############# AUGMENTATIONS #################")
             logger.info("Augmentations used in training:")
             for aug in augmentations:
                 logger.info(aug)
             logger.info("##############################################")
-        else:
-            augmentations = []
-        self.augmentations = A.Compose(
-            augmentations,
-            bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels', 'bbox_ids']))
 
     def __call__(self, dataset_dict):
         """
@@ -143,7 +141,7 @@ class AlbumentationsMapper:
             for obj in dataset_dict.pop("annotations")
             if obj.get("iscrowd", 0) == 0
         ]
-        dataset_dict['annotations'] = annotations
+        dataset_dict["annotations"] = annotations
 
         instances = detection_utils.annotations_to_instances(
             annotations, image.shape[:2], mask_format=self.instance_mask_format
