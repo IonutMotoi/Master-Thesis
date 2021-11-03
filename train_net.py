@@ -116,7 +116,7 @@ def do_train(cfg, model, resume=False):
                     writer.write()
 
             # Visualize some examples of augmented images and annotations
-            if examples_count < 3:
+            if examples_count < 5:
                 image = visualize_image_and_annotations(data[0])
                 storage.put_image("Example of augmented image", image)
                 examples_count += 1
