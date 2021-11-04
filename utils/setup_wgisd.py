@@ -42,6 +42,8 @@ def get_wgisd_dicts(root, source):
 
         record["file_name"] = filename
         record["image_id"] = img_id
+
+        # Dimensions of the output of the model
         record["height"] = height
         record["width"] = width
 
