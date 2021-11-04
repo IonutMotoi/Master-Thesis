@@ -79,6 +79,7 @@ class AlbumentationsMapper:
         image = detection_utils.read_image(dataset_dict["file_name"], format="BGR")
         detection_utils.check_image_size(dataset_dict, image)
 
+        # Apply Albumentations during training
         if self.is_train:
             # BGR to RGB format required by albumentations
             image = image[:, :, ::-1]
@@ -135,6 +136,7 @@ class AlbumentationsMapper:
         aug_input = T.AugInput(image)
         transforms = self.transforms(aug_input)
         image = aug_input.image
+
         annotations = [
             detection_utils.transform_instance_annotations(obj, transforms, image.shape[:2])
             for obj in dataset_dict.pop("annotations")
@@ -149,9 +151,6 @@ class AlbumentationsMapper:
         if self.recompute_boxes:
             instances.gt_boxes = instances.gt_masks.get_bounding_boxes()
         dataset_dict["instances"] = detection_utils.filter_empty_instances(instances)
-
-        # dataset_dict["height"] = image.shape[0]
-        # dataset_dict["width"] = image.shape[1]
 
         # Convert H,W,C image to C,H,W tensor
         dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
