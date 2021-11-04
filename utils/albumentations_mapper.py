@@ -160,30 +160,24 @@ class AlbumentationsMapper:
         return dataset_dict
 
 
-def pixel_dropout(image, p, **kwargs):
+def pixel_dropout(image, p_min, p_max, **kwargs):
     """
     Set a fraction of pixels in images to zero.
     :param image:
-    :param p: (list) a value ``p`` will be sampled from the interval ``[a, b]``
-              per image and be used as the pixel's dropout probability.
+    :param p_min: minimum pixel dropout probability
+    :param p_max: maximum pixel dropout probability
     :param kwargs:
     :return: augmented image
     """
-    assert isinstance(p, list), f"Expected p to be given as a list, got {type(p)}."
-    assert len(p) == 2, (
-            f"Expected p to be given as a list containing exactly 2 values, "
-            f"got {len(p)} values.")
-    assert p[0] <= p[1], (
-            f"Expected p to be given as a list containing exactly 2 values "
-            f"[a, b] with a <= b. Got {p[0]:.4f} and {p[1]:.4f}.")
-    assert 0 <= p[0] <= 1.0 and 0 <= p[1] <= 1.0, (
-            f"Expected p given as list to only contain values in the "
-            f"interval [0.0, 1.0], got {p[0]:.4f} and {p[1]:.4f}.")
+    assert p_min <= p_max, (
+            f"Expected p_min <= p_max. Got {p_min:.4f} and {p_max:.4f}.")
+    assert 0 <= p_min <= 1.0 and 0 <= p_max <= 1.0, (
+            f"Expected values in the interval [0.0, 1.0], got {p_min:.4f} and {p_max:.4f}.")
 
     height = image.shape[0]
     width = image.shape[1]
     # Dropout probability
-    p = np.random.uniform(p[0], p[1])
+    p = np.random.uniform(p_min, p_max)
     # Pixels to dropout
     dropouts = np.random.choice([0, 1], size=(height, width), p=[p, 1.0 - p]).astype('uint8')
     image = image * dropouts[:, :, np.newaxis]
@@ -199,7 +193,8 @@ def get_augmentations(cfg):
             name="pixel_dropout",
             image=lambda image, **kwargs: pixel_dropout(
                 image,
-                p=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_PROBABILITY),
+                p_min=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_MIN,
+                p_max=cfg.ALBUMENTATIONS.PIXEL_DROPOUT.DROPOUT_MAX),
             p=0.5))
 
     # Gaussian Noise
