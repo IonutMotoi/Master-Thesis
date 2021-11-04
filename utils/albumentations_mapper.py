@@ -135,14 +135,15 @@ class AlbumentationsMapper:
         aug_input = T.AugInput(image)
         transforms = self.transforms(aug_input)
         image = aug_input.image
-        print(dataset_dict["annotations"][0])
+        print(dataset_dict["annotations"][0]["segmentation"])
         annotations = [
             detection_utils.transform_instance_annotations(obj, transforms, image.shape[:2])
             for obj in dataset_dict.pop("annotations")
             if obj.get("iscrowd", 0) == 0
         ]
         dataset_dict["annotations"] = annotations
-        print(dataset_dict["annotations"][0])
+        print(dataset_dict["annotations"][0]["segmentation"].shape)
+        input()
 
         instances = detection_utils.annotations_to_instances(
             annotations, image.shape[:2], mask_format=self.instance_mask_format
