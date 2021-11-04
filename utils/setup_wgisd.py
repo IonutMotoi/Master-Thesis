@@ -87,7 +87,7 @@ def get_wgisd_dicts(root, source):
 def setup_wgisd():
     data_path = "/thesis/wgisd"
 
-    for d in ["train", "valid", "test", "est_detection"]:
+    for d in ["train", "valid", "test", "test_detection"]:
         dataset_name = "wgisd_" + d
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
