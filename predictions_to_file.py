@@ -6,10 +6,10 @@ import numpy as np
 import torch
 import tqdm
 from detectron2.data.detection_utils import read_image
+from detectron2.engine import DefaultPredictor
 from detectron2.utils.logger import setup_logger
 
 from utils.inference_setup import setup, get_parser
-from utils.predictor import Predictor
 from utils.save import save_image_and_labels
 
 
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     logger.info("Arguments: " + str(args))
 
     cfg = setup(args)
-    predictor = Predictor(cfg)
+    predictor = DefaultPredictor(cfg)
 
     if len(args.input) == 1:
         args.input = glob.glob(os.path.expanduser(args.input[0]))
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         image = read_image(path, format="BGR")
         start_time = time.time()
 
-        predictions, image = predictor(image)
+        predictions = predictor(image)
 
         logger.info(
             "{}: {} in {:.2f}s".format(

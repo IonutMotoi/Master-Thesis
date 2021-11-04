@@ -1,9 +1,8 @@
 import torch
 
-from detectron2.data import MetadataCatalog, Metadata
+from detectron2.data import Metadata
+from detectron2.engine import DefaultPredictor
 from detectron2.utils.visualizer import ColorMode, Visualizer
-
-from utils.predictor import Predictor
 
 
 class Visualization(object):
@@ -21,7 +20,7 @@ class Visualization(object):
         self.instance_mode = instance_mode
         self.detection_only = detection_only
 
-        self.predictor = Predictor(cfg)
+        self.predictor = DefaultPredictor(cfg)
 
     def run_on_image(self, image):
         """
@@ -33,7 +32,7 @@ class Visualization(object):
             predictions (dict): the output of the model.
             vis_output (VisImage): the visualized image output.
         """
-        predictions, image = self.predictor(image)
+        predictions = self.predictor(image)
         # Convert image from OpenCV BGR format to Matplotlib RGB format.
         image = image[:, :, ::-1]
         visualizer = Visualizer(image, self.metadata, instance_mode=self.instance_mode)
