@@ -68,9 +68,10 @@ def do_train(cfg, model, resume=False):
     max_iter = cfg.SOLVER.MAX_ITER
     periodic_checkpointer = PeriodicCheckpointer(checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter, max_to_keep=1)
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
+
     mapper = AlbumentationsMapper(cfg, is_train=True)
     data_loader = build_detection_train_loader(cfg, mapper=mapper)
-    examples_count = 0
+    examples_count = 0  # Counter for saving examples of augmented images on W&B
     validation_loss_eval = ValidationLossEval(cfg, model)
 
     logger.info("Starting training from iteration {}".format(start_iter))
