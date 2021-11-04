@@ -135,15 +135,12 @@ class AlbumentationsMapper:
         aug_input = T.AugInput(image)
         transforms = self.transforms(aug_input)
         image = aug_input.image
-        print(dataset_dict["annotations"][0]["segmentation"])
         annotations = [
             detection_utils.transform_instance_annotations(obj, transforms, image.shape[:2])
             for obj in dataset_dict.pop("annotations")
             if obj.get("iscrowd", 0) == 0
         ]
         dataset_dict["annotations"] = annotations
-        print(dataset_dict["annotations"][0]["segmentation"].shape)
-        input()
 
         instances = detection_utils.annotations_to_instances(
             annotations, image.shape[:2], mask_format=self.instance_mask_format
@@ -153,8 +150,8 @@ class AlbumentationsMapper:
             instances.gt_boxes = instances.gt_masks.get_bounding_boxes()
         dataset_dict["instances"] = detection_utils.filter_empty_instances(instances)
 
-        dataset_dict["height"] = image.shape[0]
-        dataset_dict["width"] = image.shape[1]
+        # dataset_dict["height"] = image.shape[0]
+        # dataset_dict["width"] = image.shape[1]
 
         # Convert H,W,C image to C,H,W tensor
         dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
