@@ -1,4 +1,3 @@
-# import pycocotools
 import os
 import cv2
 import numpy as np
@@ -87,10 +86,10 @@ def get_wgisd_dicts(root, source):
 def setup_wgisd():
     data_path = "/thesis/wgisd"
 
-    for d in ["train", "valid", "test", "test_detection"]:
-        dataset_name = "wgisd_" + d
+    for name in ["train", "valid", "test", "test_detection"]:
+        dataset_name = "wgisd_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
 
-        DatasetCatalog.register(dataset_name, lambda d=d: get_wgisd_dicts(data_path, d))
+        DatasetCatalog.register(dataset_name, lambda d=name: get_wgisd_dicts(data_path, d))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
