@@ -2,6 +2,9 @@ import glob
 import os
 import time
 from pathlib import Path
+
+import numpy as np
+import torch
 import tqdm
 
 from detectron2.data.detection_utils import read_image
@@ -9,6 +12,7 @@ from detectron2.utils.logger import setup_logger
 
 from utils.inference_setup import get_parser, setup
 from utils.predictor import MasksFromBboxesPredictor
+from utils.save import save_image_and_labels
 
 if __name__ == "__main__":
     parser = get_parser()
@@ -40,6 +44,23 @@ if __name__ == "__main__":
             )
         )
 
-        Path(args.output).mkdir(parents=True, exist_ok=True)  # Create destination folder
-        assert os.path.isdir(args.output), args.output
-        out_filename = os.path.join(args.output, os.path.basename(path))
+        instances = predictions["instances"].to(torch.device("cpu"))
+        boxes = instances.pred_boxes.tensor.numpy()
+        classes = instances.pred_classes.numpy()
+        masks = instances.pred_masks.numpy()
+
+        # n x H x W -> H x W x n
+        masks = np.array(masks).transpose((1, 2, 0))
+
+        img_id = os.path.basename(path)
+        img_id = os.path.splitext(img_id)[0]
+
+        save_image_and_labels(
+            dest_folder=args.output,
+            img_id=img_id,
+            image=image,
+            class_labels=classes,
+            bboxes=boxes,
+            masks=masks,
+            img_format="BGR"
+        )
