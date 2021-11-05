@@ -34,7 +34,7 @@ def get_parser():
     )
     parser.add_argument(
         "--output",
-        help="Directory to save output visualizations",
+        help="Directory to save output",
         required=True
     )
     parser.add_argument(
