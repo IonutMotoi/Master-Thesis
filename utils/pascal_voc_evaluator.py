@@ -1,7 +1,8 @@
 from collections import OrderedDict, defaultdict
-
 import numpy as np
 import torch
+from pycocotools.mask import decode
+
 from detectron2.data import MetadataCatalog
 from detectron2.evaluation.evaluator import DatasetEvaluator
 
@@ -17,7 +18,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         self.cpu_device = torch.device("cpu")
         self.results = OrderedDict()
         self.predictions = None  # initialized inside reset()
-        self.annotations = None
+        self.annotations = None  # initialized inside reset()
         self.task = task
 
     def reset(self):
@@ -73,7 +74,6 @@ class PascalVOCEvaluator(DatasetEvaluator):
         f1s = {iou: np.round(np.mean(x), 3) for iou, x in f1s.items()}
 
         ret = OrderedDict()
-        # ret["bbox"] = {"AP": np.mean(list(mAP.values())), "AP50": mAP[50], "AP75": mAP[75]}
         ret["bbox"] = {
             "IoU": ious,
             "AP": aps,
@@ -178,7 +178,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         for image_id, image_annotations in self.annotations.items():
             image_class_annotations = [annotation for annotation in image_annotations
                                        if annotation["category_id"] == class_id]
-            masks = np.array([annotation["segmentation"] for annotation in image_class_annotations])
+            masks = np.array([decode(annotation["segmentation"]) for annotation in image_class_annotations])
             det = [False] * len(image_class_annotations)
             npos += len(image_class_annotations)
             annotations[image_id] = {"masks": masks, "det": det}
