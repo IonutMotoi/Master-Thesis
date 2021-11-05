@@ -137,15 +137,16 @@ class AlbumentationsMapper:
         transforms = self.transforms(aug_input)
         image = aug_input.image
 
-        # Keep original annotations for later evaluation
         annotations = [obj for obj in dataset_dict.pop("annotations") if obj.get("iscrowd", 0) == 0]
-        dataset_dict["annotations"] = annotations
+        # Keep original annotations for later evaluation
+        dataset_dict["annotations"] = copy.deepcopy(annotations)
 
-        # Transform annotations and convert them to instances
-        instances = [detection_utils.transform_instance_annotations(obj, transforms, image.shape[:2])
-                     for obj in annotations]
+        # Transform annotations
+        annotations = [detection_utils.transform_instance_annotations(obj, transforms, image.shape[:2])
+                       for obj in annotations]
+        # Convert annotations to instances
         instances = detection_utils.annotations_to_instances(
-            instances, image.shape[:2], mask_format=self.instance_mask_format
+            annotations, image.shape[:2], mask_format=self.instance_mask_format
         )
         # If cropping is applied, the bounding box may no longer tightly bound the object
         if self.recompute_boxes:
@@ -168,9 +169,9 @@ def pixel_dropout(image, p_min, p_max, **kwargs):
     :return: augmented image
     """
     assert p_min <= p_max, (
-            f"Expected p_min <= p_max. Got {p_min:.4f} and {p_max:.4f}.")
+        f"Expected p_min <= p_max. Got {p_min:.4f} and {p_max:.4f}.")
     assert 0 <= p_min <= 1.0 and 0 <= p_max <= 1.0, (
-            f"Expected values in the interval [0.0, 1.0], got {p_min:.4f} and {p_max:.4f}.")
+        f"Expected values in the interval [0.0, 1.0], got {p_min:.4f} and {p_max:.4f}.")
 
     height = image.shape[0]
     width = image.shape[1]
