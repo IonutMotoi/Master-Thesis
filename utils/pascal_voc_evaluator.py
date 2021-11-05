@@ -51,6 +51,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
 
     def evaluate(self):
         if self.task == "detection":
+            print(f"Evaluation of {self.task}")
             ious = list(range(30, 85, 10))
         else:
             ious = list(range(30, 95, 10))
@@ -60,7 +61,9 @@ class PascalVOCEvaluator(DatasetEvaluator):
         recalls = defaultdict(list)
         f1s = defaultdict(list)
         for class_id in range(self.num_of_classes):
-            for threshold in ious:
+            print(f"Evaluating class {class_id + 1}/{self.num_of_classes}\n")
+            for count_iou, threshold in enumerate(ious):
+                print(f"Evaluating IOU {count_iou+1}/{len(ious)}\n")
                 ap, precision, recall, f1 = self.voc_eval(class_id, threshold / 100.0)
                 aps[threshold].append(ap)
                 precisions[threshold].append(precision)
@@ -187,7 +190,7 @@ class PascalVOCEvaluator(DatasetEvaluator):
         predictions = self.predictions[class_id]
         image_ids = [prediction["image_id"] for prediction in predictions]
         confidence = np.array([prediction["score"] for prediction in predictions])
-        masks = np.array([prediction["mask"] for prediction in predictions])
+        masks = np.array([prediction["mask"] for prediction in predictions], dtype=object)
 
         # Sort by confidence (descending)
         sorted_indices = np.argsort(confidence)[::-1]
