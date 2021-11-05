@@ -1,5 +1,6 @@
 import torch
 from detectron2.data import build_detection_test_loader
+from torch.cuda.amp import autocast
 
 from utils.albumentations_mapper import AlbumentationsMapper
 
@@ -22,8 +23,9 @@ class ValidationLossEval:
         losses = []
         for idx, inputs in enumerate(self.data_loader):
             with torch.no_grad():
-                loss_dict = self.model(inputs)
-                loss_dict = {k: v.item() for k, v in loss_dict.items()}
+                with autocast():
+                    loss_dict = self.model(inputs)
+                    loss_dict = {k: v.item() for k, v in loss_dict.items()}
             losses.append(loss_dict)
         mean_loss_dict = _dict_mean(losses)
         return mean_loss_dict
