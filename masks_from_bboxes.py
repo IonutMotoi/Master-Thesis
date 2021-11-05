@@ -28,7 +28,7 @@ if __name__ == "__main__":
         image = read_image(path, format="BGR")
         start_time = time.time()
 
-        predictions, image = predictor(image)
+        predictions = predictor(image)
 
         logger.info(
             "{}: {} in {:.2f}s".format(
