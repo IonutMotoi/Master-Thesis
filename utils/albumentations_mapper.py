@@ -3,7 +3,6 @@ import logging
 import numpy as np
 import torch
 from pycocotools.mask import encode, decode
-import cv2
 import albumentations as A
 
 import detectron2.data.transforms as T
