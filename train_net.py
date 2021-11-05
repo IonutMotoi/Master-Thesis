@@ -4,7 +4,6 @@ from collections import OrderedDict
 import wandb
 import torch
 from torch.nn.parallel import DistributedDataParallel
-from torch.cuda.amp import GradScaler, autocast
 
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
@@ -74,16 +73,14 @@ def do_train(cfg, model, resume=False):
     data_loader = build_detection_train_loader(cfg, mapper=mapper)
     examples_count = 0  # Counter for saving examples of augmented images on W&B
     validation_loss_eval = ValidationLossEval(cfg, model)
-    grad_scaler = GradScaler()
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
         for data, iteration in zip(data_loader, range(start_iter, max_iter)):
             storage.iter = iteration
 
-            with autocast():
-                loss_dict = model(data)
-                losses = sum(loss_dict.values())
+            loss_dict = model(data)
+            losses = sum(loss_dict.values())
             assert torch.isfinite(losses).all(), loss_dict
 
             loss_dict_reduced = {k: v.item() for k, v in comm.reduce_dict(loss_dict).items()}
@@ -93,10 +90,8 @@ def do_train(cfg, model, resume=False):
                     storage.put_scalars(total_loss=losses_reduced, **loss_dict_reduced)
 
             optimizer.zero_grad()
-            grad_scaler.scale(losses).backward()
-            grad_scaler.step(optimizer)
-            grad_scaler.update()
-
+            losses.backward()
+            optimizer.step()
             storage.put_scalar("lr", optimizer.param_groups[0]["lr"], smoothing_hint=False)
             scheduler.step()
 
