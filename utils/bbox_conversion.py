@@ -46,8 +46,12 @@ def albumentations_bbox_to_pascal_voc(bbox, height, width):
     :return: Denormalized (pascal_voc format) bounding box `(x_min, y_min, x_max, y_max)`.
     """
     x_min, y_min, x_max, y_max = bbox
-    x_min, x_max = x_min * width, x_max * width
-    y_min, y_max = y_min * height, y_max * height
+
+    # Denormalize
+    x_min *= width
+    x_max *= width
+    y_min *= height
+    y_max *= height
 
     # Check that the bbox is in the range [0.0, 0.0, height, width]
     assert 0 <= x_min <= x_max, \
