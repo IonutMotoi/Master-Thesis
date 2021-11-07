@@ -6,13 +6,12 @@ import torch
 import tqdm
 
 from detectron2.data.detection_utils import read_image
-from detectron2.structures import Instances, Boxes
 from detectron2.utils.logger import setup_logger
 
 from utils.inference_setup import get_parser, setup
 from utils.predictor import MasksFromBboxesPredictor
 from utils.save import save_image_and_labels
-from utils.bbox_conversion import pascal_voc_bboxes_to_yolo
+from utils.bbox_conversion import pascal_voc_bboxes_to_yolo, yolo_bboxes_to_pascal_voc
 
 if __name__ == "__main__":
     parser = get_parser()
@@ -42,14 +41,11 @@ if __name__ == "__main__":
         classes = bboxes[:, 0].tolist()
         bboxes = bboxes[:, 1:]
 
-        # Create an 'Instances' object
-        target = Instances(image_size=(img_height, img_width))
-        target.pred_boxes = Boxes(bboxes)
-        target.pred_classes = torch.tensor(classes, dtype=torch.int64)
-        print(target.pred_classes)
+        # Convert bboxes from YOLO format to Pascal VOC format
+        bboxes = yolo_bboxes_to_pascal_voc(bboxes)
 
         start_time = time.time()
-        predictions = predictor(image, target)
+        predictions = predictor(image, bboxes, classes)
         logger.info(
             "{}: {} in {:.2f}s".format(
                 path,
