@@ -50,11 +50,14 @@ class MasksFromBboxesPredictor:
         self.input_format = cfg.INPUT.FORMAT
         assert self.input_format in ["RGB", "BGR"], self.input_format
 
-    def __call__(self, original_image):
+    def __call__(self, original_image, target):
         """
         Args:
             original_image (np.ndarray): an image of shape (H, W, C) (in BGR order).
-
+            target (Instances): The `Instances` object contains "pred_boxes" and
+                                "pred_classes" which are known boxes in the image.
+                                The inference will then skip the detection of bounding
+                                boxes, and only predict other per-ROI outputs.
         Returns:
             predictions (dict):
                 the output of the model for one image only.
@@ -70,5 +73,5 @@ class MasksFromBboxesPredictor:
             image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
 
             inputs = {"image": image, "height": height, "width": width}
-            predictions = self.model.inference([inputs])[0]
+            predictions = self.model.inference([inputs], [target])[0]
             return predictions
