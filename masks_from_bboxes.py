@@ -59,25 +59,24 @@ if __name__ == "__main__":
             )
         )
 
-        instances = predictions["instances"].to(torch.device("cpu"))
-        bboxes = instances.pred_boxes.tensor.numpy()
-        classes = instances.pred_classes.numpy()
-        masks = instances.pred_masks.numpy()
+        if len(predictions["instances"]) > 0:
+            instances = predictions["instances"].to(torch.device("cpu"))
+            bboxes = instances.pred_boxes.tensor.numpy()
+            classes = instances.pred_classes.numpy()
+            masks = instances.pred_masks.numpy()
 
-        # n x H x W -> H x W x n
-        masks = np.array(masks).transpose((1, 2, 0))
+            # n x H x W -> H x W x n
+            masks = np.array(masks).transpose((1, 2, 0))
 
-        # Convert bboxes from Pascal VOC format to YOLO format
-        bboxes = pascal_voc_bboxes_to_yolo(bboxes, img_height, img_width)
-        # bboxes = np.array(bboxes)
-        print("BBOXES", bboxes)
-        print("CLASSES", classes)
-        save_image_and_labels(
-            dest_folder=args.output,
-            img_id=img_id,
-            image=image,
-            class_labels=classes,
-            bboxes=bboxes,
-            masks=masks,
-            img_format="BGR"
-        )
+            # Convert bboxes from Pascal VOC format to YOLO format
+            bboxes = pascal_voc_bboxes_to_yolo(bboxes, img_height, img_width)
+
+            save_image_and_labels(
+                dest_folder=args.output,
+                img_id=img_id,
+                image=image,
+                class_labels=classes,
+                bboxes=bboxes,
+                masks=masks,
+                img_format="BGR"
+            )
