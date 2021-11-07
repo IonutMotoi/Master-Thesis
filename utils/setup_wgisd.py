@@ -6,6 +6,7 @@ from pycocotools.mask import encode
 from detectron2.structures import BoxMode
 from detectron2.data import MetadataCatalog, DatasetCatalog
 
+from utils.bbox_conversion import yolo_bbox_to_pascal_voc
 
 # Dataset
 def get_wgisd_dicts(root, source):
@@ -60,23 +61,16 @@ def get_wgisd_dicts(root, source):
 
         objs = []
         for i in range(num_objs):
-            box = bboxes[i]
-            # Boxes (x0, y0, w, h) in range [0, 1] (yolo format)
-            # They are relative to the size of the image
-            # Convert to (x0, y0, x1, y1) in absolute floating points coordinates (pascal_voc format)
-            x1 = box[0] - box[2] / 2
-            x2 = box[0] + box[2] / 2
-            y1 = box[1] - box[3] / 2
-            y2 = box[1] + box[3] / 2
-            box = [x1 * width, y1 * height, x2 * width, y2 * height]
+            # Convert bboxes from YOLO format to Pascal VOC format
+            box = yolo_bbox_to_pascal_voc(bboxes[i], img_height=height, img_width=width)
 
             obj = {
                 "bbox": box,
-                "bbox_mode": BoxMode.XYXY_ABS,
+                "bbox_mode": BoxMode.XYXY_ABS,  # Pascal VOC bbox format
                 "category_id": 0,
             }
             if has_masks:
-                obj["segmentation"] = encode(np.asarray(masks[:, :, i], order="F"))
+                obj["segmentation"] = encode(np.asarray(masks[:, :, i], order="F"))  # COCO’s compressed RLE format
 
             objs.append(obj)
 
