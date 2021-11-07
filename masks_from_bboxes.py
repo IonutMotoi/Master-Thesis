@@ -45,8 +45,8 @@ if __name__ == "__main__":
         # Create an 'Instances' object
         target = Instances(image_size=(img_height, img_width))
         target.pred_boxes = Boxes(bboxes)
-        print(target.pred_boxes)
         target.pred_classes = torch.tensor(classes, dtype=torch.int64)
+        print(target.pred_classes)
 
         start_time = time.time()
         predictions = predictor(image, target)
