@@ -73,5 +73,5 @@ class MasksFromBboxesPredictor:
             image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
 
             inputs = {"image": image, "height": height, "width": width}
-            predictions = self.model.inference([inputs], detected_instances=[target])[0]
+            predictions = self.model.inference([inputs], detected_instances=None)[0]
             return predictions
