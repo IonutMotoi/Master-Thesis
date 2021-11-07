@@ -69,7 +69,8 @@ if __name__ == "__main__":
 
         # Convert bboxes from Pascal VOC format to YOLO format
         bboxes = pascal_voc_bboxes_to_yolo(bboxes, img_height, img_width)
-
+        print("BBOXES", bboxes.shape)
+        print("CLASSES", classes.shape)
         save_image_and_labels(
             dest_folder=args.output,
             img_id=img_id,
