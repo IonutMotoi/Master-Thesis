@@ -46,4 +46,4 @@ class MasksFromBboxes:
             save_masks(dest_folder=self.dest_folder, filename=f'{img_id}.npz', masks=masks)
 
     def reload_weights_predictor(self):
-        self.predictor.reload_weights()
+        self.predictor.load_weights()
