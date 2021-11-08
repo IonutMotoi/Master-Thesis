@@ -11,13 +11,13 @@ if __name__ == "__main__":
     parser = get_parser()
     parser.add_argument("--ids",
                         default="/thesis/wgisd/train_without_masked_train_and_valid_ids.txt",
-                        help="Also save an image with labels overlay")
+                        help="Path of the txt file containing the ids of the images")
     parser.add_argument("--data",
                         default="/thesis/wgisd/data",
-                        help="Also save an image with labels overlay")
+                        help="Path of the folder containing the data")
     parser.add_argument("--dest",
                         default="./pseudo_labels",
-                        help="Also save an image with labels overlay")
+                        help="Path where to save the pseudo masks")
     args = parser.parse_args()
     setup_logger(name="fvcore")
     logger = setup_logger()
