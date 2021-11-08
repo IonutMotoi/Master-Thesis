@@ -21,7 +21,7 @@ def save_image_and_labels(dest_folder, img_id, image, class_labels, bboxes, mask
 
     # Save bboxes
     bboxes_path = os.path.join(dest_folder, f'{img_id}.txt')
-    np.savetxt(bboxes_path, bboxes, fmt="%i %.6f %.6f %.6f %.6f")
+    np.savetxt(bboxes_path, bboxes, fmt="%i %.4f %.4f %.4f %.4f")
 
     if masks is not None:
         # Save masks
