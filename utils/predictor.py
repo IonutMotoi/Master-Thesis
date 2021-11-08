@@ -78,6 +78,7 @@ class MasksFromBboxesPredictor:
 
             bboxes = [transform.apply_box(np.array([bbox]))[0].clip(min=0) for bbox in bboxes]
             bboxes = torch.tensor(bboxes)
+            print(bboxes)
 
             # Create an 'Instances' object
             target = Instances(image_size=image.shape[:2])
