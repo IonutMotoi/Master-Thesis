@@ -69,8 +69,7 @@ if __name__ == "__main__":
             visualizer = Visualizer(image)
             out = visualizer.overlay_instances(boxes=bboxes, masks=masks)
             image = out.get_image()
-            image = image.transpose(2, 0, 1)  # ndarray W,H,C to C,W,H
-            cv2.imwrite('sample_image.png', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+            cv2.imwrite('./sample_image.png', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
 
             # n x H x W -> H x W x n
             masks = np.array(masks).transpose((1, 2, 0))
