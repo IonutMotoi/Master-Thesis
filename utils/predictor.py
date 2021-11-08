@@ -71,11 +71,13 @@ class MasksFromBboxesPredictor:
                 # whether the model expects BGR inputs or RGB
                 original_image = original_image[:, :, ::-1]
             height, width = original_image.shape[:2]
-            image = self.aug.get_transform(original_image).apply_image(original_image)
+            transform = self.aug.get_transform(original_image)
+
+            image = transform.apply_image(original_image)
             image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))
 
-            [self.aug.apply_box(np.array([bbox]))[0].clip(min=0)
-             for bbox in bboxes]
+            bboxes = [transform.apply_box(np.array([bbox]))[0].clip(min=0) for bbox in bboxes]
+            bboxes = torch.tensor(bboxes)
 
             # Create an 'Instances' object
             target = Instances(image_size=image.shape[:2])
