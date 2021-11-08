@@ -10,7 +10,7 @@ from detectron2.utils.logger import setup_logger
 
 from utils.inference_setup import get_parser, setup
 from utils.predictor import MasksFromBboxesPredictor
-from utils.save import save_image_and_labels
+from utils.save import save_masks
 from utils.bbox_conversion import pascal_voc_bboxes_to_yolo, yolo_bboxes_to_pascal_voc
 
 if __name__ == "__main__":
@@ -58,22 +58,9 @@ if __name__ == "__main__":
 
         if len(predictions["instances"]) > 0:
             instances = predictions["instances"].to(torch.device("cpu"))
-            bboxes = instances.pred_boxes.tensor.numpy()
-            classes = instances.pred_classes.numpy()
             masks = instances.pred_masks.numpy()
 
             # n x H x W -> H x W x n
             masks = np.array(masks).transpose((1, 2, 0))
 
-            # Convert bboxes from Pascal VOC format to YOLO format
-            bboxes = pascal_voc_bboxes_to_yolo(bboxes, img_height, img_width)
-
-            save_image_and_labels(
-                dest_folder=args.output,
-                img_id=img_id,
-                image=image,
-                class_labels=classes,
-                bboxes=bboxes,
-                masks=masks,
-                img_format="BGR"
-            )
+            save_masks(dest_folder=args.output, filename=f'{img_id}.npz', masks=masks)
