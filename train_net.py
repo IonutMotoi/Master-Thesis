@@ -112,7 +112,7 @@ def do_train(cfg, model, resume=False):
 
                 comm.synchronize()
 
-            if iteration - start_iter > 5 and ((iteration + 1) % 20 == 0 or iteration == max_iter - 1):
+            if (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0 or iteration == max_iter - 1:
                 for writer in writers:
                     writer.write()
 
