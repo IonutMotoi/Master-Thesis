@@ -87,7 +87,7 @@ def do_train(cfg, model, resume=False):
             losses_reduced = sum(loss for loss in loss_dict_reduced.values())
             if comm.is_main_process():
                 with storage.name_scope("Train losses"):
-                    storage.put_scalars(total_loss=losses_reduced, **loss_dict_reduced)
+                    storage.put_scalars(total_loss=losses_reduced, **loss_dict_reduced, smoothing_hint=False)
 
             optimizer.zero_grad()
             losses.backward()
@@ -102,12 +102,12 @@ def do_train(cfg, model, resume=False):
                 test_results = do_test(cfg, model)
                 for name, results in test_results.items():
                     with storage.name_scope(name):
-                        storage.put_scalars(**results)
+                        storage.put_scalars(**results, smoothing_hint=False)
 
                 validation_loss_dict = validation_loss_eval.get_loss()
                 validation_loss = sum(loss for loss in validation_loss_dict.values())
                 with storage.name_scope("Validation losses"):
-                    storage.put_scalars(total_validation_loss=validation_loss, **validation_loss_dict)
+                    storage.put_scalars(total_validation_loss=validation_loss, **validation_loss_dict, smoothing_hint=False)
                 logger.info("Total validation loss: {}".format(validation_loss))
 
                 comm.synchronize()
