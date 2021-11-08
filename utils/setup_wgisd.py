@@ -77,7 +77,8 @@ def get_wgisd_dicts(root, source):
                 "category_id": 0,
             }
             if has_masks:
-                obj["segmentation"] = encode(np.asarray(masks[:, :, i], order="F"))  # COCO’s compressed RLE format
+                mask = masks[:, :, i]
+                obj["segmentation"] = encode(np.asarray(mask, order="F"))  # COCO’s compressed RLE format
 
             objs.append(obj)
 
