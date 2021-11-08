@@ -27,9 +27,9 @@ class MasksFromBboxesPredictor:
         if len(cfg.DATASETS.TEST):
             self.metadata = MetadataCatalog.get(cfg.DATASETS.TEST[0])
 
-        checkpointer = DetectionCheckpointer(self.model)
-        checkpointer.load(cfg.MODEL.WEIGHTS)
-
+        self.checkpointer = DetectionCheckpointer(self.model)
+        self.load_weights()
+        
         self.aug = T.ResizeShortestEdge(
             [cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST
         )
@@ -72,3 +72,6 @@ class MasksFromBboxesPredictor:
             inputs = {"image": image, "height": height, "width": width}
             predictions = self.model.inference([inputs], detected_instances=[target])[0]
             return predictions
+
+    def load_weights(self):
+        self.checkpointer.load(self.cfg.MODEL.WEIGHTS)
