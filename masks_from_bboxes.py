@@ -42,7 +42,7 @@ if __name__ == "__main__":
         bboxes = bboxes[:, 1:]
 
         # Convert bboxes from YOLO format to Pascal VOC format
-        bboxes = yolo_bboxes_to_pascal_voc(bboxes)
+        bboxes = yolo_bboxes_to_pascal_voc(bboxes, img_height=img_height, img_width=img_width)
 
         start_time = time.time()
         predictions = predictor(image, bboxes, classes)
