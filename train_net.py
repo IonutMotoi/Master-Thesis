@@ -95,7 +95,7 @@ def do_train(cfg, model, resume=False):
             storage.put_scalar("lr", optimizer.param_groups[0]["lr"], smoothing_hint=False)
             scheduler.step()
 
-            if(
+            if (
                 cfg.TEST.EVAL_PERIOD > 0
                 and ((iteration + 1) % cfg.TEST.EVAL_PERIOD == 0 or (iteration == max_iter - 1))
             ):
@@ -119,7 +119,10 @@ def do_train(cfg, model, resume=False):
                 examples_count += 1
 
             # Write events to EventStorage periodically
-            if (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0 or (iteration == max_iter - 1):
+            if (
+                (iteration - start_iter > 5) and
+                ((iteration + 1) % cfg.TEST.EVAL_PERIOD == 0 or (iteration == max_iter - 1))
+            ):
                 for writer in writers:
                     writer.write()
 
