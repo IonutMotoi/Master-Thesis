@@ -137,6 +137,9 @@ class AlbumentationsMapper:
         image = aug_input.image
 
         annotations = [obj for obj in dataset_dict.pop("annotations") if obj.get("iscrowd", 0) == 0]
+        for anno in annotations:
+            anno["segmentation"] = decode(anno["segmentation"])
+
         # Keep original annotations for later evaluation
         dataset_dict["annotations"] = copy.deepcopy(annotations)
 
