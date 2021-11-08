@@ -30,12 +30,10 @@ def get_parser():
         nargs="+",
         help="A list of space separated input images; "
         "or a single glob pattern such as 'directory/*.jpg'",
-        required=True
     )
     parser.add_argument(
         "--output",
         help="Directory to save output",
-        required=True
     )
     parser.add_argument(
         "--confidence-threshold",
