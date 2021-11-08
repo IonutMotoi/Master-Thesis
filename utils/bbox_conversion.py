@@ -1,6 +1,3 @@
-import numpy as np
-
-
 def pascal_voc_bbox_to_albumentations(bbox, height, width):
     """
     Convert a bounding box from the pascal_voc format to the albumentations format:
@@ -176,12 +173,9 @@ def albumentations_bboxes_to_yolo(bboxes):
 
 def pascal_voc_bboxes_to_yolo(bboxes, img_height, img_width):
     """Convert a list of bounding boxes from the pascal_voc format to the yolo format"""
-    if isinstance(bboxes, np.ndarray):
-        return [pascal_voc_bbox_to_yolo(bboxes[i], img_height, img_width) for i in range(len(bboxes))]
-    else:
-        return [pascal_voc_bbox_to_yolo(bbox, img_height, img_width) for bbox in bboxes]
+    return [pascal_voc_bbox_to_yolo(bbox, img_height, img_width) for bbox in bboxes]
 
 
 def yolo_bboxes_to_pascal_voc(bboxes, img_height, img_width):
     """Convert a list of bounding boxes from the yolo format to the pascal_voc format"""
-    return [yolo_bboxes_to_pascal_voc(bbox, img_height, img_width) for bbox in bboxes]
+    return [yolo_bbox_to_pascal_voc(bbox, img_height, img_width) for bbox in bboxes]
