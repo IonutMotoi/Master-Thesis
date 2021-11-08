@@ -8,11 +8,12 @@ from detectron2.data import MetadataCatalog, DatasetCatalog
 
 from utils.bbox_conversion import yolo_bbox_to_pascal_voc
 
+
 # Dataset
 def get_wgisd_dicts(root, source):
     # Load the dataset subset defined by source
-    assert source in ['train', 'valid', 'test', 'test_detection'], \
-        'source should be "train", "valid", "test", "test_detection"'
+    assert source in ['train', 'valid', 'test', 'test_detection', 'pseudo_labels'], \
+        'source should be "train", "valid", "test", "test_detection", "pseudo_labels"'
 
     has_masks = True
 
@@ -22,10 +23,12 @@ def get_wgisd_dicts(root, source):
         source_path = os.path.join(root, 'valid_split_masked.txt')
     elif source == "test":
         source_path = os.path.join(root, 'test_masked.txt')
-    else:  # source == "test_detection"
+    elif source == "test_detection":
         source_path = os.path.join(root, 'test.txt')
         has_masks = False
-
+    else:  # source == "pseudo_labels":
+        source_path = os.path.join(root, 'train_without_masked_train_and_valid_ids.txt')
+        pseudo_labels_path = "./pseudo_labels"
     root = os.path.join(root, "data")
 
     with open(source_path, 'r') as fp:
@@ -55,8 +58,12 @@ def get_wgisd_dicts(root, source):
         num_objs = bboxes.shape[0]
 
         if has_masks:
-            mask_path = os.path.join(root, f'{img_id}.npz')
-            masks = np.load(mask_path)['arr_0'].astype(np.uint8)
+            if source == "pseudo_labels":
+                mask_path = os.path.join(pseudo_labels_path, f'{img_id}.npz')
+                masks = np.load(mask_path)['arr_0'].astype(np.uint8)
+            else:
+                mask_path = os.path.join(root, f'{img_id}.npz')
+                masks = np.load(mask_path)['arr_0'].astype(np.uint8)
             assert (masks.shape[2] == num_objs)
 
         objs = []
@@ -82,7 +89,7 @@ def get_wgisd_dicts(root, source):
 def setup_wgisd():
     data_path = "/thesis/wgisd"
 
-    for name in ["train", "valid", "test", "test_detection"]:
+    for name in ["train", "valid", "test", "test_detection", "pseudo_labels"]:
         dataset_name = "wgisd_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)

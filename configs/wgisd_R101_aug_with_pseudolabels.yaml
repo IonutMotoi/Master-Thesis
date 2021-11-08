@@ -1,0 +1,4 @@
+_BASE_: "./wgisd_R101_aug.yaml"
+DATASETS:
+  TRAIN : ("wgisd_train", "wgisd_pseudo_labels")
+OUTPUT_DIR: "./output/wgisd_R101_aug_with_pseudolabels"
