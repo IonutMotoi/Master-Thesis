@@ -3,6 +3,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+from detectron2.utils.visualizer import Visualizer
 
 
 def save_image_and_labels(dest_folder, img_id, image, class_labels, bboxes, masks, img_format="RGB"):
@@ -32,3 +33,13 @@ def save_image_and_labels(dest_folder, img_id, image, class_labels, bboxes, mask
 def save_masks(masks, dest_folder, filename):
     masks_path = os.path.join(dest_folder, filename)
     np.savez_compressed(masks_path, masks)
+
+
+def save_image_with_labels_overlay(image, bboxes, masks, dest='out.png', image_format='RGB'):
+    # Save an example image with labels overlay
+    if image_format=='BGR':
+        image = image[:, :, ::-1]  # BGR to RGB
+    visualizer = Visualizer(image)
+    out = visualizer.overlay_instances(boxes=bboxes, masks=masks)
+    image = out.get_image()
+    cv2.imwrite(dest, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
