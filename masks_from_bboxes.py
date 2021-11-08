@@ -1,17 +1,21 @@
 import glob
 import os
 import time
+
+import cv2
 import numpy as np
 import torch
 import tqdm
 
 from detectron2.data.detection_utils import read_image
 from detectron2.utils.logger import setup_logger
+from detectron2.utils.visualizer import Visualizer
 
 from utils.inference_setup import get_parser, setup
 from utils.predictor import MasksFromBboxesPredictor
 from utils.save import save_masks
 from utils.bbox_conversion import pascal_voc_bboxes_to_yolo, yolo_bboxes_to_pascal_voc
+
 
 if __name__ == "__main__":
     parser = get_parser()
@@ -59,6 +63,14 @@ if __name__ == "__main__":
         if len(predictions["instances"]) > 0:
             instances = predictions["instances"].to(torch.device("cpu"))
             masks = instances.pred_masks.numpy()
+
+            # Save an example image with labels overlay
+            image = image[:, :, ::-1]  # BGR to RGB
+            visualizer = Visualizer(image)
+            out = visualizer.overlay_instances(boxes=bboxes, masks=masks)
+            image = out.get_image()
+            image = image.transpose(2, 0, 1)  # ndarray W,H,C to C,W,H
+            cv2.imwrite('sample_image.png', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
 
             # n x H x W -> H x W x n
             masks = np.array(masks).transpose((1, 2, 0))
