@@ -37,6 +37,7 @@ def save_masks(masks, dest_folder, filename):
 
 def save_image_with_labels_overlay(image, bboxes, masks, dest='out.png', image_format='RGB'):
     # Save an example image with labels overlay
+    # Image in H,W,C format (channel last)
     if image_format=='BGR':
         image = image[:, :, ::-1]  # BGR to RGB
     visualizer = Visualizer(image)
