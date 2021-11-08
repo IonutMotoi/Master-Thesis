@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from detectron2.utils.logger import setup_logger
 
 from utils.inference_setup import get_parser, setup
@@ -25,6 +27,9 @@ if __name__ == "__main__":
     logger.info("Arguments: " + str(args))
 
     cfg = setup(args)
+
+    # Create destination folder
+    Path(args.dest).mkdir(parents=True, exist_ok=True)
 
     masks_from_bboxes = MasksFromBboxes(cfg, ids_txt=args.ids, data_folder=args.data, dest_folder=args.dest)
     masks_from_bboxes()
