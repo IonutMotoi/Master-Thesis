@@ -99,11 +99,19 @@ def do_train(cfg, model, resume=False):
                 cfg.TEST.EVAL_PERIOD > 0
                 and ((iteration + 1) % cfg.TEST.EVAL_PERIOD == 0 or (iteration == max_iter - 1))
             ):
+                # Visualize some examples of augmented images and annotations
+                if examples_count < 10:
+                    image = visualize_image_and_annotations(data[0])
+                    storage.put_image("Example of augmented image", image)
+                    examples_count += 1
+
+                # COCO Evaluation
                 test_results = do_test(cfg, model)
                 for name, results in test_results.items():
                     with storage.name_scope(name):
                         storage.put_scalars(**results, smoothing_hint=False)
 
+                # Validation loss
                 validation_loss_dict = validation_loss_eval.get_loss()
                 validation_loss = sum(loss for loss in validation_loss_dict.values())
                 with storage.name_scope("Validation losses"):
@@ -112,17 +120,7 @@ def do_train(cfg, model, resume=False):
 
                 comm.synchronize()
 
-            # Visualize some examples of augmented images and annotations
-            # There is a bug with the iteration count in the writer
-            # if examples_count < 10:
-            #     image = visualize_image_and_annotations(data[0])
-            #     storage.put_image("Example of augmented image", image)
-            #     examples_count += 1
-
-            # Write events to EventStorage periodically
-            if iteration - start_iter > 5 and (
-                    (iteration + 1) % cfg.TEST.EVAL_PERIOD == 0 or iteration == max_iter - 1
-            ):
+                # Write events to EventStorage
                 for writer in writers:
                     writer.write()
 
