@@ -1,5 +1,5 @@
-_BASE_: "./wgisd_R101.yaml"
-OUTPUT_DIR: "./output/wgisd_R101_aug"
+_BASE_: "./wgisd_R50.yaml"
+OUTPUT_DIR: "./output/wgisd_R50_with_aug"
 ALBUMENTATIONS:
   GAUSSIAN_BLUR:
     ENABLED: True
