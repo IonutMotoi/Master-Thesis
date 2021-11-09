@@ -18,7 +18,7 @@ from detectron2.utils.events import EventStorage
 
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
-from utils.validation_loss_eval import ValidationLossEval
+from utils.loss import ValidationLossEval, MeanTrainLoss
 from utils.visualization import visualize_image_and_annotations
 from utils.pascal_voc_evaluator import PascalVOCEvaluator
 
@@ -73,6 +73,7 @@ def do_train(cfg, model, resume=False):
     data_loader = build_detection_train_loader(cfg, mapper=mapper)
     examples_count = 0  # Counter for saving examples of augmented images on W&B
     validation_loss_eval = ValidationLossEval(cfg, model)
+    mean_train_loss = MeanTrainLoss()
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
@@ -84,10 +85,7 @@ def do_train(cfg, model, resume=False):
             assert torch.isfinite(losses).all(), loss_dict
 
             loss_dict_reduced = {k: v.item() for k, v in comm.reduce_dict(loss_dict).items()}
-            losses_reduced = sum(loss for loss in loss_dict_reduced.values())
-            if comm.is_main_process():
-                with storage.name_scope("Train losses"):
-                    storage.put_scalars(total_loss=losses_reduced, **loss_dict_reduced, smoothing_hint=False)
+            mean_train_loss.update(loss_dict_reduced)
 
             optimizer.zero_grad()
             losses.backward()
@@ -96,9 +94,17 @@ def do_train(cfg, model, resume=False):
             scheduler.step()
 
             if (
-                cfg.TEST.EVAL_PERIOD > 0
+                comm.is_main_process()
+                and cfg.TEST.EVAL_PERIOD > 0
                 and ((iteration + 1) % cfg.TEST.EVAL_PERIOD == 0 or (iteration == max_iter - 1))
             ):
+                # Train loss averaged over the epoch
+                with storage.name_scope("Train losses"):
+                    storage.put_scalars(total_loss=mean_train_loss.get_total_loss(),
+                                        **mean_train_loss.get_losses(),
+                                        smoothing_hint=False)
+                mean_train_loss.reset()
+
                 # Visualize some examples of augmented images and annotations
                 if examples_count < 10:
                     image = visualize_image_and_annotations(data[0])
