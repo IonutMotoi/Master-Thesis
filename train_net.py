@@ -114,10 +114,10 @@ def do_train(cfg, model, resume=False):
 
             # Visualize some examples of augmented images and annotations
             # There is a bug with the iteration count in the writer
-            if examples_count < 10:
-                image = visualize_image_and_annotations(data[0])
-                storage.put_image("Example of augmented image", image)
-                examples_count += 1
+            # if examples_count < 10:
+            #     image = visualize_image_and_annotations(data[0])
+            #     storage.put_image("Example of augmented image", image)
+            #     examples_count += 1
 
             # Write events to EventStorage periodically
             if iteration - start_iter > 5 and (
