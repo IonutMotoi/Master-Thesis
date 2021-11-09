@@ -38,7 +38,7 @@ class MeanTrainLoss:
 
     def update(self, loss_dict):
         self._count += 1
-        for k, v in loss_dict:
+        for k, v in loss_dict.items():
             self._mean_dict[k] += (v - self._mean_dict[k]) / self._count
 
     def get_losses(self):
