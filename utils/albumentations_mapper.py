@@ -2,6 +2,7 @@ import copy
 import logging
 import numpy as np
 import torch
+from detectron2.structures import BoxMode, Instances, Boxes, PolygonMasks, polygons_to_bitmask, BitMasks
 from pycocotools.mask import encode, decode
 import albumentations as A
 
@@ -144,7 +145,7 @@ class AlbumentationsMapper:
         annotations = [detection_utils.transform_instance_annotations(obj, transforms, image.shape[:2])
                        for obj in annotations]
         # Convert annotations to instances
-        instances = detection_utils.annotations_to_instances(
+        instances = annotations_to_instances(
             annotations, image.shape[:2], mask_format=self.instance_mask_format
         )
         # If cropping is applied, the bounding box may no longer tightly bound the object
@@ -156,6 +157,23 @@ class AlbumentationsMapper:
         dataset_dict["image"] = torch.as_tensor(np.ascontiguousarray(image.transpose((2, 0, 1))))
 
         return dataset_dict
+
+
+def annotations_to_instances(annos, image_size, mask_format="polygon"):
+
+    boxes = [BoxMode.convert(obj["bbox"], obj["bbox_mode"], BoxMode.XYXY_ABS) for obj in annos]
+    target = Instances(image_size)
+    target.gt_boxes = Boxes(boxes)
+
+    classes = [int(obj["category_id"]) for obj in annos]
+    classes = torch.tensor(classes, dtype=torch.int64)
+    target.gt_classes = classes
+
+    masks = [obj["segmentation"] for obj in annos]
+    masks = BitMasks(torch.stack([torch.from_numpy(np.ascontiguousarray(x)) for x in masks]))
+    target.gt_masks = masks
+
+    return target
 
 
 def pixel_dropout(image, p_min, p_max, **kwargs):
