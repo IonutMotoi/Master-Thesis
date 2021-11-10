@@ -82,6 +82,10 @@ def get_wgisd_dicts(root, source):
             objs.append(obj)
 
         record["annotations"] = objs
+        if source == "pseudo_labels":
+            record["has_pseudo_masks"] = True
+        else:
+            record["has_pseudo_masks"] = False
         dataset_dicts.append(record)
     return dataset_dicts
 
