@@ -85,9 +85,6 @@ def do_train(cfg, model, resume=False):
             assert torch.isfinite(losses).all(), loss_dict
 
             loss_dict_reduced = {k: v.item() for k, v in comm.reduce_dict(loss_dict).items()}
-            if data[0]["has_pseudo_masks"]:
-                loss_dict_reduced["loss_mask"] *= 0.1
-
             mean_train_loss.update(loss_dict_reduced)
 
             optimizer.zero_grad()
