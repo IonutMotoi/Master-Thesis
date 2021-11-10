@@ -159,7 +159,7 @@ class AlbumentationsMapper:
         return dataset_dict
 
 
-def annotations_to_instances(annos, image_size, mask_format="polygon"):
+def annotations_to_instances(annos, image_size):
 
     boxes = [BoxMode.convert(obj["bbox"], obj["bbox_mode"], BoxMode.XYXY_ABS) for obj in annos]
     target = Instances(image_size)
