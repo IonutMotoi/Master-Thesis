@@ -1,6 +1,6 @@
 _BASE_: "./wgisd_R101_with_aug.yaml"
 DATASETS:
-  TRAIN : ("wgisd_pseudo_labels")
+  TRAIN : ("wgisd_train", "wgisd_pseudo_labels")
 SOLVER:
   MAX_ITER: 22000
   CHECKPOINT_PERIOD: 220
