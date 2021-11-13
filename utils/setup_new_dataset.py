@@ -71,7 +71,7 @@ def get_new_dataset_dicts(root, source):
             bboxes = yolo_bboxes_to_pascal_voc(bboxes, img_height=height, img_width=width)
         else:
             bboxes = extract_bboxes_from_masks(masks)  # Pascal VOC format
-        assert (bboxes.shape[0] == num_objs)
+        assert (len(bboxes) == num_objs)
 
         objs = []
         for i in range(num_objs):
