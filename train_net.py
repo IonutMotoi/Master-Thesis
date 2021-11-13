@@ -15,7 +15,7 @@ from detectron2.solver import build_optimizer, build_lr_scheduler
 from detectron2.utils import comm
 from detectron2.utils.events import EventStorage
 
-
+from utils.setup_new_dataset import setup_new_dataset
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
 from utils.loss import ValidationLossEval, MeanTrainLoss
@@ -159,6 +159,7 @@ def main(args):
 
     # Register dataset
     setup_wgisd()
+    setup_new_dataset()
 
     if args.eval_only:
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
