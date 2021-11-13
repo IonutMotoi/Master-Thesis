@@ -1,4 +1,4 @@
-_BASE_: "./wgisd_R101_with_aug_crop.yaml"
+_BASE_: "./wgisd_R101_with_aug.yaml"
 DATASETS:
   TRAIN : ("new_dataset_train",)
   TEST : ("new_dataset_validation",)
