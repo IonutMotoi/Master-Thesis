@@ -1,12 +1,12 @@
 _BASE_: "./wgisd_R101_with_aug.yaml"
 DATASETS:
-  TRAIN : ("new_dataset_train",)
-  TEST : ("new_dataset_validation",)
+  TRAIN : ("new_dataset_validation",)
+  TEST : ("new_dataset_test",)
 MODEL:
   WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
 SOLVER:
-  MAX_ITER: 17300  # 8800 + 8500
-  CHECKPOINT_PERIOD: 85
+  MAX_ITER: 11200 # 17300  # 8800 + 8500
+  CHECKPOINT_PERIOD: 24
 TEST:
-  EVAL_PERIOD: 85
+  EVAL_PERIOD: 24
 OUTPUT_DIR: "./output/R101_fine_tuning"
