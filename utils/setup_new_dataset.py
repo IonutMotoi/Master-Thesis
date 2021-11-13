@@ -30,7 +30,7 @@ def get_new_dataset_dicts(root, source):
 
     if source == "train":
         source_path = Path(root, "train")
-        pseudo_labels_path = Path(source_path, "pseudo_labels")
+        pseudo_labels_path = Path("./pseudo_labels")
     elif source == "validation":
         source_path = Path(root, "validation")
     else:  # source == "test":
