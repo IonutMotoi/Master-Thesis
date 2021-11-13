@@ -63,7 +63,10 @@ def get_new_dataset_dicts(root, source):
         if source == "train":
             box_path = source_path / f'{img_id}.txt'
             bboxes = np.loadtxt(box_path, delimiter=" ", dtype=np.float32)
-            bboxes = bboxes[:, 1:]
+            if bboxes.ndim == 2:
+                bboxes = bboxes[:, 1:]
+            else:  # only 1 instance
+                bboxes = bboxes[1:]
             # Convert bboxes from YOLO format to Pascal VOC format
             bboxes = yolo_bboxes_to_pascal_voc(bboxes, img_height=height, img_width=width)
         else:

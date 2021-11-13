@@ -32,8 +32,12 @@ class MasksFromBboxes:
             # Get bboxes and classes GT
             bboxes_path = os.path.join(self.data_folder, f'{img_id}.txt')
             bboxes = np.loadtxt(bboxes_path, delimiter=" ", dtype=np.float32)
-            classes = bboxes[:, 0].tolist()
-            bboxes = bboxes[:, 1:]
+            if bboxes.ndim == 2:
+                classes = bboxes[:, 0].tolist()
+                bboxes = bboxes[:, 1:]
+            else:  # only 1 instance
+                classes = bboxes[0].tolist()
+                bboxes = bboxes[1:]
 
             # Convert bboxes from YOLO format to Pascal VOC format
             bboxes = yolo_bboxes_to_pascal_voc(bboxes, img_height=img_height, img_width=img_width)
