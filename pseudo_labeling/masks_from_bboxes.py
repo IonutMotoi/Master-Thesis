@@ -37,7 +37,7 @@ class MasksFromBboxes:
                 bboxes = bboxes[:, 1:]
             else:  # only 1 instance
                 classes = bboxes[0].tolist()
-                bboxes = bboxes[1:]
+                bboxes = [bboxes[1:]]
 
             # Convert bboxes from YOLO format to Pascal VOC format
             bboxes = yolo_bboxes_to_pascal_voc(bboxes, img_height=img_height, img_width=img_width)

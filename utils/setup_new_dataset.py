@@ -66,7 +66,7 @@ def get_new_dataset_dicts(root, source):
             if bboxes.ndim == 2:
                 bboxes = bboxes[:, 1:]
             else:  # only 1 instance
-                bboxes = bboxes[1:]
+                bboxes = [bboxes[1:]]
             # Convert bboxes from YOLO format to Pascal VOC format
             bboxes = yolo_bboxes_to_pascal_voc(bboxes, img_height=height, img_width=width)
         else:
