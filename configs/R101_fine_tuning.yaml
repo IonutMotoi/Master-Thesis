@@ -1,0 +1,7 @@
+_BASE_: "./wgisd_R101_with_aug_crop.yaml"
+DATASETS:
+  TRAIN : ("new_dataset_train",)
+  TEST : ("new_dataset_validation",)
+MODEL:
+  WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
+OUTPUT_DIR: "./output/R101_fine_tuning"
