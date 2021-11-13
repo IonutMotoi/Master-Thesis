@@ -145,9 +145,8 @@ class AlbumentationsMapper:
         annotations = [detection_utils.transform_instance_annotations(obj, transforms, image.shape[:2])
                        for obj in annotations]
         # Convert annotations to instances
-        instances = annotations_to_instances(
-            annotations, image.shape[:2], mask_format=self.instance_mask_format
-        )
+        instances = annotations_to_instances(annotations, image.shape[:2])
+
         # If cropping is applied, the bounding box may no longer tightly bound the object
         if self.recompute_boxes:
             instances.gt_boxes = instances.gt_masks.get_bounding_boxes()
