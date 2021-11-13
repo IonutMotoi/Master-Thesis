@@ -5,8 +5,8 @@ DATASETS:
 MODEL:
   WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
 SOLVER:
-  MAX_ITER: 11200 # 17300  # 8800 + 8500
-  CHECKPOINT_PERIOD: 24
+  MAX_ITER: 11300 # 17300  # 8800 + 8500
+  CHECKPOINT_PERIOD: 25
 TEST:
-  EVAL_PERIOD: 24
+  EVAL_PERIOD: 25
 OUTPUT_DIR: "./output/R101_fine_tuning"
