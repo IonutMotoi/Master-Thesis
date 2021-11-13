@@ -12,3 +12,4 @@ RUN pip install -U albumentations
 
 COPY detectron2_baseline /thesis/detectron2_baseline
 COPY wgisd /thesis/wgisd
+COPY new_dataset /thesis/new_dataset
