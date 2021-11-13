@@ -42,10 +42,10 @@ def get_new_dataset_dicts(root, source):
     for img_id in ids:
         record = {}
 
-        filename = source_path / f'{img_id}.jpg'
+        filename = str(source_path / f'{img_id}.jpg')
         height, width = cv2.imread(filename).shape[:2]
 
-        record["file_name"] = str(filename)
+        record["file_name"] = filename
         record["image_id"] = img_id
 
         # Dimensions of the output of the model
