@@ -92,7 +92,7 @@ def setup_new_dataset():
     data_path = "/thesis/new_dataset"
 
     for name in ["train", "validation", "test"]:
-        dataset_name = "new_dataset" + name
+        dataset_name = "new_dataset_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
 
