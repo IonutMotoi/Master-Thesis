@@ -11,7 +11,7 @@ from utils.bbox_conversion import yolo_bboxes_to_pascal_voc
 
 
 def extract_bboxes_from_masks(masks):
-    boxes = np.zeros(masks.shape[2], 4, dtype=np.float32)
+    boxes = np.zeros((masks.shape[2], 4), dtype=np.float32)
     x_any = np.any(masks, dim=0)
     y_any = np.any(masks, dim=1)
     for idx in range(masks.shape[2]):
