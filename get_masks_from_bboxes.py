@@ -10,10 +10,10 @@ from pseudo_labeling.masks_from_bboxes import MasksFromBboxes
 if __name__ == "__main__":
     parser = get_parser()
     parser.add_argument("--ids",
-                        default="/thesis/wgisd/train_without_masked_train_and_valid_ids.txt",
+                        default="/thesis/new_dataset/train/train.txt",
                         help="Path of the txt file containing the ids of the images")
     parser.add_argument("--data",
-                        default="/thesis/wgisd/data",
+                        default="/thesis/new_dataset/train",
                         help="Path of the folder containing the data")
     parser.add_argument("--dest",
                         default="./pseudo_labels",
