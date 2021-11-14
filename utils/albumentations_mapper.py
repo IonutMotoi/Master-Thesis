@@ -148,8 +148,8 @@ class AlbumentationsMapper:
         instances = annotations_to_instances(annotations, image.shape[:2])
 
         # If cropping is applied, the bounding box may no longer tightly bound the object
-        if self.recompute_boxes:
-            instances.gt_boxes = instances.gt_masks.get_bounding_boxes()
+        # if self.recompute_boxes:
+        #     instances.gt_boxes = instances.gt_masks.get_bounding_boxes()
         dataset_dict["instances"] = detection_utils.filter_empty_instances(instances)
 
         # Convert H,W,C image to C,H,W tensor
