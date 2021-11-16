@@ -3,8 +3,6 @@ DATASETS:
   TEST: ()
 MODEL:
   WEIGHTS: "./output/wgisd_R101_with_aug/model_final.pth"
-  ROI_HEADS:
-    SCORE_THRESH_TEST: 0.9
-OUTPUT_DIR: "./output/inference"
+OUTPUT_DIR: "./output/inference/visualization"
 LABELS: ["Grapes"]
 COLORS: [[240, 50, 200]]
