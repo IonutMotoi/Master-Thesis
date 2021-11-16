@@ -3,6 +3,6 @@ DATASETS:
   TEST: ()
 MODEL:
   WEIGHTS: "./output/wgisd_R101_with_aug/model_final.pth"
-OUTPUT_DIR: "./output/inference/visualization"
+OUTPUT_DIR: "./output/inference"
 LABELS: ["Grapes"]
 COLORS: [[240, 50, 200]]
