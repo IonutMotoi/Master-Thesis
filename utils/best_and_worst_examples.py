@@ -3,6 +3,7 @@ import logging
 import torch
 import wandb
 import numpy as np
+from detectron2.utils.events import EventStorage
 from pycocotools.mask import decode
 
 from detectron2.checkpoint import DetectionCheckpointer
@@ -72,18 +73,19 @@ def compute_best_and_worst_examples(args):
 
     best_res = []
     worst_res = []
-    with torch.no_grad():
-        for idx, inputs in enumerate(data_loader):
-            # Get mask loss
-            model.train()
-            loss_dict = model(inputs)
-            mask_loss = loss_dict["loss_mask"].item()
+    with EventStorage():
+        with torch.no_grad():
+            for idx, inputs in enumerate(data_loader):
+                # Get mask loss
+                model.train()
+                loss_dict = model(inputs)
+                mask_loss = loss_dict["loss_mask"].item()
 
-            # Get predictions
-            model.eval()
-            outputs = model(inputs)
+                # Get predictions
+                model.eval()
+                outputs = model(inputs)
 
-            best_res, worst_res = run_on_image(inputs[0], mask_loss, outputs[0], best_res, worst_res)
+                best_res, worst_res = run_on_image(inputs[0], mask_loss, outputs[0], best_res, worst_res)
 
     log_selected_images(best_res, worst_res)
 
