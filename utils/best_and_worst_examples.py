@@ -25,10 +25,10 @@ def run_on_image(inputs, loss_dict, outputs, best_res, worst_res):
 
     gt_masks = [decode(anno["segmentation"]) for anno in inputs["annotations"]]
     gt_masks = np.stack(gt_masks)
-    gt_masks = np.any(gt_masks, axis=0)
+    gt_masks = np.any(gt_masks, axis=0).astype(np.uint8)
 
     pred_masks = outputs["instances"].pred_masks.to("cpu").numpy()
-    pred_masks = np.any(pred_masks, axis=0)
+    pred_masks = np.any(pred_masks, axis=0).astype(np.uint8)
 
     sample = {
         "image_id": inputs["image_id"],
