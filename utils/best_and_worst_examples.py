@@ -57,21 +57,21 @@ def log_selected_images(results, caption="", max_res=3):
         gt_masks = cv2.resize(gt_masks, None, fx=scale_factor, fy=scale_factor)
 
         img_list.append(wandb.Image(image,
-                        masks={
-                            "predictions": {
-                                "mask_data": pred_masks,
-                                "class_labels": class_labels
-                            },
-                            "ground_truth": {
-                                "mask_data": gt_masks,
-                                "class_labels": class_labels
-                            }
-                        },
-                        caption=sample["image_id"]))
+                                    masks={
+                                        "predictions": {
+                                            "mask_data": pred_masks,
+                                            "class_labels": class_labels
+                                        },
+                                        "ground_truth": {
+                                            "mask_data": gt_masks,
+                                            "class_labels": class_labels
+                                        }
+                                    },
+                                    caption=sample["image_id"]))
 
         if i == max_res-1:
             break
-    wandb.log({caption: img_list})
+    wandb.log({"caption": img_list})
 
 
 def compute_best_and_worst_examples(args):
