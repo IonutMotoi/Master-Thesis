@@ -22,14 +22,17 @@ def run_on_image(inputs, loss_dict, outputs, best_res, worst_res):
     if len(best_res) >= 5:
         return best_res, worst_res
 
-    masks = [decode(anno["segmentation"]) for anno in inputs["annotations"]]
-    masks = np.stack(masks)
-    masks = np.any(masks, axis=0)
-    print("MASKS shape = ", masks.shape)
+    gt_masks = [decode(anno["segmentation"]) for anno in inputs["annotations"]]
+    gt_masks = np.stack(gt_masks)
+    gt_masks = np.any(gt_masks, axis=0)
+
+    pred_masks = outputs["instances"].pred_masks.to("cpu").numpy()
+    print("PRED MASKS SHAPE", pred_masks.shape)
 
     sample = {
         "file_name": inputs["file_name"],
-        "gt_masks": masks
+        "gt_masks": gt_masks,
+        "pred_masks": pred_masks
     }
 
     best_res.append(sample)
