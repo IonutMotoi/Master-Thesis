@@ -2,6 +2,7 @@ import logging
 
 import torch
 import wandb
+import numpy as np
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.data import build_detection_test_loader
 from detectron2.engine import default_argument_parser
@@ -21,7 +22,8 @@ def run_on_image(inputs, outputs, best_res, worst_res):
 
 
 def log_selected_images(best_res, worst_res):
-    images = wandb.Image(best_res, caption="example caption")
+    best_arr = np.stack(best_res)
+    images = wandb.Image(best_arr, caption="example caption")
     wandb.log({"examples": images})
 
 
