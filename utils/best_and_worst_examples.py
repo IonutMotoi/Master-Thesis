@@ -23,6 +23,7 @@ def run_on_image(inputs, outputs, best_res, worst_res):
 
     masks = [decode(anno["segmentation"]) for anno in inputs["annotations"]]
     masks = np.stack(masks)
+    masks = np.any(masks, axis=0)
     print("MASKS shape = ", masks.shape)
 
     sample = {
