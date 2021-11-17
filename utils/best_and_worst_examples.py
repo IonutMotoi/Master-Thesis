@@ -3,6 +3,8 @@ import logging
 import torch
 import wandb
 import numpy as np
+from pycocotools.mask import decode
+
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.data import build_detection_test_loader, detection_utils
 from detectron2.engine import default_argument_parser
@@ -19,9 +21,13 @@ def run_on_image(inputs, outputs, best_res, worst_res):
     if len(best_res) >= 5:
         return best_res, worst_res
 
+    masks = [decode(anno["segmentation"]) for anno in inputs["annotations"]]
+    masks = np.stack(masks)
+    print("MASKS shape = ", masks.shape)
+
     sample = {
         "file_name": inputs["file_name"],
-        "gt_masks": [anno["segmentation"] for anno in inputs["annotations"]]
+        "gt_masks": masks
     }
 
     best_res.append(sample)
