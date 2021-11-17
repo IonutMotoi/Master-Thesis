@@ -17,6 +17,7 @@ logger = logging.getLogger("detectron2")
 
 def run_on_image(inputs, outputs, best_res, worst_res):
     image = inputs["image"].permute(1, 2, 0).to("cpu").numpy()
+    image = image[:, :, ::-1]  # BGR to RGB
     best_res.append(image)
     return best_res, worst_res
 
