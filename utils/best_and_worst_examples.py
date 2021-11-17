@@ -40,47 +40,44 @@ def run_on_image(inputs, mask_loss, outputs, best_res, worst_res):
 
     best_res.append(sample)
     best_res.sort(key=lambda x: x["mask_loss"])
-    # best_res.pop(-1)
+
     worst_res.append(sample)
     worst_res.sort(key=lambda x: x["mask_loss"], reverse=True)
-    # worst_res.pop(-1)
 
     return best_res, worst_res
 
 
-def log_selected_images(best_res, worst_res, num_res=3):
+def log_selected_images(results, caption="", max_res=3):
     class_labels = {1: "grapes"}
     scale_factor = 0.25
 
-    for res in [best_res, worst_res]:
-        for i, sample in enumerate(res):
-            image = cv2.imread(sample["file_name"])
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
+    for i, sample in enumerate(results):
+        image = cv2.imread(sample["file_name"])
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
 
-            pred_masks = sample["pred_masks"]
-            pred_masks = cv2.resize(pred_masks, None, fx=scale_factor, fy=scale_factor)
+        pred_masks = sample["pred_masks"]
+        pred_masks = cv2.resize(pred_masks, None, fx=scale_factor, fy=scale_factor)
 
-            gt_masks = sample["gt_masks"]
-            gt_masks = cv2.resize(gt_masks, None, fx=scale_factor, fy=scale_factor)
+        gt_masks = sample["gt_masks"]
+        gt_masks = cv2.resize(gt_masks, None, fx=scale_factor, fy=scale_factor)
 
-            wandb.Image(image,
-                        masks={
-                            "predictions": {
-                                "mask_data": pred_masks,
-                                "class_labels": class_labels
-                            },
-                            "ground_truth": {
-                                "mask_data": gt_masks,
-                                "class_labels": class_labels
-                            }
+        wandb.Image(image,
+                    masks={
+                        "predictions": {
+                            "mask_data": pred_masks,
+                            "class_labels": class_labels
                         },
-                        caption=sample["image_id"])
-            wandb.log({"Best examples": image})
+                        "ground_truth": {
+                            "mask_data": gt_masks,
+                            "class_labels": class_labels
+                        }
+                    },
+                    caption=sample["image_id"])
+        wandb.log({caption: image})
 
-            if i == num_res-1:
-                break
-
+        if i == max_res-1:
+            break
 
 
 def compute_best_and_worst_examples(args):
@@ -118,7 +115,8 @@ def compute_best_and_worst_examples(args):
 
                 best_res, worst_res = run_on_image(inputs[0], mask_loss, outputs[0], best_res, worst_res)
 
-    log_selected_images(best_res, worst_res)
+    log_selected_images(best_res, caption="Best examples", max_res=3)
+    log_selected_images(worst_res, caption="Worst examples", max_res=3)
 
 
 if __name__ == "__main__":
