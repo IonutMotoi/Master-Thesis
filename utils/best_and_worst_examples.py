@@ -44,7 +44,8 @@ def run_on_image(inputs, loss_dict, outputs, best_res, worst_res):
 def log_selected_images(best_res, worst_res):
     best_img = []
     worst_img = []
-    # class_labels = {1: "grapes"}
+    class_labels = {1: "grapes"}
+
     for sample in best_res:
         scale_factor = 0.25
 
@@ -62,11 +63,11 @@ def log_selected_images(best_res, worst_res):
                                     masks={
                                         "predictions": {
                                             "mask_data": pred_masks,
-                                            "class_labels": {1: "pred_grapes"}
+                                            "class_labels": class_labels
                                         },
                                         "ground_truth": {
                                             "mask_data": gt_masks,
-                                            "class_labels": {1: "gt_grapes"}
+                                            "class_labels": class_labels
                                         }
                                     },
                                     caption=sample["image_id"]))
