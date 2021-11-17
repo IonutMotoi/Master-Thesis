@@ -8,8 +8,8 @@ from detectron2.engine import default_argument_parser
 from detectron2.modeling import build_model
 
 from utils.albumentations_mapper import AlbumentationsMapper
-from utils.setup_wgisd import setup_wgisd
 from utils.setup_new_dataset import setup_new_dataset
+from train_net import setup
 
 logger = logging.getLogger("detectron2")
 
@@ -26,12 +26,10 @@ def log_selected_images(best_res, worst_res):
 
 
 def compute_best_and_worst_examples(args):
-
-
     # Init Weight & Biases and sync with Tensorboard
     wandb.init(project="Mask_RCNN", sync_tensorboard=True)
 
-    cfg = wandb.setup(args)
+    cfg = setup(args)
 
     # Load model
     model = build_model(cfg)
