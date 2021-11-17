@@ -1,5 +1,6 @@
 import logging
 
+import cv2
 import torch
 import wandb
 import numpy as np
@@ -45,14 +46,26 @@ def log_selected_images(best_res, worst_res):
     worst_img = []
     # class_labels = {1: "grapes"}
     for sample in best_res:
-        best_img.append(wandb.Image(sample["file_name"],
+        scale_factor = 0.25
+
+        image = cv2.imread(sample["file_name"])
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(image, fx=scale_factor, fy=scale_factor)
+
+        pred_masks = sample["pred_masks"]
+        pred_masks = cv2.resize(pred_masks, fx=scale_factor, fy=scale_factor)
+
+        gt_masks = sample["gt_masks"]
+        gt_masks = cv2.resize(gt_masks, fx=scale_factor, fy=scale_factor)
+
+        best_img.append(wandb.Image(image,
                                     masks={
                                         "predictions": {
-                                            "mask_data": sample["pred_masks"],
+                                            "mask_data": pred_masks,
                                             "class_labels": {1: "pred_grapes"}
                                         },
                                         "ground_truth": {
-                                            "mask_data": sample["gt_masks"],
+                                            "mask_data": gt_masks,
                                             "class_labels": {1: "gt_grapes"}
                                         }
                                     },
