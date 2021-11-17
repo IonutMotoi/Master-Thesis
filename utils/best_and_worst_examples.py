@@ -19,7 +19,7 @@ from train_net import setup
 logger = logging.getLogger("detectron2")
 
 
-def run_on_image(inputs, loss_dict, outputs, best_res, worst_res):
+def run_on_image(inputs, mask_loss, outputs, best_res, worst_res):
     if len(best_res) >= 5:
         return best_res, worst_res
 
@@ -34,46 +34,53 @@ def run_on_image(inputs, loss_dict, outputs, best_res, worst_res):
         "image_id": inputs["image_id"],
         "file_name": inputs["file_name"],
         "gt_masks": gt_masks,
-        "pred_masks": pred_masks
+        "pred_masks": pred_masks,
+        "mask_loss": mask_loss
     }
 
     best_res.append(sample)
+    best_res.sort(key=lambda x: x["mask_loss"])
+    # best_res.pop(-1)
+    worst_res.append(sample)
+    worst_res.sort(key=lambda x: x["mask_loss"], reverse=True)
+    # worst_res.pop(-1)
+
     return best_res, worst_res
 
 
-def log_selected_images(best_res, worst_res):
-    best_img = []
-    worst_img = []
+def log_selected_images(best_res, worst_res, num_res=3):
     class_labels = {1: "grapes"}
+    scale_factor = 0.25
 
-    for sample in best_res:
-        scale_factor = 0.25
+    for res in [best_res, worst_res]:
+        for i, sample in enumerate(res):
+            image = cv2.imread(sample["file_name"])
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
 
-        image = cv2.imread(sample["file_name"])
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
-        print(image.dtype)
+            pred_masks = sample["pred_masks"]
+            pred_masks = cv2.resize(pred_masks, None, fx=scale_factor, fy=scale_factor)
 
-        pred_masks = sample["pred_masks"]
-        print(pred_masks.dtype)
-        pred_masks = cv2.resize(pred_masks, None, fx=scale_factor, fy=scale_factor)
+            gt_masks = sample["gt_masks"]
+            gt_masks = cv2.resize(gt_masks, None, fx=scale_factor, fy=scale_factor)
 
-        gt_masks = sample["gt_masks"]
-        gt_masks = cv2.resize(gt_masks, None, fx=scale_factor, fy=scale_factor)
+            wandb.Image(image,
+                        masks={
+                            "predictions": {
+                                "mask_data": pred_masks,
+                                "class_labels": class_labels
+                            },
+                            "ground_truth": {
+                                "mask_data": gt_masks,
+                                "class_labels": class_labels
+                            }
+                        },
+                        caption=sample["image_id"])
+            wandb.log({"Best examples": image})
 
-        best_img.append(wandb.Image(image,
-                                    masks={
-                                        "predictions": {
-                                            "mask_data": pred_masks,
-                                            "class_labels": class_labels
-                                        },
-                                        "ground_truth": {
-                                            "mask_data": gt_masks,
-                                            "class_labels": class_labels
-                                        }
-                                    },
-                                    caption=sample["image_id"]))
-    wandb.log({"Examples": best_img})
+            if i == num_res-1:
+                break
+
 
 
 def compute_best_and_worst_examples(args):
