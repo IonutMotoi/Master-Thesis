@@ -20,7 +20,8 @@ def run_on_image(inputs, outputs, best_res, worst_res):
         return best_res, worst_res
 
     sample = {
-        "file_name": inputs["file_name"]
+        "file_name": inputs["file_name"],
+        "gt_masks": [anno["segmentation"] for anno in inputs["annotations"]]
     }
 
     best_res.append(sample)
@@ -31,7 +32,13 @@ def log_selected_images(best_res, worst_res):
     best_img = []
     worst_img = []
     for sample in best_res:
-        best_img.append(wandb.Image(sample["file_name"], caption="example caption"))
+        best_img.append(wandb.Image(sample["file_name"],
+                                    masks={
+                                        'predictions': {
+                                            'mask_data': sample["gt_masks"],
+                                        }
+                                    },
+                                    caption="example caption"))
     wandb.log({"examples": best_img})
 
 
