@@ -68,7 +68,7 @@ def log_selected_images(results, caption="", max_res=3):
                               }
                           },
                           caption=sample["image_id"])
-        wandb.log({"Examples": img})
+        wandb.log({caption: img})
 
         if i == max_res - 1:
             break
