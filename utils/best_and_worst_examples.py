@@ -20,7 +20,7 @@ def run_on_image(inputs, outputs, best_res, worst_res):
         return best_res, worst_res
 
     sample = {
-        "filename": inputs["file_name"]
+        "file_name": inputs["file_name"]
     }
 
     best_res.append(sample)
