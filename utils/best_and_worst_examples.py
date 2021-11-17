@@ -27,9 +27,10 @@ def run_on_image(inputs, loss_dict, outputs, best_res, worst_res):
     gt_masks = np.any(gt_masks, axis=0)
 
     pred_masks = outputs["instances"].pred_masks.to("cpu").numpy()
-    print("PRED MASKS SHAPE", pred_masks.shape)
+    pred_masks = np.any(pred_masks, axis=0)
 
     sample = {
+        "image_id": inputs["image_id"],
         "file_name": inputs["file_name"],
         "gt_masks": gt_masks,
         "pred_masks": pred_masks
@@ -46,13 +47,17 @@ def log_selected_images(best_res, worst_res):
     for sample in best_res:
         best_img.append(wandb.Image(sample["file_name"],
                                     masks={
-                                        'predictions': {
-                                            'mask_data': sample["gt_masks"],
-                                            'class_labels': class_labels
+                                        "predictions": {
+                                            "mask_data": sample["pred_masks"],
+                                            "class_labels": class_labels
+                                        },
+                                        "ground_truth": {
+                                            "mask_data": sample["gt_masks"],
+                                            "class_labels": class_labels
                                         }
                                     },
-                                    caption="example caption"))
-    wandb.log({"examples": best_img})
+                                    caption=sample["image_id"]))
+    wandb.log({"Examples": best_img})
 
 
 def compute_best_and_worst_examples(args):
