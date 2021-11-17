@@ -56,7 +56,7 @@ def log_selected_images(results, caption="", max_res=3):
         gt_masks = sample["gt_masks"]
         gt_masks = cv2.resize(gt_masks, None, fx=scale_factor, fy=scale_factor)
 
-        wandb.Image(image,
+        img = wandb.Image(image,
                     masks={
                         "predictions": {
                             "mask_data": pred_masks,
@@ -68,7 +68,7 @@ def log_selected_images(results, caption="", max_res=3):
                         }
                     },
                     caption=sample["image_id"])
-        wandb.log({caption: [image]})
+        wandb.log({caption: img})
 
         if i == max_res-1:
             break
