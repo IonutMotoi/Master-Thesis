@@ -44,6 +44,7 @@ def run_on_image(inputs, mask_loss, outputs, sorted_results):
 def log_selected_images(results, caption="", max_res=3):
     class_labels = {1: "grapes"}
     scale_factor = 0.25
+    img_list = []
 
     for i, sample in enumerate(results):
         image = cv2.imread(sample["file_name"])
@@ -56,7 +57,7 @@ def log_selected_images(results, caption="", max_res=3):
         gt_masks = sample["gt_masks"]
         gt_masks = cv2.resize(gt_masks, None, fx=scale_factor, fy=scale_factor)
 
-        img = wandb.Image(image,
+        img_list.append(wandb.Image(image,
                     masks={
                         "predictions": {
                             "mask_data": pred_masks,
@@ -67,11 +68,11 @@ def log_selected_images(results, caption="", max_res=3):
                             "class_labels": class_labels
                         }
                     },
-                    caption=sample["image_id"])
-        wandb.log({caption: img}, step=i)
+                    caption=sample["image_id"]))
 
         if i == max_res-1:
             break
+    wandb.log({caption: img_list})
 
 
 def compute_best_and_worst_examples(args):
