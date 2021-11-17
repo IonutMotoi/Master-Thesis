@@ -24,8 +24,7 @@ def log_selected_images(best_res, worst_res):
     best_img = []
     worst_img = []
     for file_name in best_res:
-        image = detection_utils.read_image(file_name, format="RGB")
-        best_img.append(wandb.Image(image, caption="example caption"))
+        best_img.append(wandb.Image(file_name, caption="example caption"))
     wandb.log({"examples": best_img})
 
 
