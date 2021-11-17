@@ -66,7 +66,7 @@ def log_selected_images(results, caption="Images"):
                                   "class_labels": class_labels
                               }
                           },
-                          caption=sample["image_id"])
+                          caption=f'{sample["image_id"]}, loss: {sample["mask_loss"]}')
         wandb.log({caption: img})
 
 
