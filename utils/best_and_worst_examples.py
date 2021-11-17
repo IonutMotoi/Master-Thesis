@@ -25,9 +25,8 @@ def log_selected_images(best_res, worst_res):
     wandb.log({"examples": images})
 
 
-def compute_best_and_worst_examples():
-    args = default_argument_parser().parse_args()
-    print("Command Line Args:", args)
+def compute_best_and_worst_examples(args):
+
 
     # Init Weight & Biases and sync with Tensorboard
     wandb.init(project="Mask_RCNN", sync_tensorboard=True)
@@ -57,3 +56,9 @@ def compute_best_and_worst_examples():
             best_res, worst_res = run_on_image(inputs[0], outputs[0], best_res, worst_res)
 
     log_selected_images(best_res, worst_res)
+
+
+if __name__ == "__main__":
+    args = default_argument_parser().parse_args()
+    print("Command Line Args:", args)
+    compute_best_and_worst_examples(args)
