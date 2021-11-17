@@ -19,15 +19,19 @@ def run_on_image(inputs, outputs, best_res, worst_res):
     if len(best_res) >= 5:
         return best_res, worst_res
 
-    best_res.append(inputs["file_name"])
+    sample = {
+        "filename": inputs["file_name"]
+    }
+
+    best_res.append(sample)
     return best_res, worst_res
 
 
 def log_selected_images(best_res, worst_res):
     best_img = []
     worst_img = []
-    for file_name in best_res:
-        best_img.append(wandb.Image(file_name, caption="example caption"))
+    for sample in best_res:
+        best_img.append(wandb.Image(sample["file_name"], caption="example caption"))
     wandb.log({"examples": best_img})
 
 
