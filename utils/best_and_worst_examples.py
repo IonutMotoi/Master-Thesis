@@ -40,7 +40,7 @@ def run_on_image(inputs, mask_loss, outputs, sorted_results):
     return sorted_results
 
 
-def log_selected_images(results, caption="", max_res=3):
+def log_selected_images(results, caption="Images"):
     class_labels = {1: "grapes"}
     scale_factor = 0.25
 
@@ -68,9 +68,6 @@ def log_selected_images(results, caption="", max_res=3):
                           },
                           caption=sample["image_id"])
         wandb.log({caption: img})
-
-        if i == max_res - 1:
-            break
 
 
 def compute_best_and_worst_examples(args):
