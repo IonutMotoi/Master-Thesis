@@ -37,7 +37,6 @@ def run_on_image(inputs, mask_loss, outputs, sorted_results):
 
     sorted_results.append(sample)
     sorted_results.sort(key=lambda x: x["mask_loss"])
-    print(len(sorted_results))
     return sorted_results
 
 
@@ -94,9 +93,10 @@ def compute_best_and_worst_examples(args):
     mapper = AlbumentationsMapper(cfg, is_train=False)
     data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
 
-    sorted_results = []
     with EventStorage():
         with torch.no_grad():
+            sorted_results = []
+
             for idx, inputs in enumerate(data_loader):
                 # Get mask loss
                 model.train()
@@ -109,8 +109,8 @@ def compute_best_and_worst_examples(args):
 
                 sorted_results = run_on_image(inputs[0], mask_loss, outputs[0], sorted_results)
 
-    log_selected_images(sorted_results, caption="Best examples", max_res=3)
-    log_selected_images(sorted_results[::-1], caption="Worst examples", max_res=3)
+            log_selected_images(sorted_results, caption="Best examples", max_res=3)
+            log_selected_images(sorted_results[::-1], caption="Worst examples", max_res=3)
 
 
 if __name__ == "__main__":
