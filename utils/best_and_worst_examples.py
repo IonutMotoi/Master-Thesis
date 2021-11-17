@@ -16,6 +16,9 @@ logger = logging.getLogger("detectron2")
 
 
 def run_on_image(inputs, outputs, best_res, worst_res):
+    if len(best_res) >= 5:
+        return best_res, worst_res
+
     best_res.append(inputs["file_name"])
     return best_res, worst_res
 
