@@ -4,7 +4,7 @@ import torch
 import wandb
 import numpy as np
 from detectron2.checkpoint import DetectionCheckpointer
-from detectron2.data import build_detection_test_loader
+from detectron2.data import build_detection_test_loader, detection_utils
 from detectron2.engine import default_argument_parser
 from detectron2.modeling import build_model
 
@@ -16,17 +16,16 @@ logger = logging.getLogger("detectron2")
 
 
 def run_on_image(inputs, outputs, best_res, worst_res):
-    image = inputs["image"].permute(1, 2, 0).to("cpu").numpy()
-    image = image[:, :, ::-1]  # BGR to RGB
-    best_res.append(image)
+    best_res.append(inputs["file_name"])
     return best_res, worst_res
 
 
 def log_selected_images(best_res, worst_res):
     best_img = []
     worst_img = []
-    for img in best_res:
-        best_img.append(wandb.Image(img, caption="example caption"))
+    for file_name in best_res:
+        image = detection_utils.read_image(file_name, format="RGB")
+        best_img.append(wandb.Image(image, caption="example caption"))
     wandb.log({"examples": best_img})
 
 
