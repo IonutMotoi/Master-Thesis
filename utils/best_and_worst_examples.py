@@ -37,7 +37,7 @@ def run_on_image(inputs, mask_loss, outputs, sorted_results):
 
     sorted_results.append(sample)
     sorted_results.sort(key=lambda x: x["mask_loss"])
-
+    print(len(sorted_results))
     return sorted_results
 
 
@@ -58,17 +58,17 @@ def log_selected_images(results, caption="", max_res=3):
         gt_masks = cv2.resize(gt_masks, None, fx=scale_factor, fy=scale_factor)
 
         img_list.append(wandb.Image(image,
-                    masks={
-                        "predictions": {
-                            "mask_data": pred_masks,
-                            "class_labels": class_labels
+                        masks={
+                            "predictions": {
+                                "mask_data": pred_masks,
+                                "class_labels": class_labels
+                            },
+                            "ground_truth": {
+                                "mask_data": gt_masks,
+                                "class_labels": class_labels
+                            }
                         },
-                        "ground_truth": {
-                            "mask_data": gt_masks,
-                            "class_labels": class_labels
-                        }
-                    },
-                    caption=sample["image_id"]))
+                        caption=sample["image_id"]))
 
         if i == max_res-1:
             break
