@@ -15,7 +15,7 @@ logger = logging.getLogger("detectron2")
 
 
 def run_on_image(inputs, outputs, best_res, worst_res):
-    image = inputs[0]["image"].to(torch.device("cpu")).numpy()
+    image = inputs["image"].to(torch.device("cpu")).numpy()
     best_res.append(image)
     return best_res, worst_res
 
