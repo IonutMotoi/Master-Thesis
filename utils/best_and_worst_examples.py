@@ -19,10 +19,7 @@ from train_net import setup
 logger = logging.getLogger("detectron2")
 
 
-def run_on_image(inputs, mask_loss, outputs, best_res, worst_res):
-    if len(best_res) >= 5:
-        return best_res, worst_res
-
+def run_on_image(inputs, mask_loss, outputs, sorted_results):
     gt_masks = [decode(anno["segmentation"]) for anno in inputs["annotations"]]
     gt_masks = np.stack(gt_masks)
     gt_masks = np.any(gt_masks, axis=0).astype(np.uint8)
@@ -38,13 +35,10 @@ def run_on_image(inputs, mask_loss, outputs, best_res, worst_res):
         "mask_loss": mask_loss
     }
 
-    best_res.append(sample)
-    best_res.sort(key=lambda x: x["mask_loss"])
+    sorted_results.append(sample)
+    sorted_results.sort(key=lambda x: x["mask_loss"])
 
-    worst_res.append(sample)
-    worst_res.sort(key=lambda x: x["mask_loss"], reverse=True)
-
-    return best_res, worst_res
+    return sorted_results
 
 
 def log_selected_images(results, caption="", max_res=3):
@@ -99,8 +93,7 @@ def compute_best_and_worst_examples(args):
     mapper = AlbumentationsMapper(cfg, is_train=False)
     data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
 
-    best_res = []
-    worst_res = []
+    sorted_results = []
     with EventStorage():
         with torch.no_grad():
             for idx, inputs in enumerate(data_loader):
@@ -113,10 +106,10 @@ def compute_best_and_worst_examples(args):
                 model.eval()
                 outputs = model(inputs)
 
-                best_res, worst_res = run_on_image(inputs[0], mask_loss, outputs[0], best_res, worst_res)
+                sorted_results = run_on_image(inputs[0], mask_loss, outputs[0], sorted_results)
 
-    log_selected_images(best_res, caption="Best examples", max_res=3)
-    log_selected_images(worst_res, caption="Worst examples", max_res=3)
+    log_selected_images(sorted_results, caption="Best examples", max_res=3)
+    log_selected_images(sorted_results[::-1], caption="Worst examples", max_res=3)
 
 
 if __name__ == "__main__":
