@@ -53,8 +53,9 @@ def log_selected_images(best_res, worst_res):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = cv2.resize(image, None, fx=scale_factor, fy=scale_factor)
         print(type(image))
-        pred_masks = sample["pred_masks"]
-        pred_masks = cv2.resize(pred_masks, None, fx=scale_factor, fy=scale_factor)
+
+        # pred_masks = sample["pred_masks"]
+        # pred_masks = cv2.resize(pred_masks, None, fx=scale_factor, fy=scale_factor)
 
         gt_masks = sample["gt_masks"]
         gt_masks = cv2.resize(gt_masks, None, fx=scale_factor, fy=scale_factor)
