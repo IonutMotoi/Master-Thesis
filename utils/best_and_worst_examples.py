@@ -17,7 +17,7 @@ from train_net import setup
 logger = logging.getLogger("detectron2")
 
 
-def run_on_image(inputs, outputs, best_res, worst_res):
+def run_on_image(inputs, loss_dict, outputs, best_res, worst_res):
     if len(best_res) >= 5:
         return best_res, worst_res
 
@@ -63,7 +63,6 @@ def compute_best_and_worst_examples(args):
     DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
         cfg.MODEL.WEIGHTS, resume=args.resume
     )
-    model.eval()
 
     # Setup dataset, mapper and dataloader
     setup_new_dataset()
@@ -71,13 +70,20 @@ def compute_best_and_worst_examples(args):
     mapper = AlbumentationsMapper(cfg, is_train=False)
     data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
 
-
     best_res = []
     worst_res = []
     with torch.no_grad():
         for idx, inputs in enumerate(data_loader):
+            # Get mask loss
+            model.train()
+            loss_dict = model(inputs)
+            mask_loss = loss_dict["loss_mask"].item()
+
+            # Get predictions
+            model.eval()
             outputs = model(inputs)
-            best_res, worst_res = run_on_image(inputs[0], outputs[0], best_res, worst_res)
+
+            best_res, worst_res = run_on_image(inputs[0], mask_loss, outputs[0], best_res, worst_res)
 
     log_selected_images(best_res, worst_res)
 
