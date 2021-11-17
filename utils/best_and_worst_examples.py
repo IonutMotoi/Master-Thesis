@@ -43,7 +43,6 @@ def run_on_image(inputs, mask_loss, outputs, sorted_results):
 def log_selected_images(results, caption="", max_res=3):
     class_labels = {1: "grapes"}
     scale_factor = 0.25
-    img_list = []
 
     for i, sample in enumerate(results):
         image = cv2.imread(sample["file_name"])
@@ -109,8 +108,7 @@ def compute_best_and_worst_examples(args):
 
                 sorted_results = run_on_image(inputs[0], mask_loss, outputs[0], sorted_results)
 
-            log_selected_images(sorted_results, caption="Best examples", max_res=3)
-            log_selected_images(sorted_results[::-1], caption="Worst examples", max_res=3)
+            log_selected_images(sorted_results, caption="Examples (best to worst)")
 
 
 if __name__ == "__main__":
