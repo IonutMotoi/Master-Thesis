@@ -31,11 +31,13 @@ def run_on_image(inputs, outputs, best_res, worst_res):
 def log_selected_images(best_res, worst_res):
     best_img = []
     worst_img = []
+    class_labels = {1: "grapes"}
     for sample in best_res:
         best_img.append(wandb.Image(sample["file_name"],
                                     masks={
                                         'predictions': {
                                             'mask_data': sample["gt_masks"],
+                                            'class_labels': class_labels
                                         }
                                     },
                                     caption="example caption"))
