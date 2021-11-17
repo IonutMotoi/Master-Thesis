@@ -22,9 +22,11 @@ def run_on_image(inputs, outputs, best_res, worst_res):
 
 
 def log_selected_images(best_res, worst_res):
-    best_arr = np.stack(best_res)
-    images = wandb.Image(best_arr, caption="example caption")
-    wandb.log({"examples": images})
+    best_img = []
+    worst_img = []
+    for img in best_res:
+        best_img.append(wandb.Image(img, caption="example caption"))
+    wandb.log({"examples": best_img})
 
 
 def compute_best_and_worst_examples(args):
