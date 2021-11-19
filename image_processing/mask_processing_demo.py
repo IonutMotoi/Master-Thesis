@@ -33,7 +33,7 @@ def plot_bboxes_yolo(image, bboxes, ax):
 if __name__ == "__main__":
     # img_id = "IMG_20210924_131131409"
     # img_id = "IMG_20210924_112427127"
-    img_id = "IMG_20210924_132434569"
+    img_id = "IMG_20210924_155103752"
     data_path = "./new_dataset/train"
     mask_path = "./pseudo_labels"
 
@@ -49,8 +49,8 @@ if __name__ == "__main__":
 
     masks = np.load(os.path.join(mask_path, f'{img_id}.npz'))['arr_0'].astype(np.uint8)
 
-    mask = masks[:, :, 0]
-    bbox = bboxes[0]
+    mask = masks[:, :, 2]
+    bbox = bboxes[2]
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
 
@@ -66,8 +66,9 @@ if __name__ == "__main__":
     obj = ax2.imshow(mask, alpha=0.5)
     plot_bboxes_yolo(image, [bbox], ax2)
     abs_bbox = utils.bbox_conversion.yolo_bbox_to_pascal_voc(bbox, img_height=height, img_width=width)
+
     i = 0
-    while not mask_touches_bbox(mask, abs_bbox, touches_all_edges=False):
+    while not np.all((mask == 0)) and not mask_touches_bbox(mask, abs_bbox, touches_all_edges=False):
         mask = cv2.dilate(mask, kernel, iterations=1)
 
         i += 1

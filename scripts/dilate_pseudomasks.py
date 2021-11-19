@@ -43,6 +43,8 @@ if __name__ == "__main__":
 
         # Dilate the masks until they touch the edges of the bounding boxes
         for i in range(masks.shape[2]):
+            if np.all((masks[:, :, i] == 0)):  # if empty mask
+                continue
             abs_bbox = yolo_bbox_to_pascal_voc(bboxes[i], img_height=masks_height, img_width=masks_width)
             while not mask_touches_bbox(masks[:, :, i], abs_bbox, touches_all_edges=False):
                 masks[:, :, i] = cv2.dilate(masks[:, :, i], kernel, iterations=1)
