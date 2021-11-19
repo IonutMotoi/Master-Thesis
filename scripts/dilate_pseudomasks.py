@@ -38,7 +38,7 @@ if __name__ == "__main__":
         bboxes = np.loadtxt(os.path.join(path_bboxes, f'{masks_id}.txt'), delimiter=" ", dtype=np.float32)
         if bboxes.ndim == 1:
             bboxes = np.expand_dims(bboxes, axis=0)
-        bboxes = bboxes.tolist()
+        bboxes = bboxes[:, 1:]  # remove classes
 
         # Dilate the masks until they touch the edges of the bounding boxes
         for i in range(masks.shape[2]):
