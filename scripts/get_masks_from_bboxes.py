@@ -6,7 +6,6 @@ from utils.inference_setup import get_parser, setup
 from pseudo_labeling.masks_from_bboxes import MasksFromBboxes
 
 
-
 if __name__ == "__main__":
     parser = get_parser()
     parser.add_argument("--ids",

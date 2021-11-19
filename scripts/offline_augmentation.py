@@ -61,17 +61,18 @@ def offline_augmentation(ids_txt, data_folder, dest_folder, augmentations, augme
         print(f"[{count:2}/{tot_imgs:2}] {img_id} saved successfully.")
 
 
-ids_txt = "./wgisd/test.txt"
-data_folder = "./wgisd/data"
-dest_folder = "./wgisd/augmented/test_auto_folder"
-augment_masks = False
+if __name__ == "__main__":
+    ids_txt = "./wgisd/test.txt"
+    data_folder = "./wgisd/data"
+    dest_folder = "./wgisd/augmented/test_auto_folder"
+    augment_masks = False
 
-offline_augmentation(
-    ids_txt=ids_txt,
-    data_folder=data_folder,
-    dest_folder=dest_folder,
-    augmentations=A.Compose([
-        A.LongestMaxSize(max_size=1024),
-        A.PadIfNeeded(min_height=1024, min_width=1024, border_mode=cv2.BORDER_CONSTANT, value=0, mask_value=0)
-    ], bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels'])),
-    augment_masks=augment_masks)
+    offline_augmentation(
+        ids_txt=ids_txt,
+        data_folder=data_folder,
+        dest_folder=dest_folder,
+        augmentations=A.Compose([
+            A.LongestMaxSize(max_size=1024),
+            A.PadIfNeeded(min_height=1024, min_width=1024, border_mode=cv2.BORDER_CONSTANT, value=0, mask_value=0)
+        ], bbox_params=A.BboxParams(format='albumentations', label_fields=['class_labels'])),
+        augment_masks=augment_masks)
