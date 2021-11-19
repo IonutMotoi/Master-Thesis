@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
         masks_id = os.path.basename(path)
         masks_id = os.path.splitext(masks_id)[0]
+        print(masks_id)
 
         path_bboxes = "/thesis/new_dataset/train"
         bboxes = np.loadtxt(os.path.join(path_bboxes, f'{masks_id}.txt'), delimiter=" ", dtype=np.float32)
