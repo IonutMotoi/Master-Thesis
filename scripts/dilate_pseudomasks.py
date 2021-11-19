@@ -29,6 +29,6 @@ if __name__ == "__main__":
 
         path_bboxes = "/thesis/new_dataset/train"
         bboxes = np.loadtxt(os.path.join(path_bboxes, f'{masks_id}.txt'), delimiter=" ", dtype=np.float32)
-        if bboxes.ndim == 2:
+        if bboxes.ndim == 1:
             bboxes = np.expand_dims(bboxes, axis=0)
         print(bboxes.shape)
