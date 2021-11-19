@@ -64,12 +64,10 @@ if __name__ == "__main__":
     plot_bboxes_yolo(image, [bbox], ax2)
     abs_bbox = utils.bbox_conversion.yolo_bbox_to_pascal_voc(bbox, img_height=height, img_width=width)
     i = 0
-    while True:
-        i += 1
-        if mask_touches_bbox(mask, abs_bbox, touches_all_edges=False):
-            break
+    while not mask_touches_bbox(mask, abs_bbox, touches_all_edges=False):
         mask = cv2.dilate(mask, kernel, iterations=1)
 
+        i += 1
         if i % 10 == 0:  # Update shown mask every 10 iterations
             obj.set_data(mask)
             plt.draw()
