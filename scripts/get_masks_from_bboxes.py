@@ -28,4 +28,4 @@ if __name__ == "__main__":
     Path(args.dest).mkdir(parents=True, exist_ok=True)
 
     masks_from_bboxes = MasksFromBboxes(cfg, ids_txt=args.ids, data_folder=args.data, dest_folder=args.dest)
-    masks_from_bboxes()
+    masks_from_bboxes.get_masks_from_bboxes()

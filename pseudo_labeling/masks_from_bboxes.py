@@ -22,7 +22,7 @@ class MasksFromBboxes:
         self.data_folder = data_folder
         self.dest_folder = dest_folder
 
-    def __call__(self, *args, **kwargs):
+    def get_masks_from_bboxes(self):
         for img_id in tqdm.tqdm(self.ids):
             img_path = os.path.join(self.data_folder, f'{img_id}.jpg')
             img = read_image(img_path, format="BGR")  # H, W, C
@@ -36,7 +36,7 @@ class MasksFromBboxes:
                 classes = bboxes[:, 0].tolist()
                 bboxes = bboxes[:, 1:]
             else:  # only 1 instance
-                classes = [bboxes[0].tolist()]
+                classes = [bboxes[0]]
                 bboxes = [bboxes[1:]]
 
             # Convert bboxes from YOLO format to Pascal VOC format
