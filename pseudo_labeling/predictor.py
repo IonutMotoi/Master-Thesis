@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 from detectron2.checkpoint import DetectionCheckpointer
@@ -73,5 +75,8 @@ class MasksFromBboxesPredictor:
             predictions = self.model.inference([inputs], detected_instances=[target])[0]
             return predictions
 
-    def load_weights(self):
-        self.checkpointer.load(self.cfg.MODEL.WEIGHTS)
+    def load_weights(self, load_from_checkpoint=False):
+        if load_from_checkpoint:
+            self.checkpointer.load(os.path.join(self.cfg.OUTPUT_DIR, "last_model.pth"))
+        else:
+            self.checkpointer.load(self.cfg.MODEL.WEIGHTS)

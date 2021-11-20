@@ -49,5 +49,5 @@ class MasksFromBboxes:
             masks = np.array(masks).transpose((1, 2, 0))  # n x H x W -> H x W x n
             save_masks(dest_folder=self.dest_folder, filename=f'{img_id}.npz', masks=masks)
 
-    def reload_weights_predictor(self):
-        self.predictor.load_weights()
+    def reload_weights_predictor(self, load_from_checkpoint=False):
+        self.predictor.load_weights(load_from_checkpoint)
