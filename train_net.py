@@ -54,8 +54,6 @@ def do_test(cfg, model):
             else:
                 logger.info("Evaluation results for {} in csv format:".format(dataset_name))
                 print_csv_format(results_i)
-    if len(results) == 1:
-        results = list(results.values())[0]
     return results
 
 
