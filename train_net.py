@@ -113,9 +113,11 @@ def do_train(cfg, model, resume=False):
 
                 # COCO Evaluation
                 test_results = do_test(cfg, model)
-                for name, results in test_results.items():
-                    with storage.name_scope(name):
-                        storage.put_scalars(**results, smoothing_hint=False)
+                for dataset_name, dataset_results in test_results.items():
+                    with storage.name_scope(dataset_name):
+                        for name, results in dataset_results.items():
+                            with storage.name_scope(name):
+                                storage.put_scalars(**results, smoothing_hint=False)
 
                 # Validation loss
                 validation_loss_dict = validation_loss_eval.get_loss()
