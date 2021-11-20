@@ -72,7 +72,8 @@ def do_train(cfg, model, resume=False):
     mapper = AlbumentationsMapper(cfg, is_train=True)
     data_loader = build_detection_train_loader(cfg, mapper=mapper)
     examples_count = 0  # Counter for saving examples of augmented images on W&B
-    validation_loss_eval = ValidationLossEval(cfg, model)
+    validation_loss_eval_wgisd = ValidationLossEval(cfg, model, "wgisd_valid")
+    validation_loss_eval_new_dataset = ValidationLossEval(cfg, model, "new_dataset_validation")
     mean_train_loss = MeanTrainLoss()
 
     logger.info("Starting training from iteration {}".format(start_iter))
@@ -114,17 +115,26 @@ def do_train(cfg, model, resume=False):
                 # COCO Evaluation
                 test_results = do_test(cfg, model)
                 for dataset_name, dataset_results in test_results.items():
-                    with storage.name_scope(dataset_name):
-                        for name, results in dataset_results.items():
-                            with storage.name_scope(name):
-                                storage.put_scalars(**results, smoothing_hint=False)
+                    for name, results in dataset_results.items():
+                        with storage.name_scope(f"{dataset_name}_{name}"):
+                            storage.put_scalars(**results, smoothing_hint=False)
 
                 # Validation loss
-                validation_loss_dict = validation_loss_eval.get_loss()
-                validation_loss = sum(loss for loss in validation_loss_dict.values())
-                with storage.name_scope("Validation losses"):
-                    storage.put_scalars(total_validation_loss=validation_loss, **validation_loss_dict, smoothing_hint=False)
-                logger.info("Total validation loss: {}".format(validation_loss))
+                validation_loss_dict_wgisd = validation_loss_eval_wgisd.get_loss()
+                validation_loss_wgisd = sum(loss for loss in validation_loss_dict_wgisd.values())
+                with storage.name_scope("Validation losses wgisd"):
+                    storage.put_scalars(total_validation_loss_wgisd=validation_loss_wgisd,
+                                        **validation_loss_dict_wgisd,
+                                        smoothing_hint=False)
+                logger.info("Total validation loss -> wgisd: {}".format(validation_loss_wgisd))
+
+                validation_loss_dict_new_dataset = validation_loss_eval_new_dataset.get_loss()
+                validation_loss_new_dataset = sum(loss for loss in validation_loss_dict_new_dataset.values())
+                with storage.name_scope("Validation losses new dataset"):
+                    storage.put_scalars(total_validation_loss_new_dataset=validation_loss_new_dataset,
+                                        **validation_loss_dict_new_dataset,
+                                        smoothing_hint=False)
+                logger.info("Total validation loss -> new dataset: {}".format(validation_loss_new_dataset))
 
                 comm.synchronize()
 
