@@ -1,7 +1,7 @@
 _BASE_: "./Base-RCNN-FPN.yaml"
 DATASETS:
   TRAIN : ("wgisd_train",)
-  TEST : ("wgisd_valid",)
+  TEST : ("wgisd_valid", "new_dataset_validation")
 DATALOADER:
   NUM_WORKERS : 4
 INPUT:

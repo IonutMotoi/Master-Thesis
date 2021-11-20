@@ -1,7 +1,6 @@
 _BASE_: "./wgisd_R101_with_aug_crop.yaml"
 DATASETS:
   TRAIN : ("wgisd_train", "wgisd_pseudo_labels", "new_dataset_train")  # 305
-  TEST : ("wgisd_valid", "new_dataset_validation")
 SOLVER:
   MAX_ITER: 30500  # train for 100 epochs
   CHECKPOINT_PERIOD: 3050  # checkpoint every 10 epochs
