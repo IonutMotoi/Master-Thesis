@@ -28,7 +28,7 @@ def get_wgisd_dicts(root, source):
         has_masks = False
     else:  # source == "pseudo_labels":
         source_path = os.path.join(root, 'train_without_masked_train_and_valid_ids.txt')
-        pseudo_labels_path = "./pseudo_labels"
+        pseudo_labels_path = "./pseudo_labels/wgisd"
     root = os.path.join(root, "data")
 
     with open(source_path, 'r') as fp:
