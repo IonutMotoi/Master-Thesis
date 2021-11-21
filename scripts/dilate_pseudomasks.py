@@ -16,7 +16,7 @@ if __name__ == "__main__":
     parser = get_parser()
     parser.add_argument(
         "--path-bboxes",
-        default="/thesis/new_dataset/train,
+        default="/thesis/new_dataset/train",
         help="path to the bboxes txt files",
     )
     args = parser.parse_args()
