@@ -13,7 +13,13 @@ from utils.inference_setup import get_parser, setup
 from utils.save import save_masks
 
 if __name__ == "__main__":
-    args = get_parser().parse_args()
+    parser = get_parser()
+    parser.add_argument(
+        "--path-bboxes",
+        default="/thesis/new_dataset/train,
+        help="path to the bboxes txt files",
+    )
+    args = parser.parse_args()
     setup_logger(name="fvcore")
     logger = setup_logger()
     logger.info("Arguments: " + str(args))
@@ -35,7 +41,7 @@ if __name__ == "__main__":
         masks_id = os.path.splitext(masks_id)[0]
         print(masks_id)
 
-        path_bboxes = "/thesis/new_dataset/train"
+        path_bboxes = args.path_bboxes
         bboxes = np.loadtxt(os.path.join(path_bboxes, f'{masks_id}.txt'), delimiter=" ", dtype=np.float32)
         if bboxes.ndim == 1:
             bboxes = np.expand_dims(bboxes, axis=0)
