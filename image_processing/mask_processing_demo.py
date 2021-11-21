@@ -33,7 +33,7 @@ def plot_bboxes_yolo(image, bboxes, ax):
 if __name__ == "__main__":
     # img_id = "IMG_20210924_131131409"
     # img_id = "IMG_20210924_112427127"
-    img_id = "IMG_20210924_155103752"
+    img_id = "IMG_20210924_131131409"
     data_path = "./new_dataset/train"
     mask_path = "./pseudo_labels"
 
@@ -49,8 +49,8 @@ if __name__ == "__main__":
 
     masks = np.load(os.path.join(mask_path, f'{img_id}.npz'))['arr_0'].astype(np.uint8)
 
-    mask = masks[:, :, 2]
-    bbox = bboxes[2]
+    mask = masks[:, :, 1]
+    bbox = bboxes[1]
 
     fig, (ax1, ax2) = plt.subplots(1, 2)
 

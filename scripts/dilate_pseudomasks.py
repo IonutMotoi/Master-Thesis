@@ -12,26 +12,14 @@ from utils.bbox_conversion import yolo_bbox_to_pascal_voc
 from utils.inference_setup import get_parser, setup
 from utils.save import save_masks
 
-if __name__ == "__main__":
-    parser = get_parser()
-    parser.add_argument(
-        "--path-bboxes",
-        default="/thesis/new_dataset/train",
-        help="path to the bboxes txt files",
-    )
-    args = parser.parse_args()
-    setup_logger(name="fvcore")
-    logger = setup_logger()
-    logger.info("Arguments: " + str(args))
 
-    cfg = setup(args)
-
+def dilate_pseudomasks(input_masks, path_bboxes, output_path):
     kernel = get_default_kernel()
 
-    if len(args.input) == 1:
-        args.input = glob.glob(os.path.expanduser(args.input[0]))
-        assert args.input, "The input path(s) was not found"
-    for path in tqdm.tqdm(args.input, disable=not args.output):
+    if len(input_masks) == 1:
+        input_masks = glob.glob(os.path.expanduser(input_masks))
+        assert input_masks, "The input path(s) was not found"
+    for path in tqdm.tqdm(input_masks, disable=not output_path):
         masks = np.load(path)['arr_0'].astype(np.uint8)  # H x W x n
 
         masks_height = masks.shape[0]
@@ -41,7 +29,6 @@ if __name__ == "__main__":
         masks_id = os.path.splitext(masks_id)[0]
         print(masks_id)
 
-        path_bboxes = args.path_bboxes
         bboxes = np.loadtxt(os.path.join(path_bboxes, f'{masks_id}.txt'), delimiter=" ", dtype=np.float32)
         if bboxes.ndim == 1:
             bboxes = np.expand_dims(bboxes, axis=0)
@@ -57,5 +44,20 @@ if __name__ == "__main__":
             set_values_outside_bbox_to_zero(masks[:, :, i], abs_bbox)
 
         # Create destination folder
-        Path(args.output).mkdir(parents=True, exist_ok=True)
-        save_masks(masks=masks, dest_folder=args.output, filename=f'{masks_id}.npz')
+        Path(output_path).mkdir(parents=True, exist_ok=True)
+        save_masks(masks=masks, dest_folder=output_path, filename=f'{masks_id}.npz')
+
+
+if __name__ == "__main__":
+    parser = get_parser()
+    parser.add_argument(
+        "--path-bboxes",
+        default="/thesis/new_dataset/train",
+        help="path to the bboxes txt files",
+    )
+    args = parser.parse_args()
+    setup_logger(name="fvcore")
+    logger = setup_logger()
+    logger.info("Arguments: " + str(args))
+
+    dilate_pseudomasks(input_masks=args.input, path_bboxes=args.path_bboxes, output_path=args.output)
