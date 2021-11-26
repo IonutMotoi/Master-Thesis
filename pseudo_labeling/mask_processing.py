@@ -70,7 +70,6 @@ def dilate_pseudomasks(input_masks, path_bboxes, output_path):
 
         masks_id = os.path.basename(path)
         masks_id = os.path.splitext(masks_id)[0]
-        print(masks_id)
 
         bboxes = np.loadtxt(os.path.join(path_bboxes, f'{masks_id}.txt'), delimiter=" ", dtype=np.float32)
         if bboxes.ndim == 1:
