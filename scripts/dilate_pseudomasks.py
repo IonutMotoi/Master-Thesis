@@ -1,6 +1,6 @@
 from detectron2.utils.logger import setup_logger
 
-from image_processing.mask_processing import dilate_pseudomasks
+from pseudo_labeling.mask_processing import dilate_pseudomasks
 from utils.inference_setup import get_parser
 
 if __name__ == "__main__":

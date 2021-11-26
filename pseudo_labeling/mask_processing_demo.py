@@ -5,7 +5,7 @@ import cv2
 from matplotlib import patches
 
 import utils.bbox_conversion
-from image_processing.mask_processing import mask_touches_bbox, set_values_outside_bbox_to_zero, get_default_kernel
+from pseudo_labeling.mask_processing import mask_touches_bbox, set_values_outside_bbox_to_zero, get_default_kernel
 
 
 def plot_bboxes_yolo(image, bboxes, ax):
