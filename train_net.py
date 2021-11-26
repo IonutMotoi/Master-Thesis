@@ -197,13 +197,16 @@ def main(args):
 
     # Train
     if args.iterative_pseudomasks:
-        # Generate initial pseudomasks (from pretrain)
+        # Generate initial pseudo-masks (from pretrain)
         for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
+            print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
             generate_masks_from_bboxes(cfg,
                                        ids_txt=cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT[i],
                                        data_folder=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
                                        dest_folder=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i],
                                        load_from_checkpoint=False)
+            print(f"Applying post-processing to the pseudo-masks for dataset {i+1} out of "
+                  f"{len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
             dilate_pseudomasks(input_masks=f'{cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i]}/*.npz',
                                path_bboxes=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
                                output_path=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i])
@@ -211,13 +214,16 @@ def main(args):
 
         iterations = cfg.SOLVER.CHECKPOINT_PERIOD
         while iterations < cfg.SOLVER.MAX_ITER:
-            # Generate pseudomasks (from checkpoint)
+            # Generate pseudo-masks (from checkpoint)
             for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
+                print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
                 generate_masks_from_bboxes(cfg,
                                            ids_txt=cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT[i],
                                            data_folder=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
                                            dest_folder=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i],
                                            load_from_checkpoint=True)
+                print(f"Applying post-processing to the pseudo-masks for dataset {i+1} out of "
+                      f"{len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
                 dilate_pseudomasks(input_masks=f'{cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i]}/*.npz',
                                    path_bboxes=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
                                    output_path=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i])
