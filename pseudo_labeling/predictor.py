@@ -36,7 +36,7 @@ class MasksFromBboxesPredictor:
             path = self.checkpointer.get_checkpoint_file()
             self.checkpointer.load(path)
         else:
-            self.checkpointer.load(self.cfg.MODEL.WEIGHTS)
+            self.checkpointer.load(self.cfg.ITERATIVE_PSEUDOMASKS.INITIAL_WEIGHTS)
         
         self.aug = T.ResizeShortestEdge(
             [cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST
