@@ -60,7 +60,7 @@ def dilate_pseudomasks(input_masks, path_bboxes, output_path):
     kernel = get_default_kernel()
 
     if len(input_masks) == 1:
-        input_masks = glob.glob(os.path.expanduser(input_masks))
+        input_masks = glob.glob(os.path.expanduser(input_masks[0]))
         assert input_masks, "The input path(s) was not found"
     for path in tqdm.tqdm(input_masks):
         masks = np.load(path)['arr_0'].astype(np.uint8)  # H x W x n
