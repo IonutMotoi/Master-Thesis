@@ -15,6 +15,8 @@ from detectron2.solver import build_optimizer, build_lr_scheduler
 from detectron2.utils import comm
 from detectron2.utils.events import EventStorage
 
+from pseudo_labeling.mask_processing import dilate_pseudomasks
+from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
 from utils.setup_new_dataset import setup_new_dataset
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
@@ -57,7 +59,7 @@ def do_test(cfg, model):
     return results
 
 
-def do_train(cfg, model, resume=False):
+def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
     model.train()
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
@@ -142,6 +144,15 @@ def do_train(cfg, model, resume=False):
 
             periodic_checkpointer.step(iteration)
 
+            # Stop at the end of the epoch so it can generate new pseudomasks
+            if (
+                iterative_pseudomasks
+                and cfg.SOLVER.CHECKPOINT_PERIOD > 0
+                and (iteration + 1) % cfg.SOLVER.CHECKPOINT_PERIOD == 0
+                and iteration != max_iter - 1
+            ):
+                break
+
 
 def setup(args):
     """
@@ -185,7 +196,35 @@ def main(args):
         )
 
     # Train
-    do_train(cfg, model, resume=args.resume)
+    if args.iterative_pseudomasks:
+        # Generate initial pseudomasks (from pretrain)
+        for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
+            generate_masks_from_bboxes(cfg,
+                                       ids_txt=cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT[i],
+                                       data_folder=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
+                                       dest_folder=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i],
+                                       load_from_checkpoint=False)
+            dilate_pseudomasks(input_masks=f'{cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i]}/*.npz',
+                               path_bboxes=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
+                               output_path=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i])
+        do_train(cfg, model, resume=False, iterative_pseudomasks=True)
+
+        iterations = cfg.SOLVER.CHECKPOINT_PERIOD
+        while iterations < cfg.SOLVER.MAX_ITER:
+            # Generate pseudomasks (from checkpoint)
+            for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
+                generate_masks_from_bboxes(cfg,
+                                           ids_txt=cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT[i],
+                                           data_folder=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
+                                           dest_folder=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i],
+                                           load_from_checkpoint=True)
+                dilate_pseudomasks(input_masks=f'{cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i]}/*.npz',
+                                   path_bboxes=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
+                                   output_path=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i])
+            do_train(cfg, model, resume=True, iterative_pseudomasks=True)
+            iterations += cfg.SOLVER.CHECKPOINT_PERIOD
+    else:
+        do_train(cfg, model, resume=args.resume)
 
     # Save final model
     wandb.save(os.path.join(cfg.OUTPUT_DIR, "model_final.pth"))
@@ -194,7 +233,9 @@ def main(args):
 
 
 if __name__ == "__main__":
-    args = default_argument_parser().parse_args()
+    parser = default_argument_parser()
+    parser.add_argument("--iterative-pseudomasks", action="store_true", help="Generate new pseudomasks every epoch only")
+    args = parser.parse_args()
     print("Command Line Args:", args)
     launch(
         main,
