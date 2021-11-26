@@ -234,7 +234,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = default_argument_parser()
-    parser.add_argument("--iterative-pseudomasks", action="store_true", help="Generate new pseudomasks every epoch only")
+    parser.add_argument("--iterative-pseudomasks", action="store_true", help="Generate new pseudomasks every epoch")
     args = parser.parse_args()
     print("Command Line Args:", args)
     launch(
