@@ -31,6 +31,7 @@ def save_image_and_labels(dest_folder, img_id, image, class_labels, bboxes, mask
 
 
 def save_masks(masks, dest_folder, filename):
+    Path(dest_folder).mkdir(parents=True, exist_ok=True)  # Create destination folder
     masks_path = os.path.join(dest_folder, filename)
     np.savez_compressed(masks_path, masks)
 
