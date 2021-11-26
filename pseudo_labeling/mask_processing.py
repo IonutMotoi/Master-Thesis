@@ -53,6 +53,7 @@ def set_values_outside_bbox_to_zero(mask, bbox):
     mask[int(bbox[3]) + 1:, :] = 0  # y_max+1 to height
     mask[:, :int(bbox[0])] = 0  # 0 to x_min-1
     mask[:, int(bbox[2]) + 1:] = 0  # x_max+1 to width
+    return mask
 
 
 def dilate_pseudomasks(input_masks, path_bboxes, output_path):
@@ -83,8 +84,8 @@ def dilate_pseudomasks(input_masks, path_bboxes, output_path):
             abs_bbox = yolo_bbox_to_pascal_voc(bboxes[i], img_height=masks_height, img_width=masks_width)
             while not mask_touches_bbox(masks[:, :, i], abs_bbox, touches_all_edges=False):
                 masks[:, :, i] = cv2.dilate(masks[:, :, i], kernel, iterations=1)
-            set_values_outside_bbox_to_zero(masks[:, :, i], abs_bbox)
+            masks[:, :, i] = set_values_outside_bbox_to_zero(masks[:, :, i], abs_bbox)
 
-        # Create destination folder
+        # Save masks to file
         Path(output_path).mkdir(parents=True, exist_ok=True)
         save_masks(masks=masks, dest_folder=output_path, filename=f'{masks_id}.npz')
