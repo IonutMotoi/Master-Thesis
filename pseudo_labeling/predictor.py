@@ -22,15 +22,21 @@ class MasksFromBboxesPredictor:
     4. Take one input image with the bounding boxes and classes and produce a single output, instead of a batch.
     """
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, load_from_checkpoint=False):
         self.cfg = cfg.clone()  # cfg can be modified by model
         self.model = build_model(self.cfg)
         self.model.eval()
         if len(cfg.DATASETS.TEST):
             self.metadata = MetadataCatalog.get(cfg.DATASETS.TEST[0])
 
-        self.checkpointer = DetectionCheckpointer(self.model)
-        self.load_weights()
+        self.checkpointer = DetectionCheckpointer(self.model, cfg.OUTPUT_DIR)
+
+        if load_from_checkpoint:
+            assert self.checkpointer.has_checkpoint(), "No checkpoint found"
+            path = self.checkpointer.get_checkpoint_file()
+            self.checkpointer.load(path)
+        else:
+            self.checkpointer.load(self.cfg.MODEL.WEIGHTS)
         
         self.aug = T.ResizeShortestEdge(
             [cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST
@@ -74,9 +80,3 @@ class MasksFromBboxesPredictor:
             inputs = {"image": image, "height": height, "width": width}
             predictions = self.model.inference([inputs], detected_instances=[target])[0]
             return predictions
-
-    def load_weights(self, load_from_checkpoint=False):
-        if load_from_checkpoint:
-            self.checkpointer.load(os.path.join(self.cfg.OUTPUT_DIR, "last_model.pth"))
-        else:
-            self.checkpointer.load(self.cfg.MODEL.WEIGHTS)
