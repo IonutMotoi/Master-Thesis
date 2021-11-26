@@ -58,7 +58,7 @@ def set_values_outside_bbox_to_zero(mask, bbox):
 
 def dilate_pseudomasks(input_masks, path_bboxes, output_path):
     kernel = get_default_kernel()
-    print("00000000000", input_masks)
+    print("00000000000", len(input_masks))
     if len(input_masks) == 1:
         input_masks = glob.glob(os.path.expanduser(input_masks))
         assert input_masks, "The input path(s) was not found"
