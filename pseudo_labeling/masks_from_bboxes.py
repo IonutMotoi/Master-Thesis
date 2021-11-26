@@ -17,7 +17,7 @@ def generate_masks_from_bboxes(cfg, ids_txt, data_folder, dest_folder, load_from
         # Recover the items ids, removing the \n at the end
         ids = [line.rstrip() for line in lines]
 
-    predictor = MasksFromBboxesPredictor(cfg, load_from_checkpoint=False)
+    predictor = MasksFromBboxesPredictor(cfg, load_from_checkpoint=load_from_checkpoint)
     data_folder = data_folder
     dest_folder = dest_folder
 

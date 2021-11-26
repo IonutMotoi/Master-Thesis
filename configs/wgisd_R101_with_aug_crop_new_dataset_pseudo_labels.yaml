@@ -11,3 +11,4 @@ ITERATIVE_PSEUDOMASKS:
   IDS_TXT: ["/thesis/new_dataset/train/train.txt"]
   DATA_FOLDER: ["/thesis/new_dataset/train"]
   DEST_FOLDER: ["./pseudo_labels/new_dataset"]
+  INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
