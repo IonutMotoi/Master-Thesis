@@ -77,16 +77,16 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
 
     iters_per_epoch = cfg.SOLVER.ITERS_PER_EPOCH
     epochs = max_iter // iters_per_epoch
-    curr_iter = start_iter
+    iteration = start_iter
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
         # for epoch in range(epochs):
-        while curr_iter < max_iter:
+        while iteration < max_iter:
             data_loader = build_detection_train_loader(cfg, mapper=mapper)
 
             # print(f"Epoch {epoch+1} out of {epochs}")
-            for data, iteration in zip(data_loader, range(curr_iter, max_iter)):
+            for data, iteration in zip(data_loader, range(iteration, max_iter)):
                 print("ITERATION", iteration)
                 storage.iter = iteration
 
