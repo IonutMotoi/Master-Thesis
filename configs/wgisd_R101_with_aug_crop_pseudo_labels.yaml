@@ -13,3 +13,4 @@ ITERATIVE_PSEUDOMASKS:
   DATA_FOLDER: ["/thesis/new_dataset/train", "/thesis/wgisd/data"]
   DEST_FOLDER: ["./pseudo_labels/new_dataset", "./pseudo_labels/wgisd"]
   INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
+  PERIOD: 10  # Generate pseudomasks every N epochs
