@@ -70,7 +70,6 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
 
     mapper = AlbumentationsMapper(cfg, is_train=True)
-    data_loader = build_detection_train_loader(cfg, mapper=mapper)
     examples_count = 0  # Counter for saving examples of augmented images on W&B
     # validation_loss_eval_wgisd = ValidationLossEval(cfg, model, "wgisd_valid")
     # validation_loss_eval_new_dataset = ValidationLossEval(cfg, model, "new_dataset_validation")
@@ -78,13 +77,16 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
 
     iters_per_epoch = cfg.SOLVER.ITERS_PER_EPOCH
     epochs = max_iter // iters_per_epoch
+    curr_iter = start_iter
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
-        for epoch in range(epochs):
-            print(f"Epoch {epoch+1} out of {epochs}")
-            for data, iteration in zip(next(iter(data_loader)), range(start_iter + epoch * iters_per_epoch,
-                                                                      start_iter + (epoch+1) * iters_per_epoch)):
+        # for epoch in range(epochs):
+        while curr_iter < max_iter:
+            data_loader = build_detection_train_loader(cfg, mapper=mapper)
+
+            # print(f"Epoch {epoch+1} out of {epochs}")
+            for data, iteration in zip(data_loader, range(curr_iter, max_iter)):
                 print("ITERATION", iteration)
                 storage.iter = iteration
 
@@ -100,6 +102,13 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
                 optimizer.step()
                 storage.put_scalar("lr", optimizer.param_groups[0]["lr"], smoothing_hint=False)
                 scheduler.step()
+
+                iteration += 1
+                if (iteration + 1) % iters_per_epoch == 0:
+                    print("END OF EPOCH")
+                    break
+
+
 
             #     # At the end of each epoch
             #     if (iteration + 1) % iters_per_epoch == 0:
