@@ -83,12 +83,8 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
     with EventStorage(start_iter) as storage:
         for epoch in range(epochs):
             print(f"Epoch {epoch+1} out of {epochs}")
-            for data, iteration in zip(data_loader, range(start_iter + epoch * iters_per_epoch,
-                                                          start_iter + (epoch+2) * iters_per_epoch)):
-                print("ITERATION", iteration)
-                break
-            for data, iteration in zip(data_loader, range(start_iter + epoch * iters_per_epoch,
-                                                          start_iter + (epoch + 2) * iters_per_epoch)):
+            for data, iteration in zip(next(iter(data_loader)), range(start_iter + epoch * iters_per_epoch,
+                                                                      start_iter + (epoch+1) * iters_per_epoch)):
                 print("ITERATION", iteration)
                 storage.iter = iteration
 
