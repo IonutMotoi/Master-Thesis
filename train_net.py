@@ -213,20 +213,20 @@ def main(args):
             model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
         )
 
-    # if args.iterative_pseudomasks:
-    #     # Generate initial pseudo-masks (from pretrain)
-    #     for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
-    #         print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
-    #         generate_masks_from_bboxes(cfg,
-    #                                    ids_txt=cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT[i],
-    #                                    data_folder=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
-    #                                    dest_folder=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i],
-    #                                    load_from_checkpoint=False)
-    #         print(f"Applying post-processing to the pseudo-masks for dataset {i+1} out of "
-    #               f"{len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
-    #         dilate_pseudomasks(input_masks=[f'{cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i]}/*.npz'],
-    #                            path_bboxes=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
-    #                            output_path=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i])
+    if args.iterative_pseudomasks:
+        # Generate initial pseudo-masks (from pretrain)
+        for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
+            print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
+            generate_masks_from_bboxes(cfg,
+                                       ids_txt=cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT[i],
+                                       data_folder=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
+                                       dest_folder=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i],
+                                       load_from_checkpoint=False)
+            print(f"Applying post-processing to the pseudo-masks for dataset {i+1} out of "
+                  f"{len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
+            dilate_pseudomasks(input_masks=[f'{cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i]}/*.npz'],
+                               path_bboxes=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
+                               output_path=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i])
 
     # Train
     do_train(cfg, model, resume=args.resume, iterative_pseudomasks=args.iterative_pseudomasks)
