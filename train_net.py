@@ -76,9 +76,8 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
     validation_loss_eval_new_dataset = ValidationLossEval(cfg, model, "new_dataset_validation")
     mean_train_loss = MeanTrainLoss()
 
-    # TODO: add those to the config
-    epochs = 100
-    iters_per_epoch = 305
+    iters_per_epoch = cfg.SOLVER.ITERS_PER_EPOCH
+    epochs = max_iter // iters_per_epoch
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:

@@ -4,6 +4,7 @@ DATASETS:
 SOLVER:
   MAX_ITER: 17300  # train for 100 epochs
   CHECKPOINT_PERIOD: 173  # checkpoint every epoch
+  ITERS_PER_EPOCH: 173
 TEST:
   EVAL_PERIOD: 173  # evaluate every epoch
 OUTPUT_DIR: "./output/wgisd_R101_with_aug_crop_new_dataset_pseudo_labels"
