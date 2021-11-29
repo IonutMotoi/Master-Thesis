@@ -204,6 +204,8 @@ def main(args):
         return do_test(cfg, model)
 
     distributed = comm.get_world_size() > 1
+    print("DISTRIBUTED", distributed)
+    input()
     if distributed:
         model = DistributedDataParallel(
             model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
