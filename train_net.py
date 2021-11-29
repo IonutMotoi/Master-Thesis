@@ -84,7 +84,7 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
         for epoch in range(epochs):
             print(f"Epoch {epoch+1} out of {epochs}")
             for data, iteration in zip(data_loader, range(start_iter + epoch * iters_per_epoch,
-                                                          start_iter + (epoch+1) * iters_per_epoch)):
+                                                          start_iter + (epoch+2) * iters_per_epoch)):
                 print("ITERATION", iteration)
                 storage.iter = iteration
 
