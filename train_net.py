@@ -147,7 +147,7 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
 
                 periodic_checkpointer.step(iteration)
 
-            if iterative_pseudomasks and (epoch+1) < epochs:
+            if iterative_pseudomasks and (epoch+1) % 10 == 0 and (epoch+1) < epochs:
                 # Generate pseudo-masks (from checkpoint)
                 for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
                     print(
