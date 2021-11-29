@@ -82,6 +82,7 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
         for epoch in range(epochs):
+            print(f"Epoch {epoch+1} out of {epochs}")
             for data, iteration in zip(data_loader, range(start_iter + epoch * iters_per_epoch,
                                                           start_iter + (epoch+1) * iters_per_epoch)):
                 storage.iter = iteration
