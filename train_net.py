@@ -85,6 +85,7 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
             print(f"Epoch {epoch+1} out of {epochs}")
             for data, iteration in zip(data_loader, range(start_iter + epoch * iters_per_epoch,
                                                           start_iter + (epoch+1) * iters_per_epoch)):
+                print("ITERATION", iteration)
                 storage.iter = iteration
 
                 loss_dict = model(data)
@@ -151,7 +152,8 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
                 # Generate pseudo-masks (from checkpoint)
                 for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
                     print(
-                        f"Generating pseudo-masks for dataset {i + 1} out of {len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
+                        f"Generating pseudo-masks for dataset {i + 1} out of "
+                        f"{len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
                     generate_masks_from_bboxes(cfg,
                                                ids_txt=cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT[i],
                                                data_folder=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
