@@ -86,6 +86,10 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
             for data, iteration in zip(data_loader, range(start_iter + epoch * iters_per_epoch,
                                                           start_iter + (epoch+2) * iters_per_epoch)):
                 print("ITERATION", iteration)
+                break
+            for data, iteration in zip(data_loader, range(start_iter + epoch * iters_per_epoch,
+                                                          start_iter + (epoch + 2) * iters_per_epoch)):
+                print("ITERATION", iteration)
                 storage.iter = iteration
 
                 loss_dict = model(data)
