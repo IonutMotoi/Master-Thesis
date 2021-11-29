@@ -86,9 +86,6 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
             data_loader = build_detection_train_loader(cfg, mapper=mapper)
 
             for data, iteration in zip(data_loader, range(iteration, max_iter)):
-                print(f"Epoch {epoch + 1} out of {max_epochs}")
-
-                print("ITERATION", iteration)
                 storage.iter = iteration
 
                 loss_dict = model(data)
