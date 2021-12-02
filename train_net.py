@@ -17,6 +17,7 @@ from detectron2.utils.events import EventStorage
 
 from pseudo_labeling.mask_processing import dilate_pseudomasks
 from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
+from sweep.sweep_utils import set_config_from_sweep, get_hyperparameters
 from utils.setup_new_dataset import setup_new_dataset
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
@@ -125,6 +126,7 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
                         for name, results in dataset_results.items():
                             with storage.name_scope(f"{dataset_name}_{name}"):
                                 storage.put_scalars(**results, smoothing_hint=False)
+                    # metric = test_results["new_dataset_validation"]["segm"]["AP"]
 
                     # Validation loss
                     validation_loss_dict_wgisd = validation_loss_eval_wgisd.get_loss()
@@ -170,12 +172,6 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
                             break  # needed in order to recreate the dataloader
 
 
-def set_config_from_sweep(cfg, sweep):
-    assert not cfg.is_frozen()
-    cfg.ITERATIVE_PSEUDOMASKS.PERIOD = sweep.iterative_pseudomasks_period
-    return cfg
-
-
 def setup(args):
     """
     Create configs and perform basic setups.
@@ -185,6 +181,12 @@ def setup(args):
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
 
+    # Get default hyperparameters (can be over-ridden by a sweep)
+    hyperparameters = get_hyperparameters(cfg)
+
+    # Init Weight & Biases and sync with Tensorboard
+    wandb.init(project="Mask_RCNN", sync_tensorboard=True, config=hyperparameters)
+
     cfg = set_config_from_sweep(cfg, wandb.config)
 
     cfg.freeze()
@@ -193,9 +195,6 @@ def setup(args):
 
 
 def main(args):
-    # Init Weight & Biases and sync with Tensorboard
-    wandb.init(project="Mask_RCNN", sync_tensorboard=True)
-
     cfg = setup(args)
 
     # Save config.yaml on wandb
