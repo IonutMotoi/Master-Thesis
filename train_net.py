@@ -249,7 +249,13 @@ def main(args):
 if __name__ == "__main__":
     parser = default_argument_parser()
     parser.add_argument("--iterative-pseudomasks", action="store_true", help="Generate new pseudomasks every epoch")
+    parser.add_argument("-q", "--dry_run", action="store_true", help="Dry run (do not log to wandb)")
     args = parser.parse_args()
+
+    # easier testing--don't log to wandb if dry run is set
+    if args.dry_run:
+        os.environ['WANDB_MODE'] = 'dryrun'
+
     print("Command Line Args:", args)
     launch(
         main,
