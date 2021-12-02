@@ -250,7 +250,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = default_argument_parser()
-    parser.add_argument("--iterative-pseudomasks", action="store_true", help="Generate new pseudomasks every epoch")
+    parser.add_argument("--iterative-pseudomasks", action="store_true", help="Create pseudomasks")
     parser.add_argument("-q", "--dry_run", action="store_true", help="Dry run (do not log to wandb)")
     args = parser.parse_args()
 
