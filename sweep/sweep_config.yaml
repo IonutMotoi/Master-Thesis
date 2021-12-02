@@ -1,4 +1,4 @@
-program: python3 train_net.py --config-file configs/wgisd_R101_with_aug_crop_new_dataset_pseudo_labels.yaml
+program: train_net.py --config-file configs/wgisd_R101_with_aug_crop_new_dataset_pseudo_labels.yaml
 method: grid
 metric:
   name: new_dataset_validation_segm/AP
