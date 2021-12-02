@@ -6,10 +6,13 @@ metric:
 parameters:
   iterative_pseudomasks_period:
     values: [10, 20, 30]
+  output_dir:
+    value: "./output/sweep_aug_crop_new_dataset_pseudo_labels"
 command:
   - ${env}
   - ${interpreter}
   - ${program}
   - "--config-file"
-  - "configs/sweep_aug_crop_new_dataset_pseudo_labels.yaml"
+  - "configs/wgisd_R101_with_aug_crop_new_dataset_pseudo_labels.yaml"
+  - "--iterative-pseudomasks"
 project: Mask_RCNN
