@@ -13,4 +13,4 @@ def get_hyperparameters(cfg):
 def set_config_from_hyperparameters(cfg, hyperparameters):
     if cfg.is_frozen():
         cfg.defrost()
-    pass
+    return cfg
