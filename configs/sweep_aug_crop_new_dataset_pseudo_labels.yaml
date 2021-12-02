@@ -1,0 +1,16 @@
+_BASE_: "./wgisd_R101_with_aug_crop.yaml"
+DATASETS:
+  TRAIN: ("wgisd_train", "new_dataset_train")  # 173
+SOLVER:
+  MAX_ITER: 17300  # train for 100 epochs
+  CHECKPOINT_PERIOD: 173  # checkpoint every epoch
+  ITERS_PER_EPOCH: 173
+TEST:
+  EVAL_PERIOD: 173  # evaluate every epoch
+OUTPUT_DIR: "./output/sweep_aug_crop_new_dataset_pseudo_labels"
+ITERATIVE_PSEUDOMASKS:
+  IDS_TXT: ["/thesis/new_dataset/train/train.txt"]
+  DATA_FOLDER: ["/thesis/new_dataset/train"]
+  DEST_FOLDER: ["./pseudo_labels/new_dataset"]
+  INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
+  PERIOD: 10  # Generate pseudomasks every N epochs
