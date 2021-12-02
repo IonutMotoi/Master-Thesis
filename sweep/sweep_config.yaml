@@ -1,8 +1,10 @@
-program: train_net.py --config-file configs/wgisd_R101_with_aug_crop_new_dataset_pseudo_labels.yaml
+program: train_net.py
 method: grid
 metric:
   name: new_dataset_validation_segm/AP
   goal: maximize
 parameters:
+  config-file:
+    value: "configs/sweep_aug_crop_new_dataset_pseudo_labels.yaml"
   test:
     values: [2, 3]
