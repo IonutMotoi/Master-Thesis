@@ -152,7 +152,9 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
                         writer.write()
 
                     # Generate pseudo-masks (from checkpoint) every cfg.ITERATIVE_PSEUDOMASKS.PERIOD
-                    if iterative_pseudomasks and epoch % cfg.ITERATIVE_PSEUDOMASKS.PERIOD == 0:
+                    if (iterative_pseudomasks
+                            and cfg.ITERATIVE_PSEUDOMASKS.PERIOD > 0
+                            and epoch % cfg.ITERATIVE_PSEUDOMASKS.PERIOD == 0):
                         iteration += 1
                         if epoch < max_epochs:
                             for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
