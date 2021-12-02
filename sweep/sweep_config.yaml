@@ -1,0 +1,8 @@
+program: train.py
+method: grid
+metric:
+  name: new_dataset_validation_segm/AP
+  goal: maximize
+parameters:
+  test:
+    values: [2, 3]
