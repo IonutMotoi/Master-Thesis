@@ -12,3 +12,4 @@ command:
   - ${program}
   - "--config-file"
   - "configs/sweep_aug_crop_new_dataset_pseudo_labels.yaml"
+project: Mask_RCNN
