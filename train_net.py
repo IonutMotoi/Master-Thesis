@@ -17,7 +17,7 @@ from detectron2.utils.events import EventStorage
 
 from pseudo_labeling.mask_processing import dilate_pseudomasks
 from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
-from utils.config import get_hyperparameters, set_config_from_hyperparameters
+from sweep.sweep_utils import get_hyperparameters, set_config_from_hyperparameters
 from utils.setup_new_dataset import setup_new_dataset
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
@@ -196,8 +196,6 @@ def setup(args):
 
 def main(args):
     cfg = setup(args)
-
-
 
     # Save config.yaml on wandb
     wandb.save(os.path.join(cfg.OUTPUT_DIR, "config.yaml"))
