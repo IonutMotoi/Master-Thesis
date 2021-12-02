@@ -180,13 +180,8 @@ def setup(args):
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
 
-    # hyperparameters = get_hyperparameters(cfg)
-
-    # Init Weight & Biases and sync with Tensorboard
-    wandb.init(project="Mask_RCNN", sync_tensorboard=True)#, config=hyperparameters)
-
     cfg = set_config_from_sweep(cfg, wandb.config)
-    print(wandb.config.test)
+    print(wandb.config.iterative_pseudomasks_period)
 
     cfg.freeze()
     default_setup(cfg, args)
@@ -194,6 +189,9 @@ def setup(args):
 
 
 def main(args):
+    # Init Weight & Biases and sync with Tensorboard
+    wandb.init(project="Mask_RCNN", sync_tensorboard=True)
+
     cfg = setup(args)
 
     # Save config.yaml on wandb
