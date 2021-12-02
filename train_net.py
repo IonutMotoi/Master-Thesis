@@ -18,6 +18,7 @@ from detectron2.utils.events import EventStorage
 from pseudo_labeling.mask_processing import dilate_pseudomasks
 from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
 from sweep.sweep_utils import set_config_from_sweep, get_hyperparameters
+from utils.early_stopping import EarlyStopping
 from utils.setup_new_dataset import setup_new_dataset
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
@@ -75,6 +76,7 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
     validation_loss_eval_wgisd = ValidationLossEval(cfg, model, "wgisd_valid")
     validation_loss_eval_new_dataset = ValidationLossEval(cfg, model, "new_dataset_validation")
     mean_train_loss = MeanTrainLoss()
+    early_stopping = EarlyStopping(patience=5)
 
     iters_per_epoch = cfg.SOLVER.ITERS_PER_EPOCH
     max_epochs = (max_iter - start_iter) // iters_per_epoch
@@ -83,7 +85,7 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
-        while iteration < max_iter:
+        while iteration < max_iter and not early_stopping.should_stop():
             data_loader = build_detection_train_loader(cfg, mapper=mapper)
 
             for data, iteration in zip(data_loader, range(iteration, max_iter)):
@@ -105,8 +107,6 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
 
                 # At the end of each epoch
                 if (iteration - start_iter + 1) % iters_per_epoch == 0:
-                    epoch += 1
-
                     # Train loss averaged over the epoch
                     with storage.name_scope("Train losses"):
                         storage.put_scalars(total_loss=mean_train_loss.get_total_loss(),
@@ -126,7 +126,6 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
                         for name, results in dataset_results.items():
                             with storage.name_scope(f"{dataset_name}_{name}"):
                                 storage.put_scalars(**results, smoothing_hint=False)
-                    # metric = test_results["new_dataset_validation"]["segm"]["AP"]
 
                     # Validation loss
                     validation_loss_dict_wgisd = validation_loss_eval_wgisd.get_loss()
@@ -151,11 +150,20 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
                     for writer in writers:
                         writer.write()
 
+                    # Early stopping
+                    metric = test_results["new_dataset_validation"]["segm"]["AP"]
+                    early_stopping.on_epoch_end(metric, epoch)
+                    if early_stopping.has_improved:
+                        print(f"New best model -> epoch {epoch}")
+                        periodic_checkpointer.save("best_model.pth")
+                    if early_stopping.should_stop():
+                        pass
+
                     # Generate pseudo-masks (from checkpoint) every cfg.ITERATIVE_PSEUDOMASKS.PERIOD
                     if (iterative_pseudomasks
                             and cfg.ITERATIVE_PSEUDOMASKS.PERIOD > 0
-                            and epoch % cfg.ITERATIVE_PSEUDOMASKS.PERIOD == 0
-                            and epoch < max_epochs):
+                            and (epoch+1) % cfg.ITERATIVE_PSEUDOMASKS.PERIOD == 0
+                            and (epoch+1) < max_epochs):
                         for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
                             print(
                                 f"Generating pseudo-masks for dataset {i + 1} out of "
@@ -171,6 +179,7 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
                                                path_bboxes=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
                                                output_path=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i])
                         break  # needed in order to recreate the dataloader
+                epoch += 1
 
             # Increment counter for the while loop
             iteration += 1
