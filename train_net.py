@@ -187,6 +187,7 @@ def setup(args):
 
     cfg = set_config_from_hyperparameters(cfg, wandb.config)
     print(wandb.config.test)
+    input()
 
     cfg.freeze()
     default_setup(cfg, args)
