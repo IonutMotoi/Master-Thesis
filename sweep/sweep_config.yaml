@@ -7,8 +7,8 @@ parameters:
   test:
     values: [2, 3]
 command:
-  ${env}
-  ${interpreter}
-  ${program}
-  "--config-file"
-  "configs/sweep_aug_crop_new_dataset_pseudo_labels.yaml"
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "--config-file"
+  - "configs/sweep_aug_crop_new_dataset_pseudo_labels.yaml"
