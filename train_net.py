@@ -185,6 +185,10 @@ def setup(args):
     # Init Weight & Biases and sync with Tensorboard
     wandb.init(project="Mask_RCNN", sync_tensorboard=True, config=hyperparameters)
 
+    api = wandb.Api()
+    run = api.run("ionut_motoi/Mask_RCNN/lgud025e")
+    run.upload_file("./output/wgisd_R101_with_aug_crop_pseudo_labels/model_final.pth")
+
     cfg = set_config_from_hyperparameters(cfg, wandb.config)
     print(wandb.config.test)
 
