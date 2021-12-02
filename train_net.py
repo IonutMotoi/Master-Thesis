@@ -17,7 +17,6 @@ from detectron2.utils.events import EventStorage
 
 from pseudo_labeling.mask_processing import dilate_pseudomasks
 from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
-from sweep.sweep_utils import get_hyperparameters, set_config_from_sweep
 from utils.setup_new_dataset import setup_new_dataset
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
@@ -171,6 +170,12 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
                             break  # needed in order to recreate the dataloader
 
 
+def set_config_from_sweep(cfg, sweep):
+    assert not cfg.is_frozen()
+    cfg.ITERATIVE_PSEUDOMASKS.PERIOD = sweep.iterative_pseudomasks_period
+    return cfg
+
+
 def setup(args):
     """
     Create configs and perform basic setups.
@@ -181,7 +186,6 @@ def setup(args):
     cfg.merge_from_list(args.opts)
 
     cfg = set_config_from_sweep(cfg, wandb.config)
-    print(wandb.config.iterative_pseudomasks_period)
 
     cfg.freeze()
     default_setup(cfg, args)
