@@ -4,8 +4,8 @@ metric:
   name: new_dataset_validation_segm/AP
   goal: maximize
 parameters:
-  test:
-    values: [2, 3]
+  iterative_pseudomasks_period:
+    values: [10, 20, 30]
 command:
   - ${env}
   - ${interpreter}

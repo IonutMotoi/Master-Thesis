@@ -17,7 +17,7 @@ from detectron2.utils.events import EventStorage
 
 from pseudo_labeling.mask_processing import dilate_pseudomasks
 from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
-from sweep.sweep_utils import get_hyperparameters, set_config_from_hyperparameters
+from sweep.sweep_utils import get_hyperparameters, set_config_from_sweep
 from utils.setup_new_dataset import setup_new_dataset
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
@@ -180,12 +180,12 @@ def setup(args):
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
 
-    hyperparameters = get_hyperparameters(cfg)
+    # hyperparameters = get_hyperparameters(cfg)
 
     # Init Weight & Biases and sync with Tensorboard
-    wandb.init(project="Mask_RCNN", sync_tensorboard=True, config=hyperparameters)
+    wandb.init(project="Mask_RCNN", sync_tensorboard=True)#, config=hyperparameters)
 
-    cfg = set_config_from_hyperparameters(cfg, wandb.config)
+    cfg = set_config_from_sweep(cfg, wandb.config)
     print(wandb.config.test)
 
     cfg.freeze()
