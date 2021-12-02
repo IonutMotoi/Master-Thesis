@@ -12,7 +12,7 @@ command:
   - ${program}
   - "--config-file"
   - "configs/wgisd_R101_with_aug_crop_new_dataset_pseudo_labels.yaml"
-#  - "--iterative-pseudomasks"
+  - "--iterative-pseudomasks"
   - "OUTPUT_DIR"
   - "./output/sweep_aug_crop_new_dataset_pseudo_labels"
 project: Mask_RCNN
