@@ -150,7 +150,7 @@ def do_train(cfg, model, resume=False):
                 early_stopping.on_epoch_end(metric, epoch)
                 if early_stopping.has_improved:
                     print(f"New best model -> epoch: {epoch} -> segm AP: {metric}")
-                    periodic_checkpointer.save("best_model.pth")
+                    periodic_checkpointer.save("best_model")
                 if early_stopping.should_stop():
                     break
 
