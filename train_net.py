@@ -216,7 +216,7 @@ def main(args):
                                        data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
                                        dest_folder=cfg.PSEUDOMASKS.DEST_FOLDER[i],
                                        load_from_checkpoint=False)
-    if args.process_pseduomasks:
+    if args.process_pseudomasks:
         # Post-process pseudo-masks
         for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
             print(f"Applying post-processing to the pseudo-masks for dataset {i+1} out of "
@@ -238,7 +238,7 @@ def main(args):
 if __name__ == "__main__":
     parser = default_argument_parser()
     parser.add_argument("--generate_pseudomasks", action="store_true", help="Create pseudomasks")
-    parser.add_argument("--process_pseduomasks", action="store_true", help="Apply post-processing to pseudomasks")
+    parser.add_argument("--process_pseudomasks", action="store_true", help="Apply post-processing to pseudomasks")
     parser.add_argument("-q", "--dry_run", action="store_true", help="Dry run (do not log to wandb)")
     args = parser.parse_args()
 
