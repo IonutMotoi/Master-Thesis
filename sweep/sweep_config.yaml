@@ -4,15 +4,16 @@ metric:
   name: new_dataset_validation_segm/AP
   goal: maximize
 parameters:
-  iterative_pseudomasks_period:
-    values: [10, 20, 30]
+  mask_process_method:
+    value: 'naive'
 command:
   - ${env}
   - ${interpreter}
   - ${program}
   - "--config-file"
   - "configs/wgisd_R101_with_aug_crop_new_dataset_pseudo_labels.yaml"
-  - "--iterative-pseudomasks"
+  - "--generate_pseudomasks"
+  - "--process_pseduomasks"
   - "OUTPUT_DIR"
-  - "./output/sweep_aug_crop_new_dataset_pseudo_labels"
+  - "./output/sweep_aug_crop_new_dataset_pseudo_masks"
 project: Mask_RCNN

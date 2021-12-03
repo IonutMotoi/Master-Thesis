@@ -8,10 +8,8 @@ SOLVER:
 TEST:
   EVAL_PERIOD: 173  # evaluate every epoch
 OUTPUT_DIR: "./output/wgisd_R101_with_aug_crop_new_dataset_pseudo_labels"
-ITERATIVE_PSEUDOMASKS:
+PSEUDOMASKS:
   IDS_TXT: ["/thesis/new_dataset/train/train.txt"]
   DATA_FOLDER: ["/thesis/new_dataset/train"]
   DEST_FOLDER: ["./pseudo_labels/new_dataset"]
   INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
-  PERIOD: 0  # Generate pseudomasks every N epochs;
-             # set to 0 to only generate pseudo masks once using INITIAL_WEIGHTS

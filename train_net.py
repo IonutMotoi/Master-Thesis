@@ -61,7 +61,7 @@ def do_test(cfg, model):
     return results
 
 
-def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
+def do_train(cfg, model, resume=False):
     model.train()
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
@@ -72,117 +72,89 @@ def do_train(cfg, model, resume=False, iterative_pseudomasks=False):
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
 
     mapper = AlbumentationsMapper(cfg, is_train=True)
+    data_loader = build_detection_train_loader(cfg, mapper=mapper)
     examples_count = 0  # Counter for saving examples of augmented images on W&B
     validation_loss_eval_wgisd = ValidationLossEval(cfg, model, "wgisd_valid")
     validation_loss_eval_new_dataset = ValidationLossEval(cfg, model, "new_dataset_validation")
     mean_train_loss = MeanTrainLoss()
     early_stopping = EarlyStopping(patience=5)
-
     iters_per_epoch = cfg.SOLVER.ITERS_PER_EPOCH
-    max_epochs = (max_iter - start_iter) // iters_per_epoch
     epoch = 0
-    iteration = start_iter
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
-        while iteration < max_iter and not early_stopping.should_stop():
-            data_loader = build_detection_train_loader(cfg, mapper=mapper)
+        for data, iteration in zip(data_loader, range(start_iter, start_iter+max_iter)):
+            storage.iter = iteration
 
-            for data, iteration in zip(data_loader, range(iteration, max_iter)):
-                storage.iter = iteration
+            loss_dict = model(data)
+            losses = sum(loss_dict.values())
+            assert torch.isfinite(losses).all(), loss_dict
 
-                loss_dict = model(data)
-                losses = sum(loss_dict.values())
-                assert torch.isfinite(losses).all(), loss_dict
+            loss_dict_reduced = {k: v.item() for k, v in comm.reduce_dict(loss_dict).items()}
+            mean_train_loss.update(loss_dict_reduced)
 
-                loss_dict_reduced = {k: v.item() for k, v in comm.reduce_dict(loss_dict).items()}
-                mean_train_loss.update(loss_dict_reduced)
+            optimizer.zero_grad()
+            losses.backward()
+            optimizer.step()
+            storage.put_scalar("lr", optimizer.param_groups[0]["lr"], smoothing_hint=False)
+            scheduler.step()
+            periodic_checkpointer.step(iteration)
 
-                optimizer.zero_grad()
-                losses.backward()
-                optimizer.step()
-                storage.put_scalar("lr", optimizer.param_groups[0]["lr"], smoothing_hint=False)
-                scheduler.step()
-                periodic_checkpointer.step(iteration)
+            # At the end of each epoch
+            if (iteration - start_iter + 1) % iters_per_epoch == 0:
+                # Train loss averaged over the epoch
+                with storage.name_scope("Train losses"):
+                    storage.put_scalars(total_loss=mean_train_loss.get_total_loss(),
+                                        **mean_train_loss.get_losses(),
+                                        smoothing_hint=False)
+                mean_train_loss.reset()
 
-                # At the end of each epoch
-                if (iteration - start_iter + 1) % iters_per_epoch == 0:
-                    # Train loss averaged over the epoch
-                    with storage.name_scope("Train losses"):
-                        storage.put_scalars(total_loss=mean_train_loss.get_total_loss(),
-                                            **mean_train_loss.get_losses(),
-                                            smoothing_hint=False)
-                    mean_train_loss.reset()
+                # Visualize some examples of augmented images and annotations
+                if examples_count < 10:
+                    image = visualize_image_and_annotations(data[0])
+                    storage.put_image("Example of augmented image", image)
+                    examples_count += 1
 
-                    # Visualize some examples of augmented images and annotations
-                    if examples_count < 10:
-                        image = visualize_image_and_annotations(data[0])
-                        storage.put_image("Example of augmented image", image)
-                        examples_count += 1
+                # COCO Evaluation
+                test_results = do_test(cfg, model)
+                for dataset_name, dataset_results in test_results.items():
+                    for name, results in dataset_results.items():
+                        with storage.name_scope(f"{dataset_name}_{name}"):
+                            storage.put_scalars(**results, smoothing_hint=False)
 
-                    # COCO Evaluation
-                    test_results = do_test(cfg, model)
-                    for dataset_name, dataset_results in test_results.items():
-                        for name, results in dataset_results.items():
-                            with storage.name_scope(f"{dataset_name}_{name}"):
-                                storage.put_scalars(**results, smoothing_hint=False)
+                # Validation loss
+                validation_loss_dict_wgisd = validation_loss_eval_wgisd.get_loss()
+                validation_loss_wgisd = sum(loss for loss in validation_loss_dict_wgisd.values())
+                with storage.name_scope("Validation losses wgisd"):
+                    storage.put_scalars(total_validation_loss_wgisd=validation_loss_wgisd,
+                                        **validation_loss_dict_wgisd,
+                                        smoothing_hint=False)
+                logger.info("Total validation loss -> wgisd: {}".format(validation_loss_wgisd))
 
-                    # Validation loss
-                    validation_loss_dict_wgisd = validation_loss_eval_wgisd.get_loss()
-                    validation_loss_wgisd = sum(loss for loss in validation_loss_dict_wgisd.values())
-                    with storage.name_scope("Validation losses wgisd"):
-                        storage.put_scalars(total_validation_loss_wgisd=validation_loss_wgisd,
-                                            **validation_loss_dict_wgisd,
-                                            smoothing_hint=False)
-                    logger.info("Total validation loss -> wgisd: {}".format(validation_loss_wgisd))
+                validation_loss_dict_new_dataset = validation_loss_eval_new_dataset.get_loss()
+                validation_loss_new_dataset = sum(loss for loss in validation_loss_dict_new_dataset.values())
+                with storage.name_scope("Validation losses new dataset"):
+                    storage.put_scalars(total_validation_loss_new_dataset=validation_loss_new_dataset,
+                                        **validation_loss_dict_new_dataset,
+                                        smoothing_hint=False)
+                logger.info("Total validation loss -> new dataset: {}".format(validation_loss_new_dataset))
 
-                    validation_loss_dict_new_dataset = validation_loss_eval_new_dataset.get_loss()
-                    validation_loss_new_dataset = sum(loss for loss in validation_loss_dict_new_dataset.values())
-                    with storage.name_scope("Validation losses new dataset"):
-                        storage.put_scalars(total_validation_loss_new_dataset=validation_loss_new_dataset,
-                                            **validation_loss_dict_new_dataset,
-                                            smoothing_hint=False)
-                    logger.info("Total validation loss -> new dataset: {}".format(validation_loss_new_dataset))
+                comm.synchronize()
 
-                    comm.synchronize()
+                # Write events to EventStorage
+                for writer in writers:
+                    writer.write()
 
-                    # Write events to EventStorage
-                    for writer in writers:
-                        writer.write()
+                # Early stopping
+                metric = test_results["new_dataset_validation"]["segm"]["AP"]
+                early_stopping.on_epoch_end(metric, epoch)
+                if early_stopping.has_improved:
+                    print(f"New best model -> epoch: {epoch} -> segm AP: {metric}")
+                    periodic_checkpointer.save("best_model.pth")
+                if early_stopping.should_stop():
+                    break
 
-                    # Early stopping
-                    metric = test_results["new_dataset_validation"]["segm"]["AP"]
-                    early_stopping.on_epoch_end(metric, epoch)
-                    if early_stopping.has_improved:
-                        print(f"New best model -> epoch {epoch}")
-                        periodic_checkpointer.save("best_model.pth")
-                    if early_stopping.should_stop():
-                        pass
-
-                    # Generate pseudo-masks (from checkpoint) every cfg.ITERATIVE_PSEUDOMASKS.PERIOD
-                    if (iterative_pseudomasks
-                            and cfg.ITERATIVE_PSEUDOMASKS.PERIOD > 0
-                            and (epoch+1) % cfg.ITERATIVE_PSEUDOMASKS.PERIOD == 0
-                            and (epoch+1) < max_epochs):
-                        for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
-                            print(
-                                f"Generating pseudo-masks for dataset {i + 1} out of "
-                                f"{len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
-                            generate_masks_from_bboxes(cfg,
-                                                       ids_txt=cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT[i],
-                                                       data_folder=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
-                                                       dest_folder=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i],
-                                                       load_from_checkpoint=True)
-                            print(f"Applying post-processing to the pseudo-masks for dataset {i + 1} out of "
-                                  f"{len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
-                            dilate_pseudomasks(input_masks=[f'{cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i]}/*.npz'],
-                                               path_bboxes=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
-                                               output_path=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i])
-                        break  # needed in order to recreate the dataloader
                 epoch += 1
-
-            # Increment counter for the while loop
-            iteration += 1
 
 
 def setup(args):
@@ -233,33 +205,38 @@ def main(args):
             model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
         )
 
-    if args.iterative_pseudomasks:
-        # Generate initial pseudo-masks (from pretrain)
-        for i in range(len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)):
-            print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
+    if args.generate_pseudomasks:
+        # Generate pseudo-masks
+        for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
+            print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
             generate_masks_from_bboxes(cfg,
-                                       ids_txt=cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT[i],
-                                       data_folder=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
-                                       dest_folder=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i],
+                                       ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
+                                       data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                       dest_folder=cfg.PSEUDOMASKS.DEST_FOLDER[i],
                                        load_from_checkpoint=False)
+    if args.process_pseduomasks:
+        # Post-process pseudo-masks
+        for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
             print(f"Applying post-processing to the pseudo-masks for dataset {i+1} out of "
-                  f"{len(cfg.ITERATIVE_PSEUDOMASKS.IDS_TXT)}...")
-            dilate_pseudomasks(input_masks=[f'{cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i]}/*.npz'],
-                               path_bboxes=cfg.ITERATIVE_PSEUDOMASKS.DATA_FOLDER[i],
-                               output_path=cfg.ITERATIVE_PSEUDOMASKS.DEST_FOLDER[i])
+                  f"{len(cfg.PSEUDOMASKS.IDS_TXT)}...")
+            dilate_pseudomasks(input_masks=[f'{cfg.PSEUDOMASKS.DEST_FOLDER[i]}/*.npz'],
+                               path_bboxes=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                               output_path=cfg.PSEUDOMASKS.DEST_FOLDER[i])
 
     # Train
-    do_train(cfg, model, resume=args.resume, iterative_pseudomasks=args.iterative_pseudomasks)
+    do_train(cfg, model, resume=args.resume)
 
-    # Save final model on Weight and Biases
+    # Save the final and the best model on Weight and Biases
     wandb.save(os.path.join(cfg.OUTPUT_DIR, "model_final.pth"))
+    wandb.save(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
 
     return
 
 
 if __name__ == "__main__":
     parser = default_argument_parser()
-    parser.add_argument("--iterative-pseudomasks", action="store_true", help="Create pseudomasks")
+    parser.add_argument("--generate_pseudomasks", action="store_true", help="Create pseudomasks")
+    parser.add_argument("--process_pseduomasks", action="store_true", help="Apply post-processing to pseudomasks")
     parser.add_argument("-q", "--dry_run", action="store_true", help="Dry run (do not log to wandb)")
     args = parser.parse_args()
 
