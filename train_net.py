@@ -188,11 +188,14 @@ def main(args):
     model = build_model(cfg)
     logger.info("Model:\n{}".format(model))
 
-    new_dataset_pseudo_masks_dest = os.path.join(cfg.OUTPUT_DIR, "pseudo_masks", wandb.run.id, "new_dataset")
+    # Pseudo-masks will be generated in a subfolder of OUTPUT_DIR
+    pseudo_masks_folders = []
+    for folder in cfg.PSEUDOMASKS.DEST_FOLDER:
+        pseudo_masks_folders.append(os.path.join(cfg.OUTPUT_DIR, folder))
 
     # Register dataset
+    setup_new_dataset(pseudo_masks_folders[0])
     setup_wgisd()
-    setup_new_dataset(new_dataset_pseudo_masks_dest)
 
     if args.eval_only:
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
@@ -214,7 +217,7 @@ def main(args):
             generate_masks_from_bboxes(cfg,
                                        ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
                                        data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                       dest_folder=cfg.PSEUDOMASKS.DEST_FOLDER[i],
+                                       dest_folder=pseudo_masks_folders[i],
                                        load_from_checkpoint=False)
     if args.process_pseudomasks:
         # Post-process pseudo-masks
@@ -223,7 +226,7 @@ def main(args):
                   f"{len(cfg.PSEUDOMASKS.IDS_TXT)}...")
             dilate_pseudomasks(input_masks=[f'{cfg.PSEUDOMASKS.DEST_FOLDER[i]}/*.npz'],
                                path_bboxes=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                               output_path=cfg.PSEUDOMASKS.DEST_FOLDER[i])
+                               output_path=pseudo_masks_folders[i])
 
     # Train
     do_train(cfg, model, resume=args.resume)
