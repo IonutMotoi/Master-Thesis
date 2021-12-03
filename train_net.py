@@ -77,7 +77,7 @@ def do_train(cfg, model, resume=False):
     validation_loss_eval_wgisd = ValidationLossEval(cfg, model, "wgisd_valid")
     validation_loss_eval_new_dataset = ValidationLossEval(cfg, model, "new_dataset_validation")
     mean_train_loss = MeanTrainLoss()
-    early_stopping = EarlyStopping(patience=5)
+    early_stopping = EarlyStopping(patience=10)
     iters_per_epoch = cfg.SOLVER.ITERS_PER_EPOCH
     epoch = 0
 
@@ -188,9 +188,11 @@ def main(args):
     model = build_model(cfg)
     logger.info("Model:\n{}".format(model))
 
+    new_dataset_pseudo_masks_dest = os.path.join(cfg.OUTPUT_DIR, "pseudo_masks", wandb.run.id, "new_dataset")
+
     # Register dataset
     setup_wgisd()
-    setup_new_dataset()
+    setup_new_dataset(new_dataset_pseudo_masks_dest)
 
     if args.eval_only:
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(

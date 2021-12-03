@@ -10,10 +10,10 @@ from utils.bbox_conversion import yolo_bbox_to_pascal_voc
 
 
 # Dataset
-def get_wgisd_dicts(root, source):
+def get_wgisd_dicts(root, source, pseudo_masks_path):
     # Load the dataset subset defined by source
-    assert source in ['train', 'valid', 'test', 'test_detection', 'pseudo_labels'], \
-        'source should be "train", "valid", "test", "test_detection", "pseudo_labels"'
+    assert source in ['train', 'valid', 'test', 'test_detection', 'pseudo_masks'], \
+        'source should be "train", "valid", "test", "test_detection", "pseudo_masks"'
 
     has_masks = True
 
@@ -26,9 +26,8 @@ def get_wgisd_dicts(root, source):
     elif source == "test_detection":
         source_path = os.path.join(root, 'test.txt')
         has_masks = False
-    else:  # source == "pseudo_labels":
+    else:  # source == "pseudo_masks":
         source_path = os.path.join(root, 'train_without_masked_train_and_valid_ids.txt')
-        pseudo_labels_path = "./pseudo_labels/wgisd"
     root = os.path.join(root, "data")
 
     with open(source_path, 'r') as fp:
@@ -58,8 +57,8 @@ def get_wgisd_dicts(root, source):
         num_objs = bboxes.shape[0]
 
         if has_masks:
-            if source == "pseudo_labels":
-                mask_path = os.path.join(pseudo_labels_path, f'{img_id}.npz')
+            if source == "pseudo_masks":
+                mask_path = os.path.join(pseudo_masks_path, f'{img_id}.npz')
                 masks = np.load(mask_path)['arr_0'].astype(np.uint8)
             else:
                 mask_path = os.path.join(root, f'{img_id}.npz')
@@ -86,13 +85,13 @@ def get_wgisd_dicts(root, source):
     return dataset_dicts
 
 
-def setup_wgisd():
+def setup_wgisd(pseudo_masks_path=None):
     data_path = "/thesis/wgisd"
 
-    for name in ["train", "valid", "test", "test_detection", "pseudo_labels"]:
+    for name in ["train", "valid", "test", "test_detection", "pseudo_masks"]:
         dataset_name = "wgisd_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
 
-        DatasetCatalog.register(dataset_name, lambda d=name: get_wgisd_dicts(data_path, d))
+        DatasetCatalog.register(dataset_name, lambda d=name: get_wgisd_dicts(data_path, d, pseudo_masks_path))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])

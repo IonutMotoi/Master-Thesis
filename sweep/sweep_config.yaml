@@ -15,5 +15,5 @@ command:
   - "--generate_pseudomasks"
   - "--process_pseduomasks"
   - "OUTPUT_DIR"
-  - "./output/sweep_aug_crop_new_dataset_pseudo_masks"
+  - "./output/sweep_naive_pseudo_masks"
 project: Mask_RCNN

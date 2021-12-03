@@ -23,14 +23,14 @@ def extract_bboxes_from_masks(masks):
 
 
 # Dataset
-def get_new_dataset_dicts(root, source):
+def get_new_dataset_dicts(root, source, pseudo_masks_path):
     # Load the dataset subset defined by source
     assert source in ['train', 'validation', 'test'], \
         'source should be "train", "validation", "test"'
 
     if source == "train":
         source_path = Path(root, "train")
-        pseudo_labels_path = Path("./pseudo_labels/new_dataset")
+        pseudo_masks_path = Path(pseudo_masks_path)
     elif source == "validation":
         source_path = Path(root, "validation")
     else:  # source == "test":
@@ -53,7 +53,7 @@ def get_new_dataset_dicts(root, source):
         record["width"] = width
 
         if source == "train":
-            mask_path = pseudo_labels_path / f'{img_id}.npz'
+            mask_path = pseudo_masks_path / f'{img_id}.npz'
             masks = np.load(mask_path)['arr_0'].astype(np.uint8)
         else:
             mask_path = source_path / f'{img_id}.npz'
@@ -88,7 +88,7 @@ def get_new_dataset_dicts(root, source):
     return dataset_dicts
 
 
-def setup_new_dataset():
+def setup_new_dataset(pseudo_masks_path=None):
     data_path = "/thesis/new_dataset"
 
     for name in ["train", "validation", "test"]:
@@ -96,5 +96,5 @@ def setup_new_dataset():
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
 
-        DatasetCatalog.register(dataset_name, lambda d=name: get_new_dataset_dicts(data_path, d))
+        DatasetCatalog.register(dataset_name, lambda d=name: get_new_dataset_dicts(data_path, d, pseudo_masks_path))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
