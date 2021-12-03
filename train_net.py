@@ -224,7 +224,7 @@ def main(args):
         for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
             print(f"Applying post-processing to the pseudo-masks for dataset {i+1} out of "
                   f"{len(cfg.PSEUDOMASKS.IDS_TXT)}...")
-            dilate_pseudomasks(input_masks=[f'{cfg.PSEUDOMASKS.DEST_FOLDER[i]}/*.npz'],
+            dilate_pseudomasks(input_masks=[f'{pseudo_masks_folders[i]}/*.npz'],
                                path_bboxes=cfg.PSEUDOMASKS.DATA_FOLDER[i],
                                output_path=pseudo_masks_folders[i])
 
