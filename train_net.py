@@ -152,6 +152,9 @@ def do_train(cfg, model, resume=False):
                     print(f"New best model -> epoch: {epoch} -> segm AP: {metric}")
                     periodic_checkpointer.save("best_model")
                 if early_stopping.should_stop():
+                    print(f"Early stopping at epoch {epoch}")
+                    print(f"Best model was at epoch {early_stopping.best_epoch} "
+                          f"with {early_stopping.best_value} segm AP")
                     break
 
                 epoch += 1
