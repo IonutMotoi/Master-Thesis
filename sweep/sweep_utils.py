@@ -5,6 +5,7 @@ def get_hyperparameters(cfg):
     :return: (dict) Hyperparameters
     """
     hyperparameters = dict(
+        mask_process_method=cfg.PSEUDOMASKS.PROCESS_METHOD
     )
     return hyperparameters
 
@@ -12,4 +13,6 @@ def get_hyperparameters(cfg):
 def set_config_from_sweep(cfg, sweep):
     # Overwrite config with parameters from a wandb sweep, if any, otherwise set the default values from config
     assert not cfg.is_frozen()
+    cfg.PSEUDOMASKS.PROCESS_METHOD = sweep.mask_process_method
+    cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_' + sweep.mask_process_method
     return cfg

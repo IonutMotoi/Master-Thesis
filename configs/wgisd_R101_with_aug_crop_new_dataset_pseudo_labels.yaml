@@ -13,3 +13,4 @@ PSEUDOMASKS:
   DATA_FOLDER: ["/thesis/new_dataset/train"]
   DEST_FOLDER: ["./pseudo_labels/new_dataset"]
   INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
+  PROCESS_METHOD: "none"
