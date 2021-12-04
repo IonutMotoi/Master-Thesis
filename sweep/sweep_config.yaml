@@ -8,6 +8,9 @@ parameters:
     values: ['none', 'dilation']
   max_training_rounds:
     value: 15
+  model_weights:
+    values: ["./output/wgisd_R101_with_aug_crop/model_final.pth",
+             "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"]
 command:
   - ${env}
   - ${interpreter}
