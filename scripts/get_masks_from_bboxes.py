@@ -17,6 +17,10 @@ if __name__ == "__main__":
     parser.add_argument("--dest",
                         default="./pseudo_labels/new_dataset",
                         help="Path where to save the pseudo masks")
+    parser.add_argument("--weights",
+                        default=None,
+                        help="Path to the model weights to use. "
+                             "If not specified it will use the ones in cfg.PSEUDOMASKS.INITIAL_WEIGHTS")
     args = parser.parse_args()
     setup_logger(name="fvcore")
     logger = setup_logger()
@@ -24,4 +28,8 @@ if __name__ == "__main__":
 
     cfg = setup(args)
 
-    generate_masks_from_bboxes(cfg, ids_txt=args.ids, data_folder=args.data, dest_folder=args.dest)
+    generate_masks_from_bboxes(cfg,
+                               ids_txt=args.ids,
+                               data_folder=args.data,
+                               dest_folder=args.dest,
+                               model_weights=args.weights)

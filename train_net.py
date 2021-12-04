@@ -61,14 +61,17 @@ def do_test(cfg, model):
     return results
 
 
-def do_train(cfg, model, resume=False):
+def do_train(cfg, model, resume=False, model_weights=None):
     model.train()
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
     checkpointer = DetectionCheckpointer(model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler)
-    start_iter = (checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1)
+    if model_weights is not None:
+        start_iter = (checkpointer.resume_or_load(model_weights, resume=resume).get("iteration", -1) + 1)
+    else:
+        start_iter = (checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1)
     max_iter = cfg.SOLVER.MAX_ITER
-    periodic_checkpointer = PeriodicCheckpointer(checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter, max_to_keep=1)
+    # periodic_checkpointer = PeriodicCheckpointer(checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter, max_to_keep=1)
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
 
     mapper = AlbumentationsMapper(cfg, is_train=True)
@@ -98,7 +101,7 @@ def do_train(cfg, model, resume=False):
             optimizer.step()
             storage.put_scalar("lr", optimizer.param_groups[0]["lr"], smoothing_hint=False)
             scheduler.step()
-            periodic_checkpointer.step(iteration)
+            # periodic_checkpointer.step(iteration)
 
             # At the end of each epoch
             if (iteration - start_iter + 1) % iters_per_epoch == 0:
@@ -146,11 +149,14 @@ def do_train(cfg, model, resume=False):
                     writer.write()
 
                 # Early stopping
+                print("#######################################")
                 metric = test_results["new_dataset_validation"]["segm"]["AP"]
                 early_stopping.on_epoch_end(metric, epoch)
                 if early_stopping.has_improved:
                     print(f"New best model -> epoch: {epoch} -> segm AP: {metric}")
-                    periodic_checkpointer.save("best_model")
+                    checkpointer.save("best_model")
+                print("#######################################")
+
                 if early_stopping.should_stop():
                     print(f"Early stopping at epoch {epoch}")
                     print(f"Best model was at epoch {early_stopping.best_epoch} "
@@ -198,7 +204,7 @@ def main(args):
 
     # Register dataset
     setup_new_dataset(pseudo_masks_folders[0])
-    setup_wgisd()
+    setup_wgisd()  # pass pseudo_masks_folders[1] to register pseudo_masks for wgisd (check cfg as well)
 
     if args.eval_only:
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
@@ -213,38 +219,51 @@ def main(args):
             model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
         )
 
-    if args.generate_pseudomasks:
+    for train_round in range(1, cfg.SOLVER.MAX_TRAINING_ROUNDS):
+        print("#######################################")
+        print(f"Training round {train_round} out of {cfg.SOLVER.MAX_TRAINING_ROUNDS}")
+        print("#######################################")
+
+        if train_round == 1:
+            model_weights = None
+        else:
+            model_weights = os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round - 1}.pth")
+
         # Generate pseudo-masks
-        for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
-            print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
-            generate_masks_from_bboxes(cfg,
-                                       ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
-                                       data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                       dest_folder=pseudo_masks_folders[i],
-                                       load_from_checkpoint=False)
-    if args.process_pseudomasks:
+        if cfg.PSEUDOMASKS.GENERATE:
+            for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
+                print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
+                generate_masks_from_bboxes(cfg,
+                                           ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
+                                           data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                           dest_folder=pseudo_masks_folders[i],
+                                           model_weights=model_weights)
+
         # Post-process pseudo-masks
-        for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
-            print(f"Applying post-processing to the pseudo-masks for dataset {i+1} out of "
-                  f"{len(cfg.PSEUDOMASKS.IDS_TXT)}...")
-            dilate_pseudomasks(input_masks=[f'{pseudo_masks_folders[i]}/*.npz'],
-                               path_bboxes=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                               output_path=pseudo_masks_folders[i])
+        if cfg.PSEUDOMASKS.PROCESS_METHOD == 'dilation':
+            for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
+                print(f"Applying post-processing with method {cfg.PSEUDOMASKS.PROCESS_METHOD} to the pseudo-masks "
+                      f"of dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
+                dilate_pseudomasks(input_masks=[f'{pseudo_masks_folders[i]}/*.npz'],
+                                   path_bboxes=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                   output_path=pseudo_masks_folders[i])
 
-    # Train
-    do_train(cfg, model, resume=args.resume)
+        # Train
+        do_train(cfg, model, resume=args.resume, model_weights=model_weights)
 
-    # Save the final and the best model on Weight and Biases
-    wandb.save(os.path.join(cfg.OUTPUT_DIR, "model_final.pth"))
-    wandb.save(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
+        # Save the best model for each training round on Weight and Biases
+        os.rename(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"),
+                  os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
+        wandb.save(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
+        # Need to remove the saved models due to limited space
+        if train_round > 1:
+            os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round-1}.pth"))
 
     return
 
 
 if __name__ == "__main__":
     parser = default_argument_parser()
-    parser.add_argument("--generate_pseudomasks", action="store_true", help="Create pseudomasks")
-    parser.add_argument("--process_pseudomasks", action="store_true", help="Apply post-processing to pseudomasks")
     parser.add_argument("-q", "--dry_run", action="store_true", help="Dry run (do not log to wandb)")
     args = parser.parse_args()
 

@@ -22,7 +22,7 @@ class MasksFromBboxesPredictor:
     4. Take one input image with the bounding boxes and classes and produce a single output, instead of a batch.
     """
 
-    def __init__(self, cfg, load_from_checkpoint=False):
+    def __init__(self, cfg, model_weights=None):
         self.cfg = cfg.clone()  # cfg can be modified by model
         self.model = build_model(self.cfg)
         self.model.eval()
@@ -31,10 +31,8 @@ class MasksFromBboxesPredictor:
 
         self.checkpointer = DetectionCheckpointer(self.model, cfg.OUTPUT_DIR)
 
-        if load_from_checkpoint:
-            assert self.checkpointer.has_checkpoint(), "No checkpoint found"
-            path = self.checkpointer.get_checkpoint_file()
-            self.checkpointer.load(path)
+        if model_weights is not None:
+            self.checkpointer.load(model_weights)
         else:
             self.checkpointer.load(self.cfg.PSEUDOMASKS.INITIAL_WEIGHTS)
         

@@ -5,7 +5,8 @@ def get_hyperparameters(cfg):
     :return: (dict) Hyperparameters
     """
     hyperparameters = dict(
-        mask_process_method=cfg.PSEUDOMASKS.PROCESS_METHOD
+        mask_process_method=cfg.PSEUDOMASKS.PROCESS_METHOD,
+        max_training_rounds=cfg.SOLVER.MAX_TRAINING_ROUNDS
     )
     return hyperparameters
 
@@ -15,4 +16,5 @@ def set_config_from_sweep(cfg, sweep):
     assert not cfg.is_frozen()
     cfg.PSEUDOMASKS.PROCESS_METHOD = sweep.mask_process_method
     cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_' + sweep.mask_process_method
+    cfg.SOLVER.MAX_TRAINING_ROUNDS = sweep.max_training_rounds
     return cfg

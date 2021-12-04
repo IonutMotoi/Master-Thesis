@@ -5,6 +5,7 @@ SOLVER:
   MAX_ITER: 30500  # train for 100 epochs
   CHECKPOINT_PERIOD: 305  # checkpoint every epoch
   ITERS_PER_EPOCH: 305
+  MAX_TRAINING_ROUNDS: 1
 TEST:
   EVAL_PERIOD: 305  # evaluate every epoch
 OUTPUT_DIR: "./output/wgisd_R101_with_aug_crop_pseudo_labels"
