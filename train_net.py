@@ -242,7 +242,7 @@ def main(args):
         # Post-process pseudo-masks
         if cfg.PSEUDOMASKS.PROCESS_METHOD == 'dilation':
             for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
-                print(f"Applying post-processing with method {cfg.PSEUDOMASKS.PROCESS_METHOD} to the pseudo-masks "
+                print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
                       f"of dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
                 dilate_pseudomasks(input_masks=[f'{pseudo_masks_folders[i]}/*.npz'],
                                    path_bboxes=cfg.PSEUDOMASKS.DATA_FOLDER[i],
