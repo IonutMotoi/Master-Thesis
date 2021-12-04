@@ -7,7 +7,7 @@ import numpy as np
 import tqdm
 
 from utils.bbox_conversion import yolo_bbox_to_pascal_voc
-from utils.save import save_masks
+# from utils.save import save_masks
 
 
 def get_default_kernel():
