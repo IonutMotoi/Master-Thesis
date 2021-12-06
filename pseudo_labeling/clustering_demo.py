@@ -3,14 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 from matplotlib import patches
-from skimage.color import rgb2gray
-from skimage.filters import sobel
+from skimage.segmentation import slic
 
 import utils.bbox_conversion
 from pseudo_labeling.mask_processing import mask_touches_bbox, set_values_outside_bbox_to_zero, get_default_kernel
-from skimage.segmentation import felzenszwalb, slic, quickshift, watershed
-from skimage.util import img_as_float
-
+import time
 
 def plot_bboxes_yolo(image, bboxes, ax):
     # Yolo format: [x_center, y_center, width, height] (normalized)
@@ -65,29 +62,38 @@ if __name__ == "__main__":
 
     # Clustering
     ax2.imshow(image)
-    # low_res_image = image[::8,::8]
     plot_bboxes_yolo(image, [bbox], ax2)
     abs_bbox = utils.bbox_conversion.yolo_bbox_to_pascal_voc(bbox, img_height=height, img_width=width)
-    slic_mask = np.ones((image.shape[0], image.shape[1]))
-    set_values_outside_bbox_to_zero(slic_mask, abs_bbox)
 
-    segments = slic(image, slic_zero=False, n_segments=1000, compactness=20, start_label=1, convert2lab=True, sigma=0)
+    image_resized = cv2.resize(image, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)  # INTER_LINEAR INTER_AREA
+    mask_resized = cv2.resize(mask, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+
+    t0 = time.time()
+    segments = slic(image_resized, slic_zero=False, max_iter=10, n_segments=100, compactness=20,
+                    start_label=1, convert2lab=True, sigma=0)
+    print(time.time() - t0)
+
     ax2.imshow(segments)
-    ax2.imshow(mask, alpha=0.5)
+    ax2.imshow(mask_resized, alpha=0.5)
 
+    t0 = time.time()
+    print(len(np.unique(segments)[1:]))
     for n, i in enumerate(np.unique(segments)[1:]):
-        print(f"{n+1}/{len(np.unique(segments))-1}")
+        # print(f"{n+1}/{len(np.unique(segments)[1:])}")
         cluster = segments == i
 
-        intersection_area = np.sum((cluster * mask) > 0, axis=(0, 1))
+        intersection_area = np.sum((cluster * mask_resized) > 0, axis=(0, 1))
         cluster_area = np.sum(cluster > 0, axis=(0, 1))
 
         if intersection_area / cluster_area > 0.7:
-            mask = ((cluster + mask) > 0).astype(np.uint8)
+            mask_resized = ((cluster + mask_resized) > 0).astype(np.uint8)
         if intersection_area / cluster_area < 0.3:
-            mask = (mask - ((cluster * mask) > 0)).astype(np.uint8)
+            mask_resized = (mask_resized - cluster*mask_resized).astype(np.uint8)
+    print(time.time() - t0)
+
+    mask_resized = cv2.resize(mask_resized, (width, height), interpolation=cv2.INTER_LINEAR)
 
     ax3.imshow(image)
-    ax3.imshow(mask, alpha=0.5)
+    ax3.imshow(mask_resized, alpha=0.5)
 
     plt.show()
