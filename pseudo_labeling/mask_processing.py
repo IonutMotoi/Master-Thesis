@@ -1,7 +1,7 @@
 import glob
 import os
 from pathlib import Path
-
+from skimage.segmentation import slic
 import cv2
 import numpy as np
 import tqdm
@@ -56,34 +56,79 @@ def set_values_outside_bbox_to_zero(mask, bbox):
     return mask
 
 
-def dilate_pseudomasks(input_masks, path_bboxes, output_path):
+def dilate_pseudomasks(masks, bboxes):
     kernel = get_default_kernel()
+    height = masks.shape[0]
+    width = masks.shape[1]
+    # Dilate the masks until they touch the edges of the bounding boxes
+    for i in range(masks.shape[2]):
+        if np.all((masks[:, :, i] == 0)):  # if empty mask
+            continue
+        abs_bbox = yolo_bbox_to_pascal_voc(bboxes[i], img_height=height, img_width=width)
+        while not mask_touches_bbox(masks[:, :, i], abs_bbox, touches_all_edges=False):
+            masks[:, :, i] = cv2.dilate(masks[:, :, i], kernel, iterations=1)
+        masks[:, :, i] = set_values_outside_bbox_to_zero(masks[:, :, i], abs_bbox)
+    return masks
 
+
+def slic_pseudomasks(cfg, masks, bboxes, image_path):
+    height = masks.shape[0]
+    width = masks.shape[1]
+
+    image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+
+    # Get slic segmentation
+    slic_segmentation = slic(image, start_label=1, convert2lab=True,
+                             slic_zero=cfg.PSEUDOMASKS.SLIC.SLIC_ZERO,
+                             n_segments=cfg.PSEUDOMASKS.SLIC.N_SEGMENTS,
+                             compactness=cfg.PSEUDOMASKS.SLIC.COMPACTNESS,
+                             sigma=cfg.PSEUDOMASKS.SLIC.SIGMA)
+    threshold = cfg.PSEUDOMASKS.SLIC.THRESHOLD
+
+    for i in range(masks.shape[2]):  # for each mask
+        mask = masks[:, :, i]
+        mask = cv2.resize(mask, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+        if np.all(mask == 0):  # if empty mask continue
+            continue
+        abs_bbox = yolo_bbox_to_pascal_voc(bboxes[i], img_height=height, img_width=width)
+
+        for cluster_index in np.unique(slic_segmentation)[1:]:
+            cluster = slic_segmentation == cluster_index
+            intersection_area = np.sum((cluster * mask) > 0, axis=(0, 1))
+            cluster_area = np.sum(cluster > 0, axis=(0, 1))
+
+            if intersection_area / cluster_area > threshold:
+                mask = ((cluster + mask) > 0).astype(np.uint8)
+            if intersection_area / cluster_area < (1-threshold):
+                mask = (mask - ((cluster * mask) > 0)).astype(np.uint8)
+
+        mask = cv2.resize(mask, (width, height), interpolation=cv2.INTER_LINEAR)
+        masks[:, :, i] = set_values_outside_bbox_to_zero(mask, abs_bbox)
+
+    return masks
+
+
+def process_pseudomasks(cfg, method, input_masks, data_path, output_path):
     if len(input_masks) == 1:
         input_masks = glob.glob(os.path.expanduser(input_masks[0]))
         assert input_masks, "The input path(s) was not found"
     for path in tqdm.tqdm(input_masks):
         masks = np.load(path)['arr_0'].astype(np.uint8)  # H x W x n
-
-        masks_height = masks.shape[0]
-        masks_width = masks.shape[1]
-
         masks_id = os.path.basename(path)
         masks_id = os.path.splitext(masks_id)[0]
 
-        bboxes = np.loadtxt(os.path.join(path_bboxes, f'{masks_id}.txt'), delimiter=" ", dtype=np.float32)
+        bboxes = np.loadtxt(os.path.join(data_path, f'{masks_id}.txt'), delimiter=" ", dtype=np.float32)
         if bboxes.ndim == 1:
             bboxes = np.expand_dims(bboxes, axis=0)
         bboxes = bboxes[:, 1:]  # remove classes
 
-        # Dilate the masks until they touch the edges of the bounding boxes
-        for i in range(masks.shape[2]):
-            if np.all((masks[:, :, i] == 0)):  # if empty mask
-                continue
-            abs_bbox = yolo_bbox_to_pascal_voc(bboxes[i], img_height=masks_height, img_width=masks_width)
-            while not mask_touches_bbox(masks[:, :, i], abs_bbox, touches_all_edges=False):
-                masks[:, :, i] = cv2.dilate(masks[:, :, i], kernel, iterations=1)
-            masks[:, :, i] = set_values_outside_bbox_to_zero(masks[:, :, i], abs_bbox)
+        if method == 'dilation':
+            masks = dilate_pseudomasks(masks, bboxes)
+        elif method == 'slic':
+            image_path = os.path.join(data_path, f'{masks_id}.jpg')
+            masks = slic_pseudomasks(cfg, masks, bboxes, image_path)
 
         # Save masks to file
         Path(output_path).mkdir(parents=True, exist_ok=True)

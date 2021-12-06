@@ -15,7 +15,7 @@ from detectron2.solver import build_optimizer, build_lr_scheduler
 from detectron2.utils import comm
 from detectron2.utils.events import EventStorage
 
-from pseudo_labeling.mask_processing import dilate_pseudomasks
+from pseudo_labeling.mask_processing import dilate_pseudomasks, slic_pseudomasks, process_pseudomasks
 from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
 from sweep.sweep_utils import set_config_from_sweep, get_hyperparameters
 from utils.early_stopping import EarlyStopping
@@ -219,7 +219,7 @@ def main(args):
             model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
         )
 
-    for train_round in range(1, cfg.SOLVER.MAX_TRAINING_ROUNDS):
+    for train_round in range(1, cfg.SOLVER.MAX_TRAINING_ROUNDS+1):
         print("#######################################")
         print(f"Training round {train_round} out of {cfg.SOLVER.MAX_TRAINING_ROUNDS}")
         print("#######################################")
@@ -240,13 +240,15 @@ def main(args):
                                            model_weights=model_weights)
 
         # Post-process pseudo-masks
-        if cfg.PSEUDOMASKS.PROCESS_METHOD == 'dilation':
+        if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic']:
             for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
                 print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
                       f"of dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
-                dilate_pseudomasks(input_masks=[f'{pseudo_masks_folders[i]}/*.npz'],
-                                   path_bboxes=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                   output_path=pseudo_masks_folders[i])
+                process_pseudomasks(cfg,
+                                    method=cfg.PSEUDOMASKS.PROCESS_METHOD,
+                                    input_masks=[f'{pseudo_masks_folders[i]}/*.npz'],
+                                    data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                    output_path=pseudo_masks_folders[i])
 
         # Train
         do_train(cfg, model, resume=args.resume, model_weights=model_weights)
@@ -256,8 +258,10 @@ def main(args):
                   os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
         wandb.save(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
         # Need to remove the saved models due to limited space
-        if train_round > 1:
+        if train_round > 1:  # Remove previous model
             os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round-1}.pth"))
+        if train_round == cfg.SOLVER.MAX_TRAINING_ROUNDS:  # Remove last model
+            os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
 
     return
 
