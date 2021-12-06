@@ -7,7 +7,12 @@ def get_hyperparameters(cfg):
     hyperparameters = dict(
         mask_process_method=cfg.PSEUDOMASKS.PROCESS_METHOD,
         max_training_rounds=cfg.SOLVER.MAX_TRAINING_ROUNDS,
-        model_weights=cfg.MODEL.WEIGHTS
+        model_weights=cfg.MODEL.WEIGHTS,
+        slic_zero=cfg.PSEUDOMASKS.SLIC.SLIC_ZERO,
+        n_segments=cfg.PSEUDOMASKS.SLIC.N_SEGMENTS,
+        compactness=cfg.PSEUDOMASKS.SLIC.COMPACTNESS,
+        sigma=cfg.PSEUDOMASKS.SLIC.SIGMA,
+        threshold=cfg.PSEUDOMASKS.SLIC.THRESHOLD
     )
     return hyperparameters
 
@@ -21,4 +26,9 @@ def set_config_from_sweep(cfg, sweep_params):
     if 'model_final_a3ec72.pkl' not in sweep_params.model_weights:
         cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_finetuning'
     cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_' + sweep_params.mask_process_method
+    cfg.PSEUDOMASKS.SLIC.SLIC_ZERO = sweep_params.slic_zero
+    cfg.PSEUDOMASKS.SLIC.N_SEGMENTS = sweep_params.n_segments
+    cfg.PSEUDOMASKS.SLIC.COMPACTNESS = sweep_params.compactness
+    cfg.PSEUDOMASKS.SLIC.SIGMA = sweep_params.sigma
+    cfg.PSEUDOMASKS.SLIC.THRESHOLD = sweep_params.threshold
     return cfg
