@@ -14,7 +14,7 @@ parameters:
     values: [50, 100, 250, 500, 1000]
   compactness:
     values: [1, 10, 25, 50, 100]
-  slic0:
+  slic_zero:
     values: [True, False]
   sigma:
     values: [0, 3]
