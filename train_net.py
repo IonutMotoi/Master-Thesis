@@ -192,7 +192,7 @@ def main(args):
     cfg = setup(args)
 
     # Save config.yaml on wandb
-    wandb.save(os.path.join(cfg.OUTPUT_DIR, "config.yaml"))
+    wandb.save(os.path.join(cfg.OUTPUT_DIR, "config.yaml"), policy='now')
 
     model = build_model(cfg)
     logger.info("Model:\n{}".format(model))
