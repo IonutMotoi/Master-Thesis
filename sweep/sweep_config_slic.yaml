@@ -1,7 +1,7 @@
 program: train_net.py
 method: bayes
 metric:
-  name: new_dataset_validation_segm/AP
+  name: best_segm_AP
   goal: maximize
 parameters:
   mask_process_method:

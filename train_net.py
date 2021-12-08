@@ -152,6 +152,7 @@ def do_train(cfg, model, resume=False, model_weights=None):
                 print("#######################################")
                 metric = test_results["new_dataset_validation"]["segm"]["AP"]
                 early_stopping.on_epoch_end(metric, epoch)
+                storage.put_scalar(name='best_segm_AP', value=early_stopping.best_value, smoothing_hint=False)
                 if early_stopping.has_improved:
                     print(f"New best model -> epoch: {epoch} -> segm AP: {metric}")
                     checkpointer.save("best_model")
