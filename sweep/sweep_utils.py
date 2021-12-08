@@ -23,12 +23,18 @@ def set_config_from_sweep(cfg, sweep_params):
     cfg.PSEUDOMASKS.PROCESS_METHOD = sweep_params.mask_process_method
     cfg.SOLVER.MAX_TRAINING_ROUNDS = sweep_params.max_training_rounds
     cfg.MODEL.WEIGHTS = sweep_params.model_weights
-    if 'model_final_a3ec72.pkl' not in sweep_params.model_weights:
-        cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_finetuning'
-    cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_' + sweep_params.mask_process_method
-    cfg.PSEUDOMASKS.SLIC.SLIC_ZERO = sweep_params.slic_zero
     cfg.PSEUDOMASKS.SLIC.N_SEGMENTS = sweep_params.n_segments
     cfg.PSEUDOMASKS.SLIC.COMPACTNESS = sweep_params.compactness
+    cfg.PSEUDOMASKS.SLIC.SLIC_ZERO = sweep_params.slic_zero
     cfg.PSEUDOMASKS.SLIC.SIGMA = sweep_params.sigma
     cfg.PSEUDOMASKS.SLIC.THRESHOLD = sweep_params.threshold
+    if 'model_final_a3ec72.pkl' not in sweep_params.model_weights:
+        cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_finetuning'
+    cfg.OUTPUT_DIR = (cfg.OUTPUT_DIR
+                      + '_' + sweep_params.mask_process_method
+                      + '_segments' + sweep_params.n_segments
+                      + '_compactness' + sweep_params.compactness
+                      + '_sliczero' + sweep_params.slic_zero
+                      + '_sigma' + sweep_params.sigma
+                      + '_threshold' + sweep_params.threshold)
     return cfg
