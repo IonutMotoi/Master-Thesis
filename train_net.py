@@ -142,12 +142,6 @@ def do_train(cfg, model, resume=False, model_weights=None):
                                         smoothing_hint=False)
                 logger.info("Total validation loss -> new dataset: {}".format(validation_loss_new_dataset))
 
-                comm.synchronize()
-
-                # Write events to EventStorage
-                for writer in writers:
-                    writer.write()
-
                 # Early stopping
                 print("#######################################")
                 metric = test_results["new_dataset_validation"]["segm"]["AP"]
@@ -157,6 +151,12 @@ def do_train(cfg, model, resume=False, model_weights=None):
                     print(f"New best model -> epoch: {epoch} -> segm AP: {metric}")
                     checkpointer.save("best_model")
                 print("#######################################")
+
+                comm.synchronize()
+
+                # Write events to EventStorage
+                for writer in writers:
+                    writer.write()
 
                 if early_stopping.should_stop():
                     print(f"Early stopping at epoch {epoch}")
