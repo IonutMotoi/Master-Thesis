@@ -32,9 +32,9 @@ def set_config_from_sweep(cfg, sweep_params):
         cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_finetuning'
     cfg.OUTPUT_DIR = (cfg.OUTPUT_DIR
                       + '_' + sweep_params.mask_process_method
-                      + '_segments' + sweep_params.n_segments
-                      + '_compactness' + sweep_params.compactness
-                      + '_sliczero' + sweep_params.slic_zero
-                      + '_sigma' + sweep_params.sigma
-                      + '_threshold' + sweep_params.threshold)
+                      + '_segments' + str(sweep_params.n_segments)
+                      + '_compactness' + str(sweep_params.compactness)
+                      + '_sliczero' + str(sweep_params.slic_zero)
+                      + '_sigma' + str(sweep_params.sigma)
+                      + '_threshold' + str(sweep_params.threshold))
     return cfg
