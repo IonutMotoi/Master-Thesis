@@ -7,20 +7,15 @@ parameters:
   mask_process_method:
     value: 'slic'
   max_training_rounds:
-    value: 3
+    value: 1
   model_weights:
-    values: [ "./output/wgisd_R101_with_aug_crop/model_final.pth",
-              "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl" ]
+    value: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
   n_segments:
-    values: [100, 250, 500]
+    values: [500, 1000, 2000]
   compactness:
-    values: [10, 25, 50]
-  slic_zero:
-    values: [True, False]
-  sigma:
-    values: [0]
+    values: [0.01, 0.1, 1, 10, 100, slic_zero]
   threshold:
-    values: [0.6, 0.7, 0.8]
+    values: [0.0, 0.1]
 
 command:
   - ${env}
