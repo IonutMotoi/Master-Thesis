@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 from matplotlib import patches
-from skimage.segmentation import slic
+from skimage.segmentation import slic, mark_boundaries
 
 import utils.bbox_conversion
 from pseudo_labeling.mask_processing import mask_touches_bbox, set_values_outside_bbox_to_zero, get_default_kernel
@@ -33,8 +33,8 @@ def plot_bboxes_yolo(image, bboxes, ax):
 
 if __name__ == "__main__":
     # img_id = "IMG_20210924_131131409"
-    # img_id = "IMG_20210924_112427127"
-    img_id = "IMG_20210924_132053023"
+    img_id = "IMG_20210924_131159094"
+    # img_id = "IMG_20210924_132053023"
     data_path = "./new_dataset/train"
     mask_path = "./pseudo_labels"
 
@@ -69,11 +69,11 @@ if __name__ == "__main__":
     mask_resized = cv2.resize(mask, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
 
     t0 = time.time()
-    segments = slic(image_resized, slic_zero=False, max_iter=10, n_segments=100, compactness=20,
+    segments = slic(image_resized, slic_zero=False, max_iter=10, n_segments=2000, compactness=10,
                     start_label=1, convert2lab=True, sigma=0)
     print(time.time() - t0)
 
-    ax2.imshow(segments)
+    ax2.imshow(mark_boundaries(image_resized, segments))
     ax2.imshow(mask_resized, alpha=0.5)
 
     t0 = time.time()
@@ -85,10 +85,10 @@ if __name__ == "__main__":
         intersection_area = np.sum((cluster * mask_resized) > 0, axis=(0, 1))
         cluster_area = np.sum(cluster > 0, axis=(0, 1))
 
-        if intersection_area / cluster_area > 0.7:
+        if intersection_area / cluster_area > 0.0:
             mask_resized = ((cluster + mask_resized) > 0).astype(np.uint8)
-        if intersection_area / cluster_area < 0.3:
-            mask_resized = (mask_resized - cluster*mask_resized).astype(np.uint8)
+        # if intersection_area / cluster_area < 0.3:
+        #     mask_resized = (mask_resized - cluster*mask_resized).astype(np.uint8)
     print(time.time() - t0)
 
     mask_resized = cv2.resize(mask_resized, (width, height), interpolation=cv2.INTER_LINEAR)
