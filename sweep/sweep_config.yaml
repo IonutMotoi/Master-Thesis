@@ -1,13 +1,13 @@
 program: train_net.py
 method: grid
 metric:
-  name: new_dataset_validation_segm/AP
+  name: best_segm_AP
   goal: maximize
 parameters:
   mask_process_method:
-    values: ['none', 'dilation']
+    values: ['grabcut', 'dilation_and_grabcut']
   max_training_rounds:
-    value: 15
+    value: 5
   model_weights:
     values: ["./output/wgisd_R101_with_aug_crop/model_final.pth",
              "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"]

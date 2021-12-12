@@ -24,20 +24,17 @@ def set_config_from_sweep(cfg, sweep_params):
     cfg.SOLVER.MAX_TRAINING_ROUNDS = sweep_params.max_training_rounds
     cfg.MODEL.WEIGHTS = sweep_params.model_weights
     cfg.PSEUDOMASKS.SLIC.N_SEGMENTS = sweep_params.n_segments
-    # if sweep_params.compactness == 'slic_zero':
-    #     cfg.PSEUDOMASKS.SLIC.SLIC_ZERO = True
-    # else:
-    #     cfg.PSEUDOMASKS.SLIC.COMPACTNESS = sweep_params.compactness
     cfg.PSEUDOMASKS.SLIC.SLIC_ZERO = sweep_params.slic_zero
     cfg.PSEUDOMASKS.SLIC.COMPACTNESS = sweep_params.compactness
     cfg.PSEUDOMASKS.SLIC.SIGMA = sweep_params.sigma
     cfg.PSEUDOMASKS.SLIC.THRESHOLD = sweep_params.threshold
     if 'model_final_a3ec72.pkl' not in sweep_params.model_weights:
         cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_finetuning'
-    cfg.OUTPUT_DIR = (cfg.OUTPUT_DIR
-                      + '_' + cfg.PSEUDOMASKS.PROCESS_METHOD
-                      + '_segments' + str(cfg.PSEUDOMASKS.SLIC.N_SEGMENTS)
-                      + '_compactness' + str(cfg.PSEUDOMASKS.SLIC.COMPACTNESS)
-                      + '_sliczero' + str(cfg.PSEUDOMASKS.SLIC.SLIC_ZERO)
-                      + '_threshold' + str(cfg.PSEUDOMASKS.SLIC.THRESHOLD))
+    cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_' + cfg.PSEUDOMASKS.PROCESS_METHOD
+    if cfg.PSEUDOMASKS.PROCESS_METHOD == 'slic':
+        cfg.OUTPUT_DIR = (cfg.OUTPUT_DIR
+                          + '_segments' + str(cfg.PSEUDOMASKS.SLIC.N_SEGMENTS)
+                          + '_compactness' + str(cfg.PSEUDOMASKS.SLIC.COMPACTNESS)
+                          + '_sliczero' + str(cfg.PSEUDOMASKS.SLIC.SLIC_ZERO)
+                          + '_threshold' + str(cfg.PSEUDOMASKS.SLIC.THRESHOLD))
     return cfg
