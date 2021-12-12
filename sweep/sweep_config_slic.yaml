@@ -11,11 +11,11 @@ parameters:
   model_weights:
     value: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
   n_segments:
-    values: [500, 1000, 2000]
-  slic_zero:
-    value: True
+    value: 2000
+  compactness:
+    values: [0.1, 1, 10, 50]
   threshold:
-    values: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    values: [0.1, 0.3, 0.5, 0.7, 0.9]
 
 command:
   - ${env}
