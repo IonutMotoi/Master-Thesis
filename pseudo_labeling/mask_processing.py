@@ -1,5 +1,6 @@
 import glob
 import os
+import time
 from pathlib import Path
 from skimage.segmentation import slic
 import cv2
@@ -110,6 +111,43 @@ def slic_pseudomasks(cfg, masks, bboxes, image_path):
     return masks
 
 
+def grabcut_pseudomasks(masks, bboxes, image_path, apply_dilation=False):
+    height = masks.shape[0]
+    width = masks.shape[1]
+
+    image = cv2.imread(image_path)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    for i in range(masks.shape[2]):  # for each mask
+        mask = masks[:, :, i].copy()
+        if np.all(mask == 0):  # if empty mask continue
+            continue
+        abs_bbox = yolo_bbox_to_pascal_voc(bboxes[i], img_height=height, img_width=width)
+
+        # Allocate memory for two arrays that GrabCut will use internally
+        fgModel = np.zeros((1, 65), dtype="float")
+        bgModel = np.zeros((1, 65), dtype="float")
+
+        if apply_dilation:
+            mask_dilated = dilate_pseudomasks(np.array([mask.copy()]).transpose((1, 2, 0)), [bboxes[i]])
+            mask_dilated = mask_dilated.squeeze()
+            mask_dilated = mask_dilated - mask
+            mask[mask_dilated > 0] = cv2.GC_PR_FGD  # probable foreground
+        mask[mask == 1] = cv2.GC_FGD  # foreground
+        mask[mask == 0] = cv2.GC_PR_BGD  # probable background
+        set_values_outside_bbox_to_zero(mask, abs_bbox)  # values outside bbox -> obvious background
+
+        # GrabCut with mask initialization
+        (mask, bgModel, fgModel) = cv2.grabCut(image, mask, None, bgModel, fgModel,
+                                               iterCount=1, mode=cv2.GC_INIT_WITH_MASK)
+
+        # Set all background and probable background pixels to 0 and
+        # set all foreground and probable foreground pixels to 1
+        masks[:, :, i] = np.where((mask == cv2.GC_BGD) | (mask == cv2.GC_PR_BGD), 0, 1)
+
+    return masks
+
+
 def process_pseudomasks(cfg, method, input_masks, data_path, output_path):
     if len(input_masks) == 1:
         input_masks = glob.glob(os.path.expanduser(input_masks[0]))
@@ -129,6 +167,12 @@ def process_pseudomasks(cfg, method, input_masks, data_path, output_path):
         elif method == 'slic':
             image_path = os.path.join(data_path, f'{masks_id}.jpg')
             masks = slic_pseudomasks(cfg, masks, bboxes, image_path)
+        elif method == 'grabcut':
+            image_path = os.path.join(data_path, f'{masks_id}.jpg')
+            masks = grabcut_pseudomasks(masks, bboxes, image_path)
+        elif method == 'dilation_and_grabcut':
+            image_path = os.path.join(data_path, f'{masks_id}.jpg')
+            masks = grabcut_pseudomasks(masks, bboxes, image_path, apply_dilation=True)
 
         # Save masks to file
         Path(output_path).mkdir(parents=True, exist_ok=True)
