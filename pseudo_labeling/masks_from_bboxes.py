@@ -18,8 +18,6 @@ def generate_masks_from_bboxes(cfg, ids_txt, data_folder, dest_folder, model_wei
         ids = [line.rstrip() for line in lines]
 
     predictor = MasksFromBboxesPredictor(cfg, model_weights=model_weights)
-    data_folder = data_folder
-    dest_folder = dest_folder
 
     for img_id in tqdm.tqdm(ids):
         img_path = os.path.join(data_folder, f'{img_id}.jpg')

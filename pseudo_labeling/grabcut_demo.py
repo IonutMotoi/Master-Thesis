@@ -37,7 +37,7 @@ if __name__ == "__main__":
     # img_id = "IMG_20210924_132053023"
     img_id = "IMG_20210924_131835597"
     data_path = "./new_dataset/train"
-    mask_path = "./pseudo_labels"
+    mask_path = "./pseudo_labels/new_dataset"
 
     image = cv2.imread(os.path.join(data_path, f'{img_id}.jpg'))
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
