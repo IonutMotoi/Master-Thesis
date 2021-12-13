@@ -13,7 +13,7 @@ parameters:
   n_segments:
     value: 2000
   compactness:
-    values: 0.1
+    value: 0.1
   threshold:
     value: 0.1
 
