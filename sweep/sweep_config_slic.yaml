@@ -1,5 +1,5 @@
 program: train_net.py
-method: bayes
+method: grid
 metric:
   name: best_segm_AP
   goal: maximize
@@ -7,15 +7,15 @@ parameters:
   mask_process_method:
     value: 'slic'
   max_training_rounds:
-    value: 3
+    value: 1
   model_weights:
     value: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
   n_segments:
     value: 2000
   compactness:
-    values: [0.1, 1, 10, 50]
+    values: 0.1
   threshold:
-    values: [0.1, 0.3, 0.5, 0.7, 0.9]
+    value: 0.1
 
 command:
   - ${env}
