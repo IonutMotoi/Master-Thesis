@@ -241,7 +241,7 @@ def main(args):
                                            model_weights=model_weights)
 
         # Post-process pseudo-masks
-        if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic', 'grabcut', 'dilation_and_grabcut']:
+        if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic', 'grabcut']:
             for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
                 print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
                       f"of dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")

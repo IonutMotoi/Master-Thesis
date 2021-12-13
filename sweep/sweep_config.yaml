@@ -5,12 +5,15 @@ metric:
   goal: maximize
 parameters:
   mask_process_method:
-    values: ['grabcut', 'dilation_and_grabcut']
+    value: 'grabcut'
   max_training_rounds:
     value: 5
   model_weights:
-    values: ["./output/wgisd_R101_with_aug_crop/model_final.pth",
-             "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"]
+    value: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
+  grabcut_dilation:
+    values: [True, False]
+  grabcut_median_blur:
+    values: [0, 25]
 command:
   - ${env}
   - ${interpreter}

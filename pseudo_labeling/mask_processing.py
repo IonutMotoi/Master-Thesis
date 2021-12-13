@@ -111,7 +111,7 @@ def slic_pseudomasks(cfg, masks, bboxes, image_path):
     return masks
 
 
-def grabcut_pseudomasks(masks, bboxes, image_path, apply_dilation=False):
+def grabcut_pseudomasks(masks, bboxes, image_path, dilation=False, median_blur=0):
     height = masks.shape[0]
     width = masks.shape[1]
 
@@ -126,7 +126,7 @@ def grabcut_pseudomasks(masks, bboxes, image_path, apply_dilation=False):
         fgModel = np.zeros((1, 65), dtype="float")
         bgModel = np.zeros((1, 65), dtype="float")
 
-        if apply_dilation and not np.all(mask == 0):
+        if dilation and not np.all(mask == 0):
             mask_dilated = dilate_pseudomasks(np.array([mask.copy()]).transpose((1, 2, 0)), [bboxes[i]])
             mask_dilated = mask_dilated.squeeze()
             mask_dilated = mask_dilated - mask
@@ -141,7 +141,12 @@ def grabcut_pseudomasks(masks, bboxes, image_path, apply_dilation=False):
 
         # Set all background and probable background pixels to 0 and
         # set all foreground and probable foreground pixels to 1
-        masks[:, :, i] = np.where((mask == cv2.GC_BGD) | (mask == cv2.GC_PR_BGD), 0, 1)
+        mask = np.where((mask == cv2.GC_BGD) | (mask == cv2.GC_PR_BGD), 0, 1).astype(np.uint8)
+
+        if median_blur > 0:
+            mask = cv2.medianBlur(mask, ksize=median_blur)
+
+        masks[:, :, i] = mask
 
     return masks
 
@@ -167,10 +172,9 @@ def process_pseudomasks(cfg, method, input_masks, data_path, output_path):
             masks = slic_pseudomasks(cfg, masks, bboxes, image_path)
         elif method == 'grabcut':
             image_path = os.path.join(data_path, f'{masks_id}.jpg')
-            masks = grabcut_pseudomasks(masks, bboxes, image_path)
-        elif method == 'dilation_and_grabcut':
-            image_path = os.path.join(data_path, f'{masks_id}.jpg')
-            masks = grabcut_pseudomasks(masks, bboxes, image_path, apply_dilation=True)
+            masks = grabcut_pseudomasks(masks, bboxes, image_path,
+                                        dilation=cfg.PSEUDOMASKS.GRABCUT.DILATION,
+                                        median_blur=cfg.PSEUDOMASKS.GRABCUT.MEDIAN_BLUR)
 
         # Save masks to file
         Path(output_path).mkdir(parents=True, exist_ok=True)

@@ -16,6 +16,9 @@ PSEUDOMASKS:
   DEST_FOLDER: ["pseudo_masks/new_dataset"]
   INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
   PROCESS_METHOD: "none"
+  GRABCUT:
+    DILATION: False
+    MEDIAN_BLUR: 0
   SLIC:
     SLIC_ZERO: False
     N_SEGMENTS: 100
