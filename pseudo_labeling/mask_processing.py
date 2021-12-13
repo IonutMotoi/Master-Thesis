@@ -120,15 +120,13 @@ def grabcut_pseudomasks(masks, bboxes, image_path, apply_dilation=False):
 
     for i in range(masks.shape[2]):  # for each mask
         mask = masks[:, :, i].copy()
-        if np.all(mask == 0):  # if empty mask continue
-            continue
         abs_bbox = yolo_bbox_to_pascal_voc(bboxes[i], img_height=height, img_width=width)
 
         # Allocate memory for two arrays that GrabCut will use internally
         fgModel = np.zeros((1, 65), dtype="float")
         bgModel = np.zeros((1, 65), dtype="float")
 
-        if apply_dilation:
+        if apply_dilation and not np.all(mask == 0):
             mask_dilated = dilate_pseudomasks(np.array([mask.copy()]).transpose((1, 2, 0)), [bboxes[i]])
             mask_dilated = mask_dilated.squeeze()
             mask_dilated = mask_dilated - mask
