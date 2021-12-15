@@ -235,6 +235,7 @@ def main(args):
             for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
                 print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
                 if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
+                    print("NAIVE METHOD")
                     generate_masks_from_bboxes(cfg,
                                          ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
                                          data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
