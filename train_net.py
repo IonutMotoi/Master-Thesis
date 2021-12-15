@@ -234,11 +234,19 @@ def main(args):
         if cfg.PSEUDOMASKS.GENERATE:
             for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
                 print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
-                generate_masks_from_bboxes(cfg,
-                                           ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
-                                           data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                           dest_folder=pseudo_masks_folders[i],
-                                           model_weights=model_weights)
+                if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
+                    generate_masks_from_bboxes(cfg,
+                                         ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
+                                         data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                         dest_folder=pseudo_masks_folders[i],
+                                         model_weights=model_weights,
+                                         use_bboxes=False)
+                else:
+                    generate_masks_from_bboxes(cfg,
+                                               ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
+                                               data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                               dest_folder=pseudo_masks_folders[i],
+                                               model_weights=model_weights)
 
         # Post-process pseudo-masks
         if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic', 'grabcut']:

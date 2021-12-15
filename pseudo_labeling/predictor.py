@@ -22,7 +22,7 @@ class MasksFromBboxesPredictor:
     4. Take one input image with the bounding boxes and classes and produce a single output, instead of a batch.
     """
 
-    def __init__(self, cfg, model_weights=None):
+    def __init__(self, cfg, model_weights=None, use_bboxes=True):
         self.cfg = cfg.clone()  # cfg can be modified by model
         self.model = build_model(self.cfg)
         self.model.eval()
@@ -42,6 +42,8 @@ class MasksFromBboxesPredictor:
 
         self.input_format = cfg.INPUT.FORMAT
         assert self.input_format in ["RGB", "BGR"], self.input_format
+
+        self.use_bboxes = use_bboxes
 
     def __call__(self, original_image, bboxes, classes):
         """
@@ -65,16 +67,20 @@ class MasksFromBboxesPredictor:
             # Transform the image
             image = transform.apply_image(original_image)
             image = torch.as_tensor(image.astype("float32").transpose(2, 0, 1))  # C, H, W
-
-            # Transform the GT bounding boxes
-            bboxes = [transform.apply_box(np.array([bbox]))[0].clip(min=0) for bbox in bboxes]
-            bboxes = torch.tensor(bboxes)
-
-            # Create an 'Instances' object with the GT bboxes and classes
-            target = Instances(image_size=image.shape[1:])
-            target.pred_boxes = Boxes(bboxes)
-            target.pred_classes = torch.tensor(classes, dtype=torch.int64)
-
             inputs = {"image": image, "height": height, "width": width}
-            predictions = self.model.inference([inputs], detected_instances=[target])[0]
+
+            if self.use_bboxes:
+                # Transform the GT bounding boxes
+                bboxes = [transform.apply_box(np.array([bbox]))[0].clip(min=0) for bbox in bboxes]
+                bboxes = torch.tensor(bboxes)
+
+                # Create an 'Instances' object with the GT bboxes and classes
+                target = Instances(image_size=image.shape[1:])
+                target.pred_boxes = Boxes(bboxes)
+                target.pred_classes = torch.tensor(classes, dtype=torch.int64)
+
+                predictions = self.model.inference([inputs], detected_instances=[target])[0]
+
+            else:
+                predictions = self.model.inference([inputs])[0]
             return predictions
