@@ -255,14 +255,17 @@ def main(args):
         do_train(cfg, model, resume=args.resume, model_weights=model_weights)
 
         # Save the best model for each training round on Weight and Biases
-        os.rename(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"),
-                  os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
-        wandb.save(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
-        # Need to remove the saved models due to limited space
-        if train_round > 1:  # Remove previous model
-            os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round-1}.pth"))
-        if train_round == cfg.SOLVER.MAX_TRAINING_ROUNDS:  # Remove last model
-            os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
+        if cfg.SOLVER.MAX_TRAINING_ROUNDS > 1:
+            os.rename(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"),
+                      os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
+            wandb.save(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
+            # Need to remove the saved models due to limited space
+            if train_round > 1:  # Remove previous model
+                os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round-1}.pth"))
+            if train_round == cfg.SOLVER.MAX_TRAINING_ROUNDS:  # Remove last model
+                os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
+        else:
+            wandb.save(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
 
     return
 
