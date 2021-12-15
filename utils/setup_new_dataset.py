@@ -60,7 +60,7 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
             masks = np.load(mask_path)['arr_0'].astype(np.uint8)
         num_objs = masks.shape[2]
 
-        if source == "train" or not naive:
+        if source == "train" and not naive:
             box_path = source_path / f'{img_id}.txt'
             bboxes = np.loadtxt(box_path, delimiter=" ", dtype=np.float32)
             if bboxes.ndim == 2:
