@@ -5,7 +5,7 @@ metric:
   goal: maximize
 parameters:
   mask_process_method:
-    value: 'grabcut'
+    value: 'naive'
   max_training_rounds:
     value: 1
   model_weights:
