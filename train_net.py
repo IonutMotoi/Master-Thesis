@@ -204,7 +204,10 @@ def main(args):
         pseudo_masks_folders.append(os.path.join(cfg.OUTPUT_DIR, folder))
 
     # Register dataset
-    setup_new_dataset(pseudo_masks_folders[0])
+    if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
+        setup_new_dataset(pseudo_masks_folders[0], naive=True)
+    else:
+        setup_new_dataset(pseudo_masks_folders[0])
     setup_wgisd()  # pass pseudo_masks_folders[1] to register pseudo_masks for wgisd (check cfg as well)
 
     if args.eval_only:
