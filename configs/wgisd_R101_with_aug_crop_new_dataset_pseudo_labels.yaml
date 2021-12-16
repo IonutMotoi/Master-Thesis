@@ -9,6 +9,7 @@ SOLVER:
 TEST:
   EVAL_PERIOD: 173  # evaluate every epoch
 OUTPUT_DIR: "./output/wgisd_R101_with_aug_crop_new_dataset_pseudo_labels"
+SEED: -1
 PSEUDOMASKS:
   GENERATE: True
   IDS_TXT: ["/thesis/new_dataset/train/train.txt"]
