@@ -46,4 +46,20 @@ ALBUMENTATIONS:
     ENABLED: False
     DROPOUT_MIN: 0.0
     DROPOUT_MAX: 0.05
+PSEUDOMASKS:
+  GENERATE: False
+  IDS_TXT: ["/thesis/new_dataset/train/train.txt"]
+  DATA_FOLDER: ["/thesis/new_dataset/train"]
+  DEST_FOLDER: ["pseudo_masks/new_dataset"]
+  INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
+  PROCESS_METHOD: "none"
+  GRABCUT:
+    DILATION: True
+    MEDIAN_BLUR: 25
+  SLIC:
+    SLIC_ZERO: False
+    N_SEGMENTS: 2000
+    COMPACTNESS: 0.1
+    SIGMA: 0
+    THRESHOLD: 0.1
 EVALUATOR: "coco"
