@@ -80,7 +80,7 @@ def do_train(cfg, model, resume=False, model_weights=None):
     validation_loss_eval_wgisd = ValidationLossEval(cfg, model, "wgisd_valid")
     validation_loss_eval_new_dataset = ValidationLossEval(cfg, model, "new_dataset_validation")
     mean_train_loss = MeanTrainLoss()
-    early_stopping = EarlyStopping(patience=10)
+    early_stopping = EarlyStopping(patience=20)
     iters_per_epoch = cfg.SOLVER.ITERS_PER_EPOCH
     epoch = 0
 
