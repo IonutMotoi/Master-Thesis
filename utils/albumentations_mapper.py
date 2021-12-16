@@ -91,7 +91,6 @@ class AlbumentationsMapper:
 
             # Convert bboxes from the pascal_voc to the albumentations format
             bboxes = pascal_voc_bboxes_to_albumentations(bboxes, height=image.shape[0], width=image.shape[1])
-            print("[DEBUG]", bboxes)
 
             # if self.is_train:
             # Apply augmentations
