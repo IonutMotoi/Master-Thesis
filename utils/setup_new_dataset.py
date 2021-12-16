@@ -56,12 +56,12 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
         if source == "train":
             mask_path = pseudo_masks_path / f'{img_id}.npz'
             masks = np.load(mask_path)['arr_0'].astype(np.uint8)
-        else:
-            mask_path = source_path / f'{img_id}.npz'
-            masks = np.load(mask_path)['arr_0'].astype(np.uint8)
             for i in range(masks.shape[2]):
                 if np.all((masks[:, :, i] == 0)):
                     masks = np.delete(masks, i, axis=2)  # remove empty masks
+        else:
+            mask_path = source_path / f'{img_id}.npz'
+            masks = np.load(mask_path)['arr_0'].astype(np.uint8)
         num_objs = masks.shape[2]
 
         if source == "train" and not naive:
