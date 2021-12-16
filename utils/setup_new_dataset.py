@@ -19,6 +19,7 @@ def extract_bboxes_from_masks(masks):
         y = np.where(y_any[:, idx])[0]
         if len(x) > 0 and len(y) > 0:
             boxes[idx, :] = np.array([x[0], y[0], x[-1] + 1, y[-1] + 1], dtype=np.float32)
+
     return boxes
 
 
@@ -71,6 +72,9 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
             bboxes = yolo_bboxes_to_pascal_voc(bboxes, img_height=height, img_width=width)
         else:
             bboxes = extract_bboxes_from_masks(masks)  # Pascal VOC format
+            for bbox in bboxes:
+                print(f"[DEBUG] {bbox}")
+
         assert (len(bboxes) == num_objs)
 
         objs = []

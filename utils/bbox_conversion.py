@@ -31,7 +31,6 @@ def pascal_voc_bbox_to_albumentations(bbox, height, width):
     assert 0 <= y_min <= 1, "Expected bbox to be in the range [0.0, 1.0], got y_min = {y_min}.".format(y_min=y_min)
     assert 0 <= x_max <= 1, "Expected bbox to be in the range [0.0, 1.0], got x_max = {x_max}.".format(x_max=x_max)
     assert 0 <= y_max <= 1, "Expected bbox to be in the range [0.0, 1.0], got y_max = {y_max}.".format(y_max=y_max)
-    print(f"[DEBUG] before: {bbox} | after: [{x_min}, {y_min}, {x_max}, {y_max}]")
 
     return x_min, y_min, x_max, y_max
 
