@@ -59,6 +59,9 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
         else:
             mask_path = source_path / f'{img_id}.npz'
             masks = np.load(mask_path)['arr_0'].astype(np.uint8)
+            for i in range(masks.shape[2]):
+                if np.all((masks[:, :, i] == 0)):
+                    masks = np.delete(masks, i, axis=2)  # remove empty masks
         num_objs = masks.shape[2]
 
         if source == "train" and not naive:
@@ -72,8 +75,6 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
             bboxes = yolo_bboxes_to_pascal_voc(bboxes, img_height=height, img_width=width)
         else:
             bboxes = extract_bboxes_from_masks(masks)  # Pascal VOC format
-            for bbox in bboxes:
-                print(f"[DEBUG] {bbox}")
 
         assert (len(bboxes) == num_objs)
 
