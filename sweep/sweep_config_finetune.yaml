@@ -12,6 +12,8 @@ parameters:
     value: "./output/wgisd_R101_with_aug_crop/model_final.pth"
   experiments:
     values: [1, 2, 3, 4, 5]
+  threshold:
+    value: 0.7
 command:
   - ${env}
   - ${interpreter}
