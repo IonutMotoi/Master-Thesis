@@ -102,8 +102,8 @@ def slic_pseudomasks(cfg, masks, bboxes, image_path):
 
             if intersection_area / cluster_area > threshold:
                 mask = ((cluster + mask) > 0).astype(np.uint8)
-            # if intersection_area / cluster_area < (1-threshold):
-            #     mask = (mask - ((cluster * mask) > 0)).astype(np.uint8)
+            if intersection_area / cluster_area < (1-threshold):
+                mask = (mask - ((cluster * mask) > 0)).astype(np.uint8)
 
         mask = cv2.resize(mask, (width, height), interpolation=cv2.INTER_LINEAR)
         masks[:, :, i] = set_values_outside_bbox_to_zero(mask, abs_bbox)
