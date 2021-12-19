@@ -58,17 +58,16 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
             masks = np.load(mask_path)['arr_0'].astype(np.uint8)
 
             # Remove empty masks
-            indices = []
+            indices_to_remove = []
             for i in range(masks.shape[2]):
                 if np.all((masks[:, :, i] == 0)):
-                    indices.append(i)
-            if len(indices) > 0:
-                masks = np.delete(masks, indices, axis=2)
+                    indices_to_remove.append(i)
+            if len(indices_to_remove) > 0:
+                masks = np.delete(masks, indices_to_remove, axis=2)
+
         else:
             mask_path = source_path / f'{img_id}.npz'
             masks = np.load(mask_path)['arr_0'].astype(np.uint8)
-        num_objs = masks.shape[2]
-        print("DEBUG:", "NUM OBJS", num_objs)
 
         if source == "train" and not naive:
             box_path = source_path / f'{img_id}.txt'
@@ -77,12 +76,18 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
                 bboxes = bboxes[:, 1:]
             else:  # only 1 instance
                 bboxes = [bboxes[1:]]
+
             # Convert bboxes from YOLO format to Pascal VOC format
             bboxes = yolo_bboxes_to_pascal_voc(bboxes, img_height=height, img_width=width)
         else:
             bboxes = extract_bboxes_from_masks(masks)  # Pascal VOC format
-        print("DEBUG:", "len(bboxes)", len(bboxes))
 
+        # Remove bboxes corresponding to empty masks
+        if source == "train":
+            if len(indices_to_remove) > 0:
+                bboxes = [bboxes[i] for i in range(len(bboxes)) if i not in indices_to_remove]
+
+        num_objs = masks.shape[2]
         assert (len(bboxes) == num_objs)
 
         objs = []
