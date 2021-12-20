@@ -274,8 +274,8 @@ def main(args):
             # Need to remove the saved models due to limited space
             if train_round > 1:  # Remove previous model
                 os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round-1}.pth"))
-            if train_round == cfg.SOLVER.MAX_TRAINING_ROUNDS:  # Remove last model
-                os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
+            # if train_round == cfg.SOLVER.MAX_TRAINING_ROUNDS:  # Remove last model
+            #     os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
         else:
             wandb.save(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
 
