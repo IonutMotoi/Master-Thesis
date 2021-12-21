@@ -111,32 +111,39 @@ def slic_pseudomasks(cfg, masks, bboxes, image_path):
     return masks
 
 
-def grabcut_pseudomasks(masks, bboxes, image_path, dilation=False, median_blur=0):
+def grabcut_pseudomasks(masks, bboxes, image_path, gamma_iters=40, median_blur=0):
     height = masks.shape[0]
     width = masks.shape[1]
 
     image = cv2.imread(image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+    kernel = get_default_kernel()
+
     for i in range(masks.shape[2]):  # for each mask
         mask = masks[:, :, i].copy()
         abs_bbox = yolo_bbox_to_pascal_voc(bboxes[i], img_height=height, img_width=width)
+
+        # Dilation and erosion iterations proportional to the minimum size of the bounding box
+        iters = int(min(abs_bbox[2] - abs_bbox[0], abs_bbox[3] - abs_bbox[1]) / gamma_iters)
 
         # Allocate memory for two arrays that GrabCut will use internally
         fgModel = np.zeros((1, 65), dtype="float")
         bgModel = np.zeros((1, 65), dtype="float")
 
-        if dilation and not np.all(mask == 0):
-            mask_dilated = dilate_pseudomasks(np.array([mask.copy()]).transpose((1, 2, 0)), [bboxes[i]])
-            mask_dilated = mask_dilated.squeeze()
-            mask_dilated = mask_dilated - mask
-            mask[mask_dilated > 0] = cv2.GC_PR_FGD  # probable foreground
-        mask[mask == 1] = cv2.GC_FGD  # foreground
-        mask[mask == 0] = cv2.GC_PR_BGD  # probable background
-        set_values_outside_bbox_to_zero(mask, abs_bbox)  # values outside bbox -> obvious background
+        if not np.all(mask == 0):
+            new_mask = mask.copy()
+            dilated_mask = cv2.dilate(mask, kernel, iterations=iters)
+            eroded_mask = cv2.erode(mask, kernel, iterations=iters)
+            new_mask[dilated_mask > 0] = cv2.GC_PR_BGD  # probable background
+            new_mask[mask > 0] = cv2.GC_PR_FGD  # probable foreground
+            new_mask[eroded_mask > 0] = cv2.GC_FGD  # foreground
+        else:
+            new_mask = np.full_like(mask, fill_value=cv2.GC_PR_BGD)  # probable background
+        set_values_outside_bbox_to_zero(new_mask, abs_bbox)  # background
 
         # GrabCut with mask initialization
-        (mask, bgModel, fgModel) = cv2.grabCut(image, mask, None, bgModel, fgModel,
+        (mask, bgModel, fgModel) = cv2.grabCut(image, new_mask, None, bgModel, fgModel,
                                                iterCount=1, mode=cv2.GC_INIT_WITH_MASK)
 
         # Set all background and probable background pixels to 0 and

@@ -33,11 +33,11 @@ def plot_bboxes_yolo(image, bboxes, ax):
 
 if __name__ == "__main__":
     # img_id = "IMG_20210924_131131409"
-    # img_id = "IMG_20210924_131159094"
-    # img_id = "IMG_20210924_132053023"
-    img_id = "IMG_20210924_131835597"
+    img_id = "IMG_20210924_131159094"
+    # img_id = "IMG_20210924_160155838"
+    # img_id = "IMG_20210924_131835597"
     data_path = "./new_dataset/train"
-    mask_path = "./pseudo_labels/new_dataset"
+    mask_path = "./pseudo_masks/new_dataset"
 
     image = cv2.imread(os.path.join(data_path, f'{img_id}.jpg'))
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     mask = masks[:, :, 0]
     bbox = bboxes[0]
 
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
 
     # Before processing
     ax1.imshow(image)
@@ -70,40 +70,41 @@ if __name__ == "__main__":
     # uses when segmenting the foreground from the background
     fgModel = np.zeros((1, 65), dtype="float")
     bgModel = np.zeros((1, 65), dtype="float")
-    # apply GrabCut using the the mask segmentation method
-    start = time.time()
+
+    # apply GrabCut using the mask initialization method
     # mask_dilated = dilate_pseudomasks(np.array([mask.copy()]).transpose((1, 2, 0)), [bbox])
     # mask_dilated = mask_dilated.squeeze()
     # mask_dilated = mask_dilated - mask
     # mask[mask_dilated > 0] = cv2.GC_PR_FGD
-    mask[mask == 1] = cv2.GC_FGD
-    mask[mask == 0] = cv2.GC_PR_BGD
-    set_values_outside_bbox_to_zero(mask, abs_bbox)
+    iters = int(min(abs_bbox[2] - abs_bbox[0], abs_bbox[3] - abs_bbox[1]) / 40)
+    print(iters)
+    eroded_mask = cv2.erode(mask, get_default_kernel(), iterations=iters)
+    dilated_mask = cv2.dilate(mask, get_default_kernel(), iterations=iters)
+    new_mask = mask.copy()
+    new_mask[dilated_mask > 0] = cv2.GC_PR_BGD
+    new_mask[mask > 0] = cv2.GC_PR_FGD
+    new_mask[eroded_mask > 0] = cv2.GC_FGD
+    set_values_outside_bbox_to_zero(new_mask, abs_bbox)
+    print(np.unique(new_mask))
+    ax2.imshow(new_mask, alpha=0.5)
 
-    # image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
-
-    # mask = cv2.resize(mask, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
-
-
-
-    print(np.unique(mask))
-    (mask_grabcut, bgModel, fgModel) = cv2.grabCut(image, mask, None, bgModel,
+    start = time.time()
+    (mask_grabcut, bgModel, fgModel) = cv2.grabCut(image, new_mask, None, bgModel,
                                            fgModel, iterCount=1, mode=cv2.GC_INIT_WITH_MASK)
-    # mask_grabcut = cv2.resize(mask_grabcut, (width, height), interpolation=cv2.INTER_LINEAR)
 
-    mask_grabcut = np.where((mask_grabcut == cv2.GC_BGD) | (mask_grabcut == cv2.GC_PR_BGD), 0, 1).astype(np.uint8)
-    ax2.imshow(mask_grabcut, alpha=0.5)
-    print(mask_grabcut.dtype)
     end = time.time()
-    print("[INFO] applying GrabCut took {:.2f} seconds".format(end - start))
-
-    # ax2.imshow((mask_grabcut == cv2.GC_BGD) | (mask_grabcut == cv2.GC_PR_BGD), alpha=0.5)
-    # ax2.imshow((mask_grabcut == cv2.GC_FGD), alpha=0.5)
-    # ax2.imshow((mask_grabcut == cv2.GC_PR_FGD), alpha=0.5)
-    ax2.imshow(mask_grabcut, alpha=0.5)
-
-    mask_grabcut = cv2.medianBlur(mask_grabcut, 25)
+    mask_grabcut = np.where((mask_grabcut == cv2.GC_BGD) | (mask_grabcut == cv2.GC_PR_BGD), 0, 1).astype(np.uint8)
     ax3.imshow(image)
     ax3.imshow(mask_grabcut, alpha=0.5)
+    print("[INFO] applying GrabCut took {:.2f} seconds".format(end - start))
+
+    # ax3.imshow((mask_grabcut == cv2.GC_BGD) | (mask_grabcut == cv2.GC_PR_BGD), alpha=0.5)
+    # ax3.imshow((mask_grabcut == cv2.GC_FGD), alpha=0.5)
+    # ax3.imshow((mask_grabcut == cv2.GC_PR_FGD), alpha=0.5)
+    # ax3.imshow(mask_grabcut, alpha=0.5)
+
+    mask_grabcut = cv2.medianBlur(mask_grabcut, 25)
+    ax4.imshow(image)
+    ax4.imshow(mask_grabcut, alpha=0.5)
 
     plt.show()
