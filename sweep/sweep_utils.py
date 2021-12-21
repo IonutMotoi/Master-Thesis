@@ -13,7 +13,6 @@ def get_hyperparameters(cfg):
         compactness=cfg.PSEUDOMASKS.SLIC.COMPACTNESS,
         sigma=cfg.PSEUDOMASKS.SLIC.SIGMA,
         threshold=cfg.PSEUDOMASKS.SLIC.THRESHOLD,
-        grabcut_dilation=cfg.PSEUDOMASKS.GRABCUT.DILATION,
         grabcut_median_blur=cfg.PSEUDOMASKS.GRABCUT.MEDIAN_BLUR
     )
     return hyperparameters
@@ -30,7 +29,6 @@ def set_config_from_sweep(cfg, sweep_params):
     cfg.PSEUDOMASKS.SLIC.COMPACTNESS = sweep_params.compactness
     cfg.PSEUDOMASKS.SLIC.SIGMA = sweep_params.sigma
     cfg.PSEUDOMASKS.SLIC.THRESHOLD = sweep_params.threshold
-    cfg.PSEUDOMASKS.GRABCUT.DILATION = sweep_params.grabcut_dilation
     cfg.PSEUDOMASKS.GRABCUT.MEDIAN_BLUR = sweep_params.grabcut_median_blur
     if 'model_final_a3ec72.pkl' not in sweep_params.model_weights:
         cfg.OUTPUT_DIR = cfg.OUTPUT_DIR + '_finetuning'
@@ -42,7 +40,5 @@ def set_config_from_sweep(cfg, sweep_params):
                           + '_sliczero' + str(cfg.PSEUDOMASKS.SLIC.SLIC_ZERO)
                           + '_threshold' + str(cfg.PSEUDOMASKS.SLIC.THRESHOLD))
     elif cfg.PSEUDOMASKS.PROCESS_METHOD == 'grabcut':
-        cfg.OUTPUT_DIR = (cfg.OUTPUT_DIR
-                          + '_dilation' + str(cfg.PSEUDOMASKS.GRABCUT.DILATION)
-                          + '_median_blur' + str(cfg.PSEUDOMASKS.GRABCUT.MEDIAN_BLUR))
+        cfg.OUTPUT_DIR = (cfg.OUTPUT_DIR + '_median_blur' + str(cfg.PSEUDOMASKS.GRABCUT.MEDIAN_BLUR))
     return cfg

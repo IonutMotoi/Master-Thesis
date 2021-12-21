@@ -18,7 +18,6 @@ PSEUDOMASKS:
   INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
   PROCESS_METHOD: "none"
   GRABCUT:
-    DILATION: True
     MEDIAN_BLUR: 25
   SLIC:
     SLIC_ZERO: False
