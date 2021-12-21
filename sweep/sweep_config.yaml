@@ -7,7 +7,7 @@ parameters:
   mask_process_method:
     value: 'grabcut'
   max_training_rounds:
-    value: 10
+    value: 1
   model_weights:
     value: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
   experiments:
