@@ -264,7 +264,7 @@ def main(args):
                                     output_path=pseudo_masks_folders[i])
 
         # Train
-        do_train(cfg, model, resume=args.resume, model_weights=model_weights)
+        do_train(cfg, model, resume=args.resume, model_weights=None)
 
         # Save the best model for each training round on Weight and Biases
         if cfg.SOLVER.MAX_TRAINING_ROUNDS > 1:
