@@ -180,7 +180,6 @@ def process_pseudomasks(cfg, method, input_masks, data_path, output_path):
         elif method == 'grabcut':
             image_path = os.path.join(data_path, f'{masks_id}.jpg')
             masks = grabcut_pseudomasks(masks, bboxes, image_path,
-                                        dilation=cfg.PSEUDOMASKS.GRABCUT.DILATION,
                                         median_blur=cfg.PSEUDOMASKS.GRABCUT.MEDIAN_BLUR)
 
         # Save masks to file
