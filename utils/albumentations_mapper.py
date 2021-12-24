@@ -168,9 +168,10 @@ def annotations_to_instances(annos, image_size):
     classes = torch.tensor(classes, dtype=torch.int64)
     target.gt_classes = classes
 
-    masks = [obj["segmentation"] for obj in annos]
-    masks = BitMasks(torch.stack([torch.from_numpy(np.copy(x)) for x in masks]))
-    target.gt_masks = masks
+    if "segmentation" in annos[0]:
+        masks = [obj["segmentation"] for obj in annos]
+        masks = BitMasks(torch.stack([torch.from_numpy(np.copy(x)) for x in masks]))
+        target.gt_masks = masks
 
     return target
 
