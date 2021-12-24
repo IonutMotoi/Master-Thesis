@@ -5,6 +5,11 @@ from detectron2.engine import DefaultPredictor
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
 
+class VisualizerWithoutColorJitter(Visualizer):
+    def _jitter(self, color):
+        return color
+
+
 class Visualization(object):
     def __init__(self, cfg, instance_mode=ColorMode.SEGMENTATION, detection_only=False):
         """
@@ -35,7 +40,7 @@ class Visualization(object):
         predictions = self.predictor(image)
         # Convert image from OpenCV BGR format to Matplotlib RGB format.
         image = image[:, :, ::-1]
-        visualizer = Visualizer(image, self.metadata, instance_mode=self.instance_mode)
+        visualizer = VisualizerWithoutColorJitter(image, self.metadata, instance_mode=self.instance_mode)
         instances = predictions["instances"].to(self.cpu_device)
         if self.detection_only:
             instances.remove("pred_masks")
