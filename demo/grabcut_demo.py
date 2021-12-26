@@ -32,8 +32,8 @@ def plot_bboxes_yolo(image, bboxes, ax):
 
 
 if __name__ == "__main__":
-    # img_id = "IMG_20210924_131131409"
-    img_id = "IMG_20210924_131159094"
+    img_id = "IMG_20210924_131131409"
+    # img_id = "IMG_20210924_131159094"
     # img_id = "IMG_20210924_160155838"
     # img_id = "IMG_20210924_131835597"
     data_path = "./new_dataset/train"
@@ -89,14 +89,14 @@ if __name__ == "__main__":
     ax2.imshow(new_mask, alpha=0.5)
 
     start = time.time()
-    (mask_grabcut, bgModel, fgModel) = cv2.grabCut(image, new_mask, None, bgModel,
-                                           fgModel, iterCount=1, mode=cv2.GC_INIT_WITH_MASK)
+    (mask_grabcut, bgModel, fgModel) = cv2.grabCut(image, new_mask.copy(), None, bgModel,
+                                           fgModel, iterCount=5, mode=cv2.GC_INIT_WITH_MASK)
 
     end = time.time()
+    print("[INFO] applying GrabCut took {:.2f} seconds".format(end - start))
     mask_grabcut = np.where((mask_grabcut == cv2.GC_BGD) | (mask_grabcut == cv2.GC_PR_BGD), 0, 1).astype(np.uint8)
     ax3.imshow(image)
     ax3.imshow(mask_grabcut, alpha=0.5)
-    print("[INFO] applying GrabCut took {:.2f} seconds".format(end - start))
 
     # ax3.imshow((mask_grabcut == cv2.GC_BGD) | (mask_grabcut == cv2.GC_PR_BGD), alpha=0.5)
     # ax3.imshow((mask_grabcut == cv2.GC_FGD), alpha=0.5)

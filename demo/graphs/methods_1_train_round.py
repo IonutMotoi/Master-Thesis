@@ -39,13 +39,13 @@ if __name__ == "__main__":
              statistics.stdev(exp_slic_thr2), statistics.stdev(exp_slic_thr2_finetune),
              statistics.stdev(exp_grabcut), statistics.stdev(exp_grabcut_finetune)]
 
-    names.insert(0, "baseline w/o crop")
-    means.insert(0, 5.962)
-    stdevs.insert(0, 0)
+    # names.insert(0, "baseline w/o crop")
+    # means.insert(0, 5.962)
+    # stdevs.insert(0, 0)
+    #
+    # names.insert(1, "baseline")
+    # means.insert(1, 39.164)
+    # stdevs.insert(1, 0)
 
-    names.insert(1, "baseline")
-    means.insert(1, 39.164)
-    stdevs.insert(1, 0)
-
-    plt.errorbar(names, means, stdevs, linestyle='None', marker='^')
+    plt.errorbar(names, means, stdevs, linestyle='None', marker='d')
     plt.show()
