@@ -20,5 +20,5 @@ command:
   - "OUTPUT_DIR"
   - "./output/sweep_pseudo_masks_test"
   - "MODEL.ROI_HEADS.SCORE_THRESH_TEST"
-  - 0.7
-project: Mask_RCNN_experiments
+  - 0.5
+project: Mask_RCNN_experimentss
