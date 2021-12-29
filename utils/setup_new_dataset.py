@@ -83,7 +83,7 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
             bboxes = extract_bboxes_from_masks(masks)  # Pascal VOC format
 
         # Remove bboxes corresponding to empty masks
-        if source == "train":
+        if source == "train" and not naive:
             if len(indices_to_remove) > 0:
                 bboxes = [bboxes[i] for i in range(len(bboxes)) if i not in indices_to_remove]
 
