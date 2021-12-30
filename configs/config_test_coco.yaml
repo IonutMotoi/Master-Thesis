@@ -1,6 +1,6 @@
 _BASE_: "./wgisd_R101.yaml"
 DATASETS:
-  TEST : ("wgisd_test", "wgisd_test_detection")
+  TEST : ("new_dataset_valid", "new_dataset_test", "wgisd_test")
 MODEL:
   WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
   ROI_HEADS:
