@@ -5,11 +5,11 @@ metric:
   goal: maximize
 parameters:
   mask_process_method:
-    value: 'none'
+    value: 'grabcut'
   max_training_rounds:
-    value: 10
+    value: 1
   model_weights:
-    value: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
+    value: "./output/wgisd_R101_with_aug_crop/model_final.pth"
   experiments:
     values: [1, 2, 3, 4, 5]
 command:
