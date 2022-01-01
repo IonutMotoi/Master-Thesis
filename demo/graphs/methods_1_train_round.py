@@ -1,51 +1,48 @@
+import numpy as np
 from matplotlib import pyplot as plt
 import statistics
 
 if __name__ == "__main__":
-    exp_naive = [51.299, 50.661, 52.839, 51.409, 49.693]
-    exp_naive_finetune = [51.937, 53.793, 50.28, 51.17, 55.706]
-    exp_none = [56.595, 60.151, 58.469, 58.024, 58.957]
-    exp_none_finetune = [56.822, 56.691, 59.029, 57.57, 58.111]
-    exp_dilation = [60.714, 57.758, 59.404, 61.211, 59.842]
-    exp_dilation_finetune = [57.98, 58.171, 59.039, 57.614, 58.343]
-    exp_slic_thr1 = [57.957, 58.213, 57.457, 59.423, 59.146]
-    exp_slic_thr1_finetune = [55.903, 56.331, 57.004, 55.943, 56.186]
-    exp_slic_thr2 = [59.507, 59.289, 59.232, 60.438, 57.425]
-    exp_slic_thr2_finetune = [57.777, 58.113, 57.98, 56.54, 55.055]
-    exp_grabcut = [57.702, 59.697, 59.018, 57.74, 59.22]
-    exp_grabcut_finetune = [54.744, 55.833, 58.285, 55.463, 59.132]
+    labels = ["baseline\nw/o crop", "baseline",
+              "pseudo-masks", "pseudo-masks\nfinetune",
+              "dilation", "dilation\nfinetune",
+              "slic (1)", "slic (1)\nfinetune",
+              "slic (2)", "slic (2)\nfinetune",
+              "slic (3)", "slic (3)\nfinetune",
+              "grabcut", "grabcut\nfinetune"]
 
-    print(statistics.mean(exp_dilation))
-    print(statistics.stdev(exp_dilation))
+    means = [5.962, 39.164,
+             58.439, 57.645,
+             59.786, 58.229,
+             58.439, 56.273,
+             0, 0,
+             59.178, 57.093,
+             60.424, 58.656]
 
-    names = ["naive", "naive_finetune",
-             "none", "none_finetune",
-             "dilation", "dilation_finetune",
-             "slic_thr1", "slic_thr1_finetune",
-             "slic_thr2", "slic_thr2_finetune",
-             "grabcut", "grabcut_finetune"]
+    stdevs = [0, 0,
+              1.301, 0.965,
+              1.337, 0.527,
+              0.824, 0.445,
+              0, 0,
+              1.094, 1.299,
+              1.538, 1.227]
 
-    means = [statistics.mean(exp_naive), statistics.mean(exp_naive_finetune),
-             statistics.mean(exp_none), statistics.mean(exp_none_finetune),
-             statistics.mean(exp_dilation), statistics.mean(exp_dilation_finetune),
-             statistics.mean(exp_slic_thr1), statistics.mean(exp_slic_thr1_finetune),
-             statistics.mean(exp_slic_thr2), statistics.mean(exp_slic_thr2_finetune),
-             statistics.mean(exp_grabcut), statistics.mean(exp_grabcut_finetune)]
+    # means = [5.962, 58.439, 59.786, 58.439, 0, 59.178, 60.424]
+    # means_finetune = [39.164, 57.645, 58.229, 56.273, 0, 57.093, 58.656]
+    # plt.errorbar(names, means, stdevs, linestyle='None', marker='d')
+    # plt.show()
 
-    stdevs = [statistics.stdev(exp_naive), statistics.stdev(exp_naive_finetune),
-             statistics.stdev(exp_none), statistics.stdev(exp_none_finetune),
-             statistics.stdev(exp_dilation), statistics.stdev(exp_dilation_finetune),
-             statistics.stdev(exp_slic_thr1), statistics.stdev(exp_slic_thr1_finetune),
-             statistics.stdev(exp_slic_thr2), statistics.stdev(exp_slic_thr2_finetune),
-             statistics.stdev(exp_grabcut), statistics.stdev(exp_grabcut_finetune)]
+    # Build the plot
+    fig, ax = plt.subplots()
+    x_pos = np.arange(len(means))
+    ax.bar(x_pos, means, yerr=stdevs, align='center', alpha=0.5, ecolor='black', capsize=10)
+    ax.set_ylabel('Segmentation Average Precision (AP)')
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(labels)
+    # ax.set_title('Methods evaluation comparison')
+    ax.yaxis.grid(True)
 
-    # names.insert(0, "baseline w/o crop")
-    # means.insert(0, 5.962)
-    # stdevs.insert(0, 0)
-    #
-    # names.insert(1, "baseline")
-    # means.insert(1, 39.164)
-    # stdevs.insert(1, 0)
-
-    plt.errorbar(names, means, stdevs, linestyle='None', marker='d')
+    # Save the figure and show
+    plt.tight_layout()
+    plt.savefig('bar_plot_with_error_bars.png')
     plt.show()
