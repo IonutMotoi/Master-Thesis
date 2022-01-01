@@ -11,7 +11,7 @@ parameters:
   model_weights:
     value: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
   experiments:
-    values: [1, 2, 3, 4, 5]
+    values: [5]
 command:
   - ${env}
   - ${interpreter}
