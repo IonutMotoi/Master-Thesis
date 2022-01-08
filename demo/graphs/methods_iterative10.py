@@ -28,4 +28,5 @@ if __name__ == "__main__":
 
     ax.legend()
     plt.tight_layout()
+    plt.savefig('methods_iterative_comparison.png', dpi=300)
     plt.show()

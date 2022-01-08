@@ -32,8 +32,8 @@ def plot_bboxes_yolo(image, bboxes, ax):
 
 
 if __name__ == "__main__":
-    img_id = "IMG_20210924_131131409"
-    # img_id = "IMG_20210924_131159094"
+    # img_id = "IMG_20210924_131131409"
+    img_id = "IMG_20210924_161822966_HDR"
     # img_id = "IMG_20210924_160155838"
     # img_id = "IMG_20210924_131835597"
     data_path = "./new_dataset/train"
@@ -54,14 +54,18 @@ if __name__ == "__main__":
     mask = masks[:, :, 0]
     bbox = bboxes[0]
 
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
+    # fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4)
+    fig1, ax1 = plt.subplots()
 
     # Before processing
     ax1.imshow(image)
     ax1.imshow(mask, alpha=0.5)
     plot_bboxes_yolo(image, [bbox], ax1)
+    ax1.set_axis_off()
+    plt.savefig('grabcut_1_before.png', bbox_inches='tight', pad_inches=0, dpi=300)
 
     # Grabcut
+    fig2, ax2 = plt.subplots()
     ax2.imshow(image)
     plot_bboxes_yolo(image, [bbox], ax2)
     abs_bbox = utils.bbox_conversion.yolo_bbox_to_pascal_voc(bbox, img_height=height, img_width=width)
@@ -87,6 +91,8 @@ if __name__ == "__main__":
     set_values_outside_bbox_to_zero(new_mask, abs_bbox)
     print(np.unique(new_mask))
     ax2.imshow(new_mask, alpha=0.5)
+    ax2.set_axis_off()
+    plt.savefig('grabcut_2_mask.png', bbox_inches='tight', pad_inches=0, dpi=300)
 
     start = time.time()
     (mask_grabcut, bgModel, fgModel) = cv2.grabCut(image, new_mask.copy(), None, bgModel,
@@ -95,8 +101,11 @@ if __name__ == "__main__":
     end = time.time()
     print("[INFO] applying GrabCut took {:.2f} seconds".format(end - start))
     mask_grabcut = np.where((mask_grabcut == cv2.GC_BGD) | (mask_grabcut == cv2.GC_PR_BGD), 0, 1).astype(np.uint8)
+    fig3, ax3 = plt.subplots()
     ax3.imshow(image)
     ax3.imshow(mask_grabcut, alpha=0.5)
+    ax3.set_axis_off()
+    plt.savefig('grabcut_3_after.png', bbox_inches='tight', pad_inches=0, dpi=300)
 
     # ax3.imshow((mask_grabcut == cv2.GC_BGD) | (mask_grabcut == cv2.GC_PR_BGD), alpha=0.5)
     # ax3.imshow((mask_grabcut == cv2.GC_FGD), alpha=0.5)
@@ -104,7 +113,10 @@ if __name__ == "__main__":
     # ax3.imshow(mask_grabcut, alpha=0.5)
 
     mask_grabcut = cv2.medianBlur(mask_grabcut, 25)
+    fig4, ax4 = plt.subplots()
     ax4.imshow(image)
     ax4.imshow(mask_grabcut, alpha=0.5)
+    ax4.set_axis_off()
+    plt.savefig('grabcut_4_medianblur.png', bbox_inches='tight', pad_inches=0, dpi=300)
 
     plt.show()

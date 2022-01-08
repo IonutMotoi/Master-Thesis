@@ -38,11 +38,11 @@ if __name__ == "__main__":
     ax.bar(x_pos, means, yerr=stdevs, align='center', alpha=0.5, ecolor='black', capsize=10)
     ax.set_ylabel('Segmentation Average Precision (AP)')
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(labels)
+    ax.set_xticklabels(labels, rotation=90)
     # ax.set_title('Methods evaluation comparison')
     ax.yaxis.grid(True)
 
     # Save the figure and show
     plt.tight_layout()
-    plt.savefig('bar_plot_with_error_bars.png')
+    plt.savefig('methods_comparison.png', dpi=300)
     plt.show()
