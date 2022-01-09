@@ -4,17 +4,17 @@ import cv2
 import torch
 import wandb
 import numpy as np
+from detectron2.config import get_cfg
 from detectron2.utils.events import EventStorage
 from pycocotools.mask import decode
 
 from detectron2.checkpoint import DetectionCheckpointer
-from detectron2.data import build_detection_test_loader, detection_utils
-from detectron2.engine import default_argument_parser
+from detectron2.data import build_detection_test_loader
+from detectron2.engine import default_argument_parser, default_setup
 from detectron2.modeling import build_model
 
 from utils.albumentations_mapper import AlbumentationsMapper
 from utils.setup_new_dataset import setup_new_dataset
-from train_net import setup
 
 logger = logging.getLogger("detectron2")
 
@@ -68,6 +68,23 @@ def log_selected_images(results, caption="Images"):
                           },
                           caption=f'{sample["image_id"]}, loss: {sample["mask_loss"]}')
         wandb.log({caption: img})
+
+
+def setup(args):
+    """
+    Create configs and perform basic setups.
+    """
+    cfg = get_cfg()
+    cfg.set_new_allowed(True)  # to allow merging new keys
+    cfg.merge_from_file(args.config_file)
+    cfg.merge_from_list(args.opts)
+
+    # Init Weight & Biases and sync with Tensorboard
+    wandb.init(project="Mask_RCNN", sync_tensorboard=True)
+
+    cfg.freeze()
+    default_setup(cfg, args)
+    return cfg
 
 
 def compute_best_and_worst_examples(args):
