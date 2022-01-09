@@ -1,6 +1,7 @@
 import logging
 
 import cv2
+import os
 import torch
 import wandb
 import numpy as np
@@ -13,6 +14,8 @@ from detectron2.data import build_detection_test_loader
 from detectron2.engine import default_argument_parser, default_setup
 from detectron2.modeling import build_model
 
+from pseudo_labeling.mask_processing import process_pseudomasks
+from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
 from utils.albumentations_mapper import AlbumentationsMapper
 from utils.setup_new_dataset import setup_new_dataset
 
@@ -100,9 +103,25 @@ def compute_best_and_worst_examples(args):
         cfg.MODEL.WEIGHTS, resume=args.resume
     )
 
+    pseudo_masks_folder = os.path.join(cfg.OUTPUT_DIR, "pseudo_masks/new_dataset")
+
+    # Pseudomasks
+    print(f"Generating pseudo-masks")
+    generate_masks_from_bboxes(cfg,
+                               ids_txt="/thesis/new_dataset/validation/validation.txt",
+                               data_folder="/thesis/new_dataset/validation",
+                               dest_folder=pseudo_masks_folder,
+                               model_weights=cfg.MODEL.WEIGHTS)
+    print(f"Applying post-processing with grabcut method to the pseudo-masks")
+    process_pseudomasks(cfg,
+                        method='grabcut',
+                        input_masks=[f'{pseudo_masks_folder}/*.npz'],
+                        data_path="/thesis/new_dataset/validation",
+                        output_path=pseudo_masks_folder)
+
     # Setup dataset, mapper and dataloader
-    setup_new_dataset()
-    dataset_name = cfg.DATASETS.TEST[0]
+    setup_new_dataset(pseudo_masks_folder)
+    dataset_name = "new_dataset_validation"
     mapper = AlbumentationsMapper(cfg, is_train=False)
     data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
 
