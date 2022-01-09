@@ -10,14 +10,14 @@ from detectron2.utils.events import EventStorage
 from pycocotools.mask import decode
 
 from detectron2.checkpoint import DetectionCheckpointer
-from detectron2.data import build_detection_test_loader
+from detectron2.data import build_detection_test_loader, DatasetCatalog, MetadataCatalog
 from detectron2.engine import default_argument_parser, default_setup
 from detectron2.modeling import build_model
 
 from pseudo_labeling.mask_processing import process_pseudomasks
 from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
 from utils.albumentations_mapper import AlbumentationsMapper
-from utils.setup_new_dataset import setup_new_dataset
+from utils.setup_new_dataset import setup_new_dataset, get_new_dataset_dicts
 
 logger = logging.getLogger("detectron2")
 
@@ -103,25 +103,12 @@ def compute_best_and_worst_examples(args):
         cfg.MODEL.WEIGHTS, resume=args.resume
     )
 
-    pseudo_masks_folder = os.path.join(cfg.OUTPUT_DIR, "pseudo_masks/new_dataset")
-
-    # Pseudomasks
-    print(f"Generating pseudo-masks")
-    generate_masks_from_bboxes(cfg,
-                               ids_txt="/thesis/new_dataset/validation/validation.txt",
-                               data_folder="/thesis/new_dataset/validation",
-                               dest_folder=pseudo_masks_folder,
-                               model_weights=cfg.MODEL.WEIGHTS)
-    print(f"Applying post-processing with grabcut method to the pseudo-masks")
-    process_pseudomasks(cfg,
-                        method='grabcut',
-                        input_masks=[f'{pseudo_masks_folder}/*.npz'],
-                        data_path="/thesis/new_dataset/validation",
-                        output_path=pseudo_masks_folder)
-
     # Setup dataset, mapper and dataloader
-    setup_new_dataset(pseudo_masks_folder)
+    data_path = "/thesis/new_dataset"
     dataset_name = "new_dataset_validation"
+    DatasetCatalog.register(dataset_name,
+                            lambda d="validation": get_new_dataset_dicts(data_path, d, None))
+    MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
     mapper = AlbumentationsMapper(cfg, is_train=False)
     data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
 
