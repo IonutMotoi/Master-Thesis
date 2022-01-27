@@ -74,8 +74,9 @@ if __name__ == "__main__":
     print(time.time() - t0)
 
     fig2, ax2 = plt.subplots(1, 1)
-    ax2.imshow(mark_boundaries(image_resized, segments))
-    ax2.imshow(mask_resized, alpha=0.5)
+    ax2.imshow(mark_boundaries(image_resized, segments, outline_color=(255.0/255, 20.0/255, 147.0/255)))
+    # ax2.imshow(image_resized)
+    # ax2.imshow(mask_resized, alpha=0.5)
     ax2.set_axis_off()
     plt.savefig(f'{img_id}.png', bbox_inches='tight', pad_inches=0, dpi=300)
 
@@ -85,45 +86,45 @@ if __name__ == "__main__":
     mask_resized2 = mask_resized.copy()
     mask_resized3 = mask_resized.copy()
 
-    for n, i in enumerate(np.unique(segments)[1:]):
-        # print(f"{n+1}/{len(np.unique(segments)[1:])}")
-        cluster = segments == i
+    # for n, i in enumerate(np.unique(segments)[1:]):
+    #     # print(f"{n+1}/{len(np.unique(segments)[1:])}")
+    #     cluster = segments == i
+    #
+    #     intersection_area = np.sum((cluster * mask_resized) > 0, axis=(0, 1))
+    #     cluster_area = np.sum(cluster > 0, axis=(0, 1))
+    #
+    #     if intersection_area / cluster_area > 0.1:
+    #         mask_resized = ((cluster + mask_resized) > 0).astype(np.uint8)
+    #     # if intersection_area / cluster_area < 0.3:
+    #     #     mask_resized = (mask_resized - cluster*mask_resized).astype(np.uint8)
+    # print(time.time() - t0)
+    # mask_resized = cv2.resize(mask_resized, (width, height), interpolation=cv2.INTER_LINEAR)
+    #
+    # fig3, ax3 = plt.subplots(1, 1)
+    # ax3.imshow(image)
+    # ax3.imshow(mask_resized, alpha=0.5)
+    # ax3.set_axis_off()
+    # plt.savefig(f'{img_id}_slic_01.png', bbox_inches='tight', pad_inches=0, dpi=300)
 
-        intersection_area = np.sum((cluster * mask_resized) > 0, axis=(0, 1))
-        cluster_area = np.sum(cluster > 0, axis=(0, 1))
-
-        if intersection_area / cluster_area > 0.1:
-            mask_resized = ((cluster + mask_resized) > 0).astype(np.uint8)
-        # if intersection_area / cluster_area < 0.3:
-        #     mask_resized = (mask_resized - cluster*mask_resized).astype(np.uint8)
-    print(time.time() - t0)
-    mask_resized = cv2.resize(mask_resized, (width, height), interpolation=cv2.INTER_LINEAR)
-
-    fig3, ax3 = plt.subplots(1, 1)
-    ax3.imshow(image)
-    ax3.imshow(mask_resized, alpha=0.5)
-    ax3.set_axis_off()
-    plt.savefig(f'{img_id}_slic_01.png', bbox_inches='tight', pad_inches=0, dpi=300)
-
-    for n, i in enumerate(np.unique(segments)[1:]):
-        # print(f"{n+1}/{len(np.unique(segments)[1:])}")
-        cluster = segments == i
-
-        intersection_area = np.sum((cluster * mask_resized2) > 0, axis=(0, 1))
-        cluster_area = np.sum(cluster > 0, axis=(0, 1))
-
-        if intersection_area / cluster_area > 0.7:
-            mask_resized2 = ((cluster + mask_resized2) > 0).astype(np.uint8)
-        # if intersection_area / cluster_area < 0.3:
-        #     mask_resized2 = (mask_resized2 - cluster*mask_resized2).astype(np.uint8)
-    print(time.time() - t0)
-    mask_resized2 = cv2.resize(mask_resized2, (width, height), interpolation=cv2.INTER_LINEAR)
-
-    fig4, ax4 = plt.subplots(1, 1)
-    ax4.imshow(image)
-    ax4.imshow(mask_resized2, alpha=0.5)
-    ax4.set_axis_off()
-    plt.savefig(f'{img_id}_slic_07.png', bbox_inches='tight', pad_inches=0, dpi=300)
+    # for n, i in enumerate(np.unique(segments)[1:]):
+    #     # print(f"{n+1}/{len(np.unique(segments)[1:])}")
+    #     cluster = segments == i
+    #
+    #     intersection_area = np.sum((cluster * mask_resized2) > 0, axis=(0, 1))
+    #     cluster_area = np.sum(cluster > 0, axis=(0, 1))
+    #
+    #     if intersection_area / cluster_area > 0.7:
+    #         mask_resized2 = ((cluster + mask_resized2) > 0).astype(np.uint8)
+    #     # if intersection_area / cluster_area < 0.3:
+    #     #     mask_resized2 = (mask_resized2 - cluster*mask_resized2).astype(np.uint8)
+    # print(time.time() - t0)
+    # mask_resized2 = cv2.resize(mask_resized2, (width, height), interpolation=cv2.INTER_LINEAR)
+    #
+    # fig4, ax4 = plt.subplots(1, 1)
+    # ax4.imshow(image)
+    # ax4.imshow(mask_resized2, alpha=0.5)
+    # ax4.set_axis_off()
+    # plt.savefig(f'{img_id}_slic_07.png', bbox_inches='tight', pad_inches=0, dpi=300)
 
     for n, i in enumerate(np.unique(segments)[1:]):
         # print(f"{n+1}/{len(np.unique(segments)[1:])}")
