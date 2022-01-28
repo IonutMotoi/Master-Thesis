@@ -264,7 +264,8 @@ def main(args):
                                     method=cfg.PSEUDOMASKS.PROCESS_METHOD,
                                     input_masks=[f'{pseudo_masks_folders[i]}/*.npz'],
                                     data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                    output_path=pseudo_masks_folders[i])
+                                    output_path=pseudo_masks_folders[i],
+                                    img_ext='png')
 
         # Train
         do_train(cfg, model, resume=args.resume, model_weights=None)

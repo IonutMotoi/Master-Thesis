@@ -158,7 +158,7 @@ def grabcut_pseudomasks(masks, bboxes, image_path, gamma_iters=40, median_blur=0
     return masks
 
 
-def process_pseudomasks(cfg, method, input_masks, data_path, output_path):
+def process_pseudomasks(cfg, method, input_masks, data_path, output_path, img_ext='jpg'):
     if len(input_masks) == 1:
         input_masks = glob.glob(os.path.expanduser(input_masks[0]))
         assert input_masks, "The input path(s) was not found"
@@ -175,10 +175,10 @@ def process_pseudomasks(cfg, method, input_masks, data_path, output_path):
         if method == 'dilation':
             masks = dilate_pseudomasks(masks, bboxes)
         elif method == 'slic':
-            image_path = os.path.join(data_path, f'{masks_id}.jpg')
+            image_path = os.path.join(data_path, f'{masks_id}.{img_ext}')
             masks = slic_pseudomasks(cfg, masks, bboxes, image_path)
         elif method == 'grabcut':
-            image_path = os.path.join(data_path, f'{masks_id}.jpg')
+            image_path = os.path.join(data_path, f'{masks_id}.{img_ext}')
             masks = grabcut_pseudomasks(masks, bboxes, image_path,
                                         median_blur=cfg.PSEUDOMASKS.GRABCUT.MEDIAN_BLUR)
 
