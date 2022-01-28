@@ -10,7 +10,8 @@ from utils.bbox_conversion import yolo_bboxes_to_pascal_voc
 from utils.save import save_masks
 
 
-def generate_masks_from_bboxes(cfg, ids_txt, data_folder, dest_folder, model_weights=None, use_bboxes=True):
+def generate_masks_from_bboxes(cfg, ids_txt, data_folder, dest_folder, model_weights=None,
+                               use_bboxes=True, img_ext='jpg'):
     with open(ids_txt, 'r') as f:
         # Read all lines in file
         lines = f.readlines()
@@ -20,7 +21,7 @@ def generate_masks_from_bboxes(cfg, ids_txt, data_folder, dest_folder, model_wei
     predictor = MasksFromBboxesPredictor(cfg, model_weights=model_weights, use_bboxes=use_bboxes)
 
     for img_id in tqdm.tqdm(ids):
-        img_path = os.path.join(data_folder, f'{img_id}.jpg')
+        img_path = os.path.join(data_folder, f'{img_id}.{img_ext}')
         img = read_image(img_path, format="BGR")  # H, W, C
         img_height = img.shape[0]
         img_width = img.shape[1]
