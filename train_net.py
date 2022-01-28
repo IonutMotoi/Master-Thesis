@@ -20,6 +20,7 @@ from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
 from sweep.sweep_utils import set_config_from_sweep, get_hyperparameters
 from utils.early_stopping import EarlyStopping
 from utils.setup_new_dataset import setup_new_dataset
+from utils.setup_pseudo_bboxes import setup_pseudo_bboxes
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
 from utils.loss import ValidationLossEval, MeanTrainLoss
@@ -204,11 +205,12 @@ def main(args):
         pseudo_masks_folders.append(os.path.join(cfg.OUTPUT_DIR, folder))
 
     # Register dataset
-    if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
-        setup_new_dataset(pseudo_masks_folders[0], naive=True)
-    else:
-        setup_new_dataset(pseudo_masks_folders[0])
-    setup_wgisd()  # pass pseudo_masks_folders[1] to register pseudo_masks for wgisd (check cfg as well)
+    # if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
+    #     setup_new_dataset(pseudo_masks_folders[0], naive=True)
+    # else:
+    #     setup_new_dataset(pseudo_masks_folders[0])
+    setup_wgisd()
+    setup_pseudo_bboxes(pseudo_masks_folders[0])
 
     if args.eval_only:
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
@@ -250,7 +252,8 @@ def main(args):
                                                ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
                                                data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
                                                dest_folder=pseudo_masks_folders[i],
-                                               model_weights=model_weights)
+                                               model_weights=model_weights,
+                                               img_ext='png')
 
         # Post-process pseudo-masks
         if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic', 'grabcut']:
