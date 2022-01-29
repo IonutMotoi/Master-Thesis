@@ -105,10 +105,10 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
     return dataset_dicts
 
 
-def setup_new_dataset(pseudo_masks_path, naive=False):
+def setup_new_dataset(pseudo_masks_path=None, naive=False):
     data_path = "/thesis/new_dataset"
 
-    for name in ["train", "validation", "test"]:
+    for name in ["validation"]:  # ["train", "validation", "test"]:
         dataset_name = "new_dataset_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
