@@ -144,7 +144,7 @@ def grabcut_pseudomasks(masks, bboxes, image_path, gamma_iters=40, median_blur=0
 
         # GrabCut with mask initialization
         (mask, bgModel, fgModel) = cv2.grabCut(image, new_mask, None, bgModel, fgModel,
-                                               iterCount=5, mode=cv2.GC_INIT_WITH_MASK)
+                                               iterCount=1, mode=cv2.GC_INIT_WITH_MASK)
 
         # Set all background and probable background pixels to 0 and
         # set all foreground and probable foreground pixels to 1
