@@ -139,7 +139,7 @@ def grabcut_pseudomasks(masks, bboxes, image_path, gamma_iters=40, median_blur=0
             new_mask[mask > 0] = cv2.GC_PR_FGD  # probable foreground
             new_mask[eroded_mask > 0] = cv2.GC_FGD  # foreground
         else:
-            new_mask = np.full_like(mask, fill_value=cv2.GC_PR_BGD)  # probable background
+            new_mask = np.full_like(mask, fill_value=cv2.GC_PR_FGD)  # probable foreground
         set_values_outside_bbox_to_zero(new_mask, abs_bbox)  # background
 
         # GrabCut with mask initialization
