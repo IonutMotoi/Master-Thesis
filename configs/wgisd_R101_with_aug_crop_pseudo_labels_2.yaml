@@ -1,0 +1,21 @@
+_BASE_: "./wgisd_R101_with_aug_crop.yaml"
+DATASETS:
+  TRAIN: ("wgisd_train", "full_test_video")  # 1984 (88+1896)
+SOLVER:
+  IMS_PER_BATCH : 8
+  WEIGHT_DECAY: 0.001
+  MAX_ITER: 24800  # train for 100 epochs
+  CHECKPOINT_PERIOD: 248  # checkpoint every epoch
+  ITERS_PER_EPOCH: 248
+  MAX_TRAINING_ROUNDS: 1
+TEST:
+  EVAL_PERIOD: 248  # evaluate every epoch
+OUTPUT_DIR: "./output/wgisd_R101_with_aug_crop_pseudo_labels"
+SEED: -1
+PSEUDOMASKS:
+  GENERATE: True
+  IDS_TXT: ["/thesis/full_test_video/ids.txt"]
+  DATA_FOLDER: ["/thesis/full_test_video/data"]
+  DEST_FOLDER: ["pseudo_masks/full_test_video"]
+  INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
+  PROCESS_METHOD: "none"
