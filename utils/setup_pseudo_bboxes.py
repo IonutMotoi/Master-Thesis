@@ -81,6 +81,7 @@ def get_pseudo_bboxes_dicts(root, pseudo_masks_path):
 
 def setup_pseudo_bboxes(pseudo_masks_path):
     for dataset_name in ["closeup1", "closeup2", "video1", "video2", "video3"]:
-        data_path = f"/thesis/videos/{dataset_name}"
-        DatasetCatalog.register(dataset_name, lambda: get_pseudo_bboxes_dicts(data_path, pseudo_masks_path))
+        data_path = os.path.join("/thesis/videos", dataset_name)
+        masks_path = os.path.join(pseudo_masks_path, dataset_name)
+        DatasetCatalog.register(dataset_name, lambda: get_pseudo_bboxes_dicts(data_path, masks_path))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])

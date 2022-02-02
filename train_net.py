@@ -200,18 +200,16 @@ def main(args):
     logger.info("Model:\n{}".format(model))
 
     # Pseudo-masks will be generated in a subfolder of OUTPUT_DIR
-    pseudo_masks_folders = []
-    for folder in cfg.PSEUDOMASKS.DEST_FOLDER:
-        pseudo_masks_folders.append(os.path.join(cfg.OUTPUT_DIR, folder))
+    pseudo_masks_folder = os.path.join(cfg.OUTPUT_DIR, "pseudomasks")
 
-    # Register dataset
+    # Register datasets
     setup_wgisd()
     # if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
-    #     setup_new_dataset(pseudo_masks_folders[0], naive=True)
+    #     setup_new_dataset(pseudo_masks_folder, naive=True)
     # else:
-    #     setup_new_dataset(pseudo_masks_folders[0])
-    setup_new_dataset()
-    setup_pseudo_bboxes(pseudo_masks_folders[0])
+    #     setup_new_dataset(pseudo_masks_folder)
+    setup_new_dataset(pseudo_masks_folder)
+    setup_pseudo_bboxes(pseudo_masks_folder)
 
     if args.eval_only:
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
@@ -240,32 +238,34 @@ def main(args):
         if cfg.PSEUDOMASKS.GENERATE:
             for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
                 print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
+                dest_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
                 if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
                     print("NAIVE METHOD")
                     generate_masks_from_bboxes(cfg,
                                          ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
                                          data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                         dest_folder=pseudo_masks_folders[i],
+                                         dest_folder=dest_folder,
                                          model_weights=model_weights,
                                          use_bboxes=False)
                 else:
                     generate_masks_from_bboxes(cfg,
                                                ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
                                                data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                               dest_folder=pseudo_masks_folders[i],
+                                               dest_folder=dest_folder,
                                                model_weights=model_weights,
                                                img_ext='png')
 
         # Post-process pseudo-masks
         if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic', 'grabcut']:
             for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
+                masks_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
                 print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
                       f"of dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
                 process_pseudomasks(cfg,
                                     method=cfg.PSEUDOMASKS.PROCESS_METHOD,
-                                    input_masks=[f'{pseudo_masks_folders[i]}/*.npz'],
+                                    input_masks=[f'{masks_folder}/*.npz'],
                                     data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                    output_path=pseudo_masks_folders[i],
+                                    output_path=masks_folder,
                                     img_ext='png')
 
         # Train
