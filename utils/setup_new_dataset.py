@@ -64,7 +64,6 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
                     indices_to_remove.append(i)
             if len(indices_to_remove) > 0:
                 masks = np.delete(masks, indices_to_remove, axis=2)
-
         else:
             mask_path = source_path / f'{img_id}.npz'
             masks = np.load(mask_path)['arr_0'].astype(np.uint8)
@@ -108,7 +107,7 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
 def setup_new_dataset(pseudo_masks_path=None, naive=False):
     data_path = "/thesis/new_dataset"
 
-    for name in ["train", "validation", "test"]:
+    for name in ["train", "validation"]:
         dataset_name = "new_dataset_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
