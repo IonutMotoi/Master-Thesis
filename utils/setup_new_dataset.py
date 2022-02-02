@@ -112,6 +112,6 @@ def setup_new_dataset(pseudo_masks_path=None, naive=False):
         dataset_name = "new_dataset_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
-
-        DatasetCatalog.register(dataset_name, lambda d=name: get_new_dataset_dicts(data_path, d, pseudo_masks_path, naive=naive))
+        pseudo_masks_path_new = os.path.join(pseudo_masks_path, dataset_name)
+        DatasetCatalog.register(dataset_name, lambda d=name: get_new_dataset_dicts(data_path, d, pseudo_masks_path_new, naive=naive))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
