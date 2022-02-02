@@ -106,11 +106,10 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
 
 def setup_new_dataset(pseudo_masks_path=None, naive=False):
     data_path = "/thesis/new_dataset"
-
-    for name in ["train", "validation"]:
+    pseudo_masks_path = os.path.join(pseudo_masks_path, "new_dataset_train")
+    for name in ["train", "validation", "test"]:
         dataset_name = "new_dataset_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
-        pseudo_masks_path_new = os.path.join(pseudo_masks_path, dataset_name)
-        DatasetCatalog.register(dataset_name, lambda d=name: get_new_dataset_dicts(data_path, d, pseudo_masks_path_new, naive=naive))
+        DatasetCatalog.register(dataset_name, lambda d=name: get_new_dataset_dicts(data_path, d, pseudo_masks_path, naive=naive))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
