@@ -1,27 +1,35 @@
 _BASE_: "./wgisd_R101_with_aug_crop.yaml"
 DATASETS:
-  TRAIN: ("wgisd_train", "full_test_video")  # 1984 (88+1896)
+  # 2483 (88 + 85 + 417 + 424 + 599 + 600 + 270)
+  TRAIN: ("wgisd_train", "new_dataset_train", "closeup1", "closeup2", "video1", "video2", "video3")
 SOLVER:
-  MAX_ITER: 198400  # train for 100 epochs
-  CHECKPOINT_PERIOD: 1984  # checkpoint every epoch
-  ITERS_PER_EPOCH: 1984
+  MAX_ITER: 248300  # train for 100 epochs
+  CHECKPOINT_PERIOD: 2483  # checkpoint every epoch
+  ITERS_PER_EPOCH: 2483
   MAX_TRAINING_ROUNDS: 1
 TEST:
-  EVAL_PERIOD: 1984  # evaluate every epoch
+  EVAL_PERIOD: 2483  # evaluate every epoch
 OUTPUT_DIR: "./output/wgisd_R101_with_aug_crop_pseudo_labels"
 SEED: -1
 PSEUDOMASKS:
   GENERATE: True
-  IDS_TXT: ["/thesis/full_test_video/ids.txt"]
-  DATA_FOLDER: ["/thesis/full_test_video/data"]
-  DEST_FOLDER: ["pseudo_masks/full_test_video"]
+  IDS_TXT: ["/thesis/new_dataset/train/train.txt",
+            "/thesis/videos/closeup1/ids.txt",
+            "/thesis/videos/closeup2/ids.txt",
+            "/thesis/videos/video1/ids.txt",
+            "/thesis/videos/video2/ids.txt",
+            "/thesis/videos/video3/ids.txt"]
+  DATA_FOLDER: ["/thesis/new_dataset/train",
+                "/thesis/videos/closeup1/",
+                "/thesis/videos/closeup2/",
+                "/thesis/videos/video1/",
+                "/thesis/videos/video2/",
+                "/thesis/videos/video3/"]
+  DEST_FOLDER: ["pseudo_masks/new_dataset",
+                "pseudo_masks/closeup1",
+                "pseudo_masks/closeup2",
+                "pseudo_masks/video1",
+                "pseudo_masks/video2",
+                "pseudo_masks/video3"]
   INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
-  PROCESS_METHOD: "grabcut"
-  GRABCUT:
-    MEDIAN_BLUR: 25
-  SLIC:
-    SLIC_ZERO: False
-    N_SEGMENTS: 2000
-    COMPACTNESS: 0.1
-    SIGMA: 0
-    THRESHOLD: 0.7
+  PROCESS_METHOD: "none"
