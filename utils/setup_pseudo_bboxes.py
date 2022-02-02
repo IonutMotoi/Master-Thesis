@@ -15,7 +15,7 @@ def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path):
     source_path = Path(root, dataset_name)
     pseudo_masks_path = Path(pseudo_masks_path, dataset_name)
 
-    with open(os.path.join(root, "ids.txt"), 'r') as f:
+    with open(os.path.join(root, dataset_name, "ids.txt"), 'r') as f:
         # Read all lines in file
         lines = f.readlines()
         # Recover the items ids, removing the \n at the end
