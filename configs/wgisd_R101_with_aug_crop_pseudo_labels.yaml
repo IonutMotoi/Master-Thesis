@@ -19,17 +19,12 @@ PSEUDOMASKS:
             "/thesis/videos/video1/ids.txt",
             "/thesis/videos/video2/ids.txt",
             "/thesis/videos/video3/ids.txt"]
+  DATASET_NAME: ["new_dataset_train", "closeup1", "closeup2", "video1", "video2", "video3"]
   DATA_FOLDER: ["/thesis/new_dataset/train",
                 "/thesis/videos/closeup1/",
                 "/thesis/videos/closeup2/",
                 "/thesis/videos/video1/",
                 "/thesis/videos/video2/",
                 "/thesis/videos/video3/"]
-  DEST_FOLDER: ["pseudo_masks/new_dataset",
-                "pseudo_masks/closeup1",
-                "pseudo_masks/closeup2",
-                "pseudo_masks/video1",
-                "pseudo_masks/video2",
-                "pseudo_masks/video3"]
   INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
   PROCESS_METHOD: "none"
