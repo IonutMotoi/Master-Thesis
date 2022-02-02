@@ -13,7 +13,7 @@ from utils.bbox_conversion import yolo_bboxes_to_pascal_voc
 # Dataset
 def get_pseudo_bboxes_dicts(root, pseudo_masks_path):
 
-    source_path = Path(root, "data")
+    source_path = Path(root)
     pseudo_masks_path = Path(pseudo_masks_path)
 
     with open(os.path.join(root, "ids.txt"), 'r') as f:
@@ -80,8 +80,7 @@ def get_pseudo_bboxes_dicts(root, pseudo_masks_path):
 
 
 def setup_pseudo_bboxes(pseudo_masks_path):
-    data_path = "/thesis/full_test_video"
-    dataset_name = "full_test_video"
-
-    DatasetCatalog.register(dataset_name, lambda: get_pseudo_bboxes_dicts(data_path, pseudo_masks_path))
-    MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
+    for dataset_name in ["closeup1", "closeup2", "video1", "video2", "video3"]:
+        data_path = f"/thesis/videos/{dataset_name}"
+        DatasetCatalog.register(dataset_name, lambda: get_pseudo_bboxes_dicts(data_path, pseudo_masks_path))
+        MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
