@@ -87,7 +87,7 @@ def do_train(cfg, model, resume=False, model_weights=None):
 
     logger.info("Starting training from iteration {}".format(start_iter))
     with EventStorage(start_iter) as storage:
-        for data, iteration in zip(data_loader, range(start_iter, start_iter+max_iter)):
+        for data, iteration in zip(data_loader, range(start_iter, start_iter + max_iter)):
             storage.iter = iteration
 
             loss_dict = model(data)
@@ -224,7 +224,7 @@ def main(args):
             model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
         )
 
-    for train_round in range(1, cfg.SOLVER.MAX_TRAINING_ROUNDS+1):
+    for train_round in range(1, cfg.SOLVER.MAX_TRAINING_ROUNDS + 1):
         print("#######################################")
         print(f"Training round {train_round} out of {cfg.SOLVER.MAX_TRAINING_ROUNDS}")
         print("#######################################")
@@ -237,36 +237,39 @@ def main(args):
         # Generate pseudo-masks
         if cfg.PSEUDOMASKS.GENERATE:
             for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
-                print(f"Generating pseudo-masks for dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
+                print(f"Generating pseudo-masks for dataset {i + 1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
                 dest_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
+                ext = 'jpg' if cfg.PSEUDOMASKS.DATASET_NAME[i] == "new_dataset_train" else 'png'
                 if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
                     print("NAIVE METHOD")
                     generate_masks_from_bboxes(cfg,
-                                         ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
-                                         data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                         dest_folder=dest_folder,
-                                         model_weights=model_weights,
-                                         use_bboxes=False)
+                                               ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
+                                               data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                               dest_folder=dest_folder,
+                                               model_weights=model_weights,
+                                               use_bboxes=False,
+                                               img_ext=ext)
                 else:
                     generate_masks_from_bboxes(cfg,
                                                ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
                                                data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
                                                dest_folder=dest_folder,
                                                model_weights=model_weights,
-                                               img_ext='png')
+                                               img_ext=ext)
 
         # Post-process pseudo-masks
         if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic', 'grabcut']:
             for i in range(len(cfg.PSEUDOMASKS.IDS_TXT)):
                 masks_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
+                ext = 'jpg' if cfg.PSEUDOMASKS.DATASET_NAME[i] == "new_dataset_train" else 'png'
                 print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
-                      f"of dataset {i+1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
+                      f"of dataset {i + 1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
                 process_pseudomasks(cfg,
                                     method=cfg.PSEUDOMASKS.PROCESS_METHOD,
                                     input_masks=[f'{masks_folder}/*.npz'],
                                     data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
                                     output_path=masks_folder,
-                                    img_ext='png')
+                                    img_ext=ext)
 
         # Train
         do_train(cfg, model, resume=args.resume, model_weights=None)
@@ -278,7 +281,7 @@ def main(args):
             wandb.save(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
             # Need to remove the saved models due to limited space
             if train_round > 1:  # Remove previous model
-                os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round-1}.pth"))
+                os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round - 1}.pth"))
             # if train_round == cfg.SOLVER.MAX_TRAINING_ROUNDS:  # Remove last model
             #     os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
         else:
