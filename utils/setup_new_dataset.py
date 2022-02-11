@@ -26,7 +26,7 @@ def extract_bboxes_from_masks(masks):
 # Dataset
 def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
     # Load the dataset subset defined by source
-    assert source in ['train', 'validation', 'test'], \
+    assert source in ['train', 'validation', 'test', 'new_validation'], \
         'source should be "train", "validation", "test"'
 
     if source == "train":
@@ -34,6 +34,8 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
         pseudo_masks_path = Path(pseudo_masks_path)
     elif source == "validation":
         source_path = Path(root, "validation")
+    elif source == "new_validation":
+        source_path = Path("./new_validation")
     else:  # source == "test":
         source_path = Path(root, "test")
 
@@ -44,7 +46,7 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
         record = {}
 
         ##### ONLY FOR TESTING
-        if source == 'validation':
+        if source == 'validation' or source == 'new_validation':
             img_id = 'IMG_20210924_122217870'
         #####
 
@@ -108,7 +110,7 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
         dataset_dicts.append(record)
 
         ##### ONLY FOR TESTING
-        if source == 'validation':
+        if source == 'validation' or source == 'new_validation':
             break
         #####
     return dataset_dicts
@@ -117,7 +119,7 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
 def setup_new_dataset(pseudo_masks_path=None, naive=False):
     data_path = "/thesis/new_dataset"
     pseudo_masks_path = os.path.join(pseudo_masks_path, "new_dataset_train")
-    for name in ["train", "validation", "test"]:
+    for name in ["train", "validation", "test", "new_validation"]:
         dataset_name = "new_dataset_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
