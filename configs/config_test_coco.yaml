@@ -1,9 +1,9 @@
 _BASE_: "./wgisd_R101.yaml"
 DATASETS:
-  TEST : ("new_dataset_validation", "new_dataset_test", "wgisd_test")
+  TEST : ("new_dataset_validation",) #, "new_dataset_test", "wgisd_test")
 MODEL:
   WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
   ROI_HEADS:
-    SCORE_THRESH_TEST: 0.05  # default
+    SCORE_THRESH_TEST: 0.05  # default 0.05
 OUTPUT_DIR: "./output/test_coco"
 EVALUATOR: "coco"

@@ -43,6 +43,11 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
     for img_id in ids:
         record = {}
 
+        ##### ONLY FOR TESTING
+        if source == 'validation':
+            img_id = 'IMG_20210924_122217870'
+        #####
+
         filename = str(source_path / f'{img_id}.jpg')
         height, width = cv2.imread(filename).shape[:2]
 
@@ -101,6 +106,11 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
         record["annotations"] = objs
 
         dataset_dicts.append(record)
+
+        ##### ONLY FOR TESTING
+        if source == 'validation':
+            break
+        #####
     return dataset_dicts
 
 
