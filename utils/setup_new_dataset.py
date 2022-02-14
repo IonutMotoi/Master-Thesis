@@ -26,7 +26,7 @@ def extract_bboxes_from_masks(masks):
 # Dataset
 def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
     # Load the dataset subset defined by source
-    assert source in ['train', 'validation', 'test', 'new_validation'], \
+    assert source in ['train', 'validation', 'test'], \
         'source should be "train", "validation", "test"'
 
     if source == "train":
@@ -34,8 +34,6 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
         pseudo_masks_path = Path(pseudo_masks_path)
     elif source == "validation":
         source_path = Path(root, "validation")
-    elif source == "new_validation":
-        source_path = Path("./new_validation")
     else:  # source == "test":
         source_path = Path(root, "test")
 
@@ -44,11 +42,6 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
     dataset_dicts = []
     for img_id in ids:
         record = {}
-
-        ##### ONLY FOR TESTING
-        if source == 'validation' or source == 'new_validation':
-            img_id = 'IMG_20210924_122217870'
-        #####
 
         filename = str(source_path / f'{img_id}.jpg')
         height, width = cv2.imread(filename).shape[:2]
@@ -108,18 +101,13 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
         record["annotations"] = objs
 
         dataset_dicts.append(record)
-
-        ##### ONLY FOR TESTING
-        if source == 'validation' or source == 'new_validation':
-            break
-        #####
     return dataset_dicts
 
 
 def setup_new_dataset(pseudo_masks_path=None, naive=False):
     data_path = "/thesis/new_dataset"
     pseudo_masks_path = os.path.join(pseudo_masks_path, "new_dataset_train")
-    for name in ["train", "validation", "test", "new_validation"]:
+    for name in ["train", "validation", "test"]:
         dataset_name = "new_dataset_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
