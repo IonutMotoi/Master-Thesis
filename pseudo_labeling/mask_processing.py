@@ -90,7 +90,7 @@ def slic_pseudomasks(cfg, masks, bboxes, image_path):
 
     for i in range(masks.shape[2]):  # for each mask
         mask = masks[:, :, i]
-        mask = cv2.resize(mask, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+        # mask = cv2.resize(mask, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
         if np.all(mask == 0):  # if empty mask continue
             continue
         abs_bbox = yolo_bbox_to_pascal_voc(bboxes[i], img_height=height, img_width=width)
@@ -102,10 +102,10 @@ def slic_pseudomasks(cfg, masks, bboxes, image_path):
 
             if intersection_area / cluster_area > threshold:
                 mask = ((cluster + mask) > 0).astype(np.uint8)
-            # if intersection_area / cluster_area < (1-threshold):
-            #     mask = (mask - ((cluster * mask) > 0)).astype(np.uint8)
+            if intersection_area / cluster_area < (1-threshold):
+                mask = (mask - ((cluster * mask) > 0)).astype(np.uint8)
 
-        mask = cv2.resize(mask, (width, height), interpolation=cv2.INTER_LINEAR)
+        # mask = cv2.resize(mask, (width, height), interpolation=cv2.INTER_LINEAR)
         masks[:, :, i] = set_values_outside_bbox_to_zero(mask, abs_bbox)
 
     return masks
