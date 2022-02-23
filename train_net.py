@@ -78,10 +78,10 @@ def do_train(cfg, model, resume=False, model_weights=None):
     mapper = AlbumentationsMapper(cfg, is_train=True)
     data_loader = build_detection_train_loader(cfg, mapper=mapper)
     examples_count = 0  # Counter for saving examples of augmented images on W&B
-    # validation_loss_eval_wgisd = ValidationLossEval(cfg, model, "wgisd_valid")
+    validation_loss_eval_wgisd = ValidationLossEval(cfg, model, "wgisd_valid")
     validation_loss_eval_new_dataset = ValidationLossEval(cfg, model, "new_dataset_validation")
     mean_train_loss = MeanTrainLoss()
-    early_stopping = EarlyStopping(patience=20)
+    early_stopping = EarlyStopping(patience=30)
     iters_per_epoch = cfg.SOLVER.ITERS_PER_EPOCH
     epoch = 0
 
@@ -127,13 +127,13 @@ def do_train(cfg, model, resume=False, model_weights=None):
                             storage.put_scalars(**results, smoothing_hint=False)
 
                 # Validation loss
-                # validation_loss_dict_wgisd = validation_loss_eval_wgisd.get_loss()
-                # validation_loss_wgisd = sum(loss for loss in validation_loss_dict_wgisd.values())
-                # with storage.name_scope("Validation losses wgisd"):
-                #     storage.put_scalars(total_validation_loss_wgisd=validation_loss_wgisd,
-                #                         **validation_loss_dict_wgisd,
-                #                         smoothing_hint=False)
-                # logger.info("Total validation loss -> wgisd: {}".format(validation_loss_wgisd))
+                validation_loss_dict_wgisd = validation_loss_eval_wgisd.get_loss()
+                validation_loss_wgisd = sum(loss for loss in validation_loss_dict_wgisd.values())
+                with storage.name_scope("Validation losses wgisd"):
+                    storage.put_scalars(total_validation_loss_wgisd=validation_loss_wgisd,
+                                        **validation_loss_dict_wgisd,
+                                        smoothing_hint=False)
+                logger.info("Total validation loss -> wgisd: {}".format(validation_loss_wgisd))
 
                 validation_loss_dict_new_dataset = validation_loss_eval_new_dataset.get_loss()
                 validation_loss_new_dataset = sum(loss for loss in validation_loss_dict_new_dataset.values())
