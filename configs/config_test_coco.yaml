@@ -4,6 +4,6 @@ DATASETS:
 MODEL:
   WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
   ROI_HEADS:
-    SCORE_THRESH_TEST: 0.05  # default
+    SCORE_THRESH_TEST: 0.05  # default 0.05
 OUTPUT_DIR: "./output/test_coco"
 EVALUATOR: "coco"
