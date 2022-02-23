@@ -78,7 +78,7 @@ def slic_pseudomasks(cfg, masks, bboxes, image_path):
 
     image = cv2.imread(image_path)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+    # image = cv2.resize(image, (0, 0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
 
     # Get slic segmentation
     slic_segmentation = slic(image, start_label=1, convert2lab=True,
