@@ -54,7 +54,7 @@ PSEUDOMASKS:
   GENERATE: False
   DATASET_NAME: ["new_dataset_train"]
   DATA_FOLDER: ["/thesis/new_dataset/train"]
-  INITIAL_WEIGHTS: "./output/wgisd_R101/model_final.pth"
+  INITIAL_WEIGHTS: "./output/wgisd_R101/best_model.pth"
   PROCESS_METHOD: "none"
   GRABCUT:
     MEDIAN_BLUR: 0
