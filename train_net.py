@@ -187,8 +187,6 @@ def setup(args):
 
     cfg.freeze()
     default_setup(cfg, args)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
     return cfg
 
 
