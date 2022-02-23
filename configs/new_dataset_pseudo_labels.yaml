@@ -1,0 +1,18 @@
+_BASE_: "./wgisd_R101.yaml"
+DATASETS:
+  TRAIN: ("wgisd_train", "new_dataset_train")  # 173
+SOLVER:
+  MAX_ITER: 18200  # train for 100 epochs
+  CHECKPOINT_PERIOD: 182  # checkpoint every epoch
+  ITERS_PER_EPOCH: 182
+  MAX_TRAINING_ROUNDS: 1
+TEST:
+  EVAL_PERIOD: 182  # evaluate every epoch
+OUTPUT_DIR: "./output/new_dataset_pseudo_labels"
+SEED: 42
+PSEUDOMASKS:
+  GENERATE: True
+  DATA_FOLDER: ["/thesis/datasets/new_dataset/train"]
+  DEST_FOLDER: ["pseudo_masks/new_dataset"]
+  INITIAL_WEIGHTS: "./output/wgisd_R101/model_final.pth"
+  PROCESS_METHOD: "none"

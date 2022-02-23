@@ -1,7 +1,7 @@
 _BASE_: "./Base-RCNN-FPN.yaml"
 DATASETS:
   TRAIN : ("wgisd_train",)
-  TEST : ("wgisd_valid", "new_dataset_validation")
+  TEST : ("new_dataset_validation",)
 DATALOADER:
   NUM_WORKERS : 4
 INPUT:
@@ -11,6 +11,10 @@ INPUT:
   MIN_SIZE_TEST: 1024
   MAX_SIZE_TEST: 1024
   RANDOM_FLIP: "horizontal"
+  CROP:
+    ENABLED: True
+    TYPE: "relative_range"
+    SIZE: [0.5, 0.5]
 SOLVER:
   IMS_PER_BATCH : 1
   BASE_LR : 0.001
@@ -37,13 +41,13 @@ OUTPUT_DIR: "./output/wgisd_R101"
 SEED: 42
 ALBUMENTATIONS:
   GAUSSIAN_BLUR:
-    ENABLED: False
+    ENABLED: True
   GAUSSIAN_NOISE:
-    ENABLED: False
+    ENABLED: True
   RANDOM_BRIGHTNESS_CONTRAST:
-    ENABLED: False
+    ENABLED: True
   PIXEL_DROPOUT:
-    ENABLED: False
+    ENABLED: True
     DROPOUT_MIN: 0.0
     DROPOUT_MAX: 0.05
 PSEUDOMASKS:
@@ -54,11 +58,11 @@ PSEUDOMASKS:
   INITIAL_WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
   PROCESS_METHOD: "none"
   GRABCUT:
-    MEDIAN_BLUR: 25
+    MEDIAN_BLUR: 0
   SLIC:
     SLIC_ZERO: False
     N_SEGMENTS: 2000
     COMPACTNESS: 0.1
     SIGMA: 0
-    THRESHOLD: 0.1
+    THRESHOLD: 0.7
 EVALUATOR: "coco"

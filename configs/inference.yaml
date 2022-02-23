@@ -2,7 +2,7 @@ _BASE_: "./wgisd_R101.yaml"
 DATASETS:
   TEST: ()
 MODEL:
-  WEIGHTS: "./output/wgisd_R101_with_aug_crop/model_final.pth"
+  WEIGHTS: "./output/wgisd_R101/model_final.pth"
 OUTPUT_DIR: "./output/inference"
 LABELS: ["Grapes"]
 COLORS: [[240, 50, 200]]

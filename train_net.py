@@ -240,22 +240,13 @@ def main(args):
                 print(f"Generating pseudo-masks for dataset {i + 1} out of {len(cfg.PSEUDOMASKS.IDS_TXT)}...")
                 dest_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
                 ext = 'jpg' if cfg.PSEUDOMASKS.DATASET_NAME[i] == "new_dataset_train" else 'png'
-                if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
-                    print("NAIVE METHOD")
-                    generate_masks_from_bboxes(cfg,
-                                               ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
-                                               data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                               dest_folder=dest_folder,
-                                               model_weights=model_weights,
-                                               use_bboxes=False,
-                                               img_ext=ext)
-                else:
-                    generate_masks_from_bboxes(cfg,
-                                               ids_txt=cfg.PSEUDOMASKS.IDS_TXT[i],
-                                               data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                               dest_folder=dest_folder,
-                                               model_weights=model_weights,
-                                               img_ext=ext)
+                use_bboxes = cfg.PSEUDOMASKS.PROCESS_METHOD != 'naive'
+                generate_masks_from_bboxes(cfg,
+                                           data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                           dest_folder=dest_folder,
+                                           model_weights=model_weights,
+                                           use_bboxes=use_bboxes,
+                                           img_ext=ext)
 
         # Post-process pseudo-masks
         if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic', 'grabcut']:
@@ -282,8 +273,6 @@ def main(args):
             # Need to remove the saved models due to limited space
             if train_round > 1:  # Remove previous model
                 os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round - 1}.pth"))
-            # if train_round == cfg.SOLVER.MAX_TRAINING_ROUNDS:  # Remove last model
-            #     os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
         else:
             wandb.save(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
 

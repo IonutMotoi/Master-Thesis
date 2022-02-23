@@ -1,4 +1,4 @@
-_BASE_: "./wgisd_R101_with_aug_crop.yaml"
+_BASE_: "./wgisd_R101.yaml"
 DATASETS:
   # 2483 (88 + 85 + 417 + 424 + 599 + 600 + 270)
   TRAIN: ("wgisd_train", "new_dataset_train", "closeup1", "closeup2", "video1", "video2", "video3")
