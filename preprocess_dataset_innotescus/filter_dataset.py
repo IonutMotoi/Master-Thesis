@@ -2,41 +2,40 @@ from pathlib import Path
 import shutil
 
 if __name__ == '__main__':
-    # Use masked images as validation / test and images with only bboxes as train
+    # Split dataset from Innotescus in train/val/test
 
-    path_dataset = Path("./dataset")
-    path_train = Path("./new_dataset", "train")
+    # Sources
+    path_TGD = Path("./datasets", "TGD")  # contains yolo bounding boxes (txt)
+    path_TGIS = Path("./datasets", "TGIS")  # contains instance annotations (png)
+    path_TG = Path("./datasets", "TG")  # contains all images (jpg)
+    # Destinations
+    path_train = Path("./datasets", "new_dataset", "train")
     path_train.mkdir(parents=True, exist_ok=True)
-    path_validation = Path("./new_dataset", "validation")
+    path_validation = Path("./datasets", "new_dataset", "validation")
     path_validation.mkdir(parents=True, exist_ok=True)
-    path_test = Path("./new_dataset", "test")
+    path_test = Path("./datasets", "new_dataset", "test")
     path_test.mkdir(parents=True, exist_ok=True)
 
-    ids = [file.stem for file in path_dataset.glob("*")]
-    print("Total number of images:", len(ids))
+    ids_tgis = [file.stem for file in path_TGIS.glob("*.png")]
+    print("Total number of images in TIS:", len(ids_tgis))
 
-    ids_with_masks = [file.stem for file in Path.cwd().glob("annotations/*.png")]
-    print("Images with mask annotations:", len(ids_with_masks))
+    ids_tgd = [file.stem for file in path_TGD.glob("*.txt")]
+    print("Total number of images in TGD:", len(ids_tgd))
 
-    ids_without_masks = [id for id in ids if id not in ids_with_masks]
-    print("Images with only bounding box annotations:", len(ids_without_masks))
-
-    valid_split = len(ids_with_masks) // 2
-    print("Train split:", len(ids_without_masks))
-    print("Validation split:", valid_split)
-    print("Test split:", len(ids_with_masks) - valid_split)
-
-    for i, id_ in enumerate(sorted(ids_with_masks)):
-        file = path_dataset.joinpath(id_)
-        file = file.with_suffix(".jpg")
-        if i < valid_split:
-            shutil.copy(file, path_validation)
+    for i, id_ in enumerate(ids_tgis):
+        image = path_TG.joinpath(id_)
+        image = image.with_suffix(".jpg")
+        if i < 20:
+            shutil.copy(image, path_test)
+        elif i < 40:
+            shutil.copy(image, path_validation)
         else:
-            shutil.copy(file, path_test)
+            shutil.copy(image, path_train)
 
-    for id_ in ids_without_masks:
-        file = path_dataset.joinpath(id_)
-        file = file.with_suffix(".jpg")
-        shutil.copy(file, path_train)
+    for id_ in ids_tgd:
+        if id_ not in ids_tgis:
+            image = path_TG.joinpath(id_)
+            image = image.with_suffix(".jpg")
+            shutil.copy(image, path_train)
 
-    print("Done copy of", len(ids), "images")
+    print("Done")

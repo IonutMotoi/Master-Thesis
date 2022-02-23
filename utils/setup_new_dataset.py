@@ -105,7 +105,7 @@ def get_new_dataset_dicts(root, source, pseudo_masks_path, naive=False):
 
 
 def setup_new_dataset(pseudo_masks_path=None, naive=False):
-    data_path = "/thesis/new_dataset"
+    data_path = "/thesis/datasets/new_dataset"
     pseudo_masks_path = os.path.join(pseudo_masks_path, "new_dataset_train")
     for name in ["train", "validation", "test"]:
         dataset_name = "new_dataset_" + name

@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 
 def save_masks(masks_list, image_id, dest_folder):
-    dest_folder = Path("./new_dataset") / dest_folder
+    dest_folder = Path("./datasets", "new_dataset") / dest_folder
     masks = np.stack(masks_list, axis=2)  # HxWxN
     print(" Shape of masks array:", masks.shape)
     masks_path = dest_folder / f'{image_id}.npz'
@@ -13,12 +13,12 @@ def save_masks(masks_list, image_id, dest_folder):
 
 
 if __name__ == '__main__':
-    with open('./annotations/classes.txt', "r") as f:
+    with open('./datasets/TGIS/classes.txt', "r") as f:
         lines = f.readlines()
     lines = [line.strip() for line in lines]
 
-    ids_validation = [file.stem for file in Path.cwd().glob("new_dataset/validation/*.jpg")]
-    ids_test = [file.stem for file in Path.cwd().glob("new_dataset/test/*.jpg")]
+    ids_validation = [file.stem for file in Path.cwd().glob("datasets/new_dataset/validation/*.jpg")]
+    ids_test = [file.stem for file in Path.cwd().glob("datasets/new_dataset/test/*.jpg")]
 
     instances_list = []
     curr_mask_id = ""
@@ -27,13 +27,12 @@ if __name__ == '__main__':
             if instances_list:  # save the masks of the previous file
                 curr_mask_id = curr_mask_id.split(".")[0]
                 if curr_mask_id in ids_validation:
-                    split = "validation"
-                else:
-                    split = "test"
-                save_masks(instances_list, curr_mask_id, split)
+                    save_masks(instances_list, curr_mask_id, "validation")
+                elif curr_mask_id in ids_test:
+                    save_masks(instances_list, curr_mask_id, "test")
                 instances_list = []
             curr_mask_id = line.split()[1]
-            path = Path("./annotations") / curr_mask_id
+            path = Path("./datasets/TGIS") / curr_mask_id
             mask = np.array(Image.open(path))
         else:  # instances
             instance_id, category = line.split(maxsplit=1)
@@ -42,7 +41,6 @@ if __name__ == '__main__':
     # save the masks of the last file
     curr_mask_id = curr_mask_id.split(".")[0]
     if curr_mask_id in ids_validation:
-        split = "validation"
-    else:
-        split = "test"
-    save_masks(instances_list, curr_mask_id, split)
+        save_masks(instances_list, curr_mask_id, "validation")
+    elif curr_mask_id in ids_test:
+        save_masks(instances_list, curr_mask_id, "test")
