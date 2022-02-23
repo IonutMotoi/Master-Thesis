@@ -181,7 +181,7 @@ def setup(args):
     hyperparameters = get_hyperparameters(cfg)
 
     # Init Weight & Biases and sync with Tensorboard
-    wandb.init(project="Mask_RCNN", sync_tensorboard=True, config=hyperparameters)
+    wandb.init(project="GrapeDnT", sync_tensorboard=True, config=hyperparameters)
 
     cfg = set_config_from_sweep(cfg, wandb.config)
 
