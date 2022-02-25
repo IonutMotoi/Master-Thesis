@@ -7,11 +7,11 @@ parameters:
   mask_process_method:
     value: 'slic'
   max_training_rounds:
-    value: 1
+    value: 10
   model_weights:
     value: "/thesis/detectron2_baseline/R101-FPN/model_final_a3ec72.pkl"
   experiments:
-    values: [1, 2, 3, 4, 5]
+    values: [1, 2, 3]
 command:
   - ${env}
   - ${interpreter}
