@@ -21,6 +21,7 @@ def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path, img_ext):
         record = {}
 
         filename = str(source_path / f'{img_id}.{img_ext}')
+        print(filename)
         height, width = cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
