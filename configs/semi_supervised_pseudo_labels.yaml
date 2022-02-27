@@ -9,7 +9,7 @@ SOLVER:
   MAX_TRAINING_ROUNDS: 1
 TEST:
   EVAL_PERIOD: 182  # evaluate every epoch
-OUTPUT_DIR: "./output/video_pseudo_labels"
+OUTPUT_DIR: "./output/semi_supervised_pseudo_labels"
 SEED: 42
 PSEUDOMASKS:
   GENERATE: True
