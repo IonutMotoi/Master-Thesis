@@ -13,7 +13,7 @@ from utils.save import save_masks
 
 def generate_masks_from_bboxes(cfg, data_folder, dest_folder, model_weights=None,
                                use_bboxes=True, img_ext='jpg'):
-    ids = [file.stem for file in Path(data_folder).glob(f"*.{img_ext}")]
+    ids = [file.stem for file in Path(data_folder).glob("*.txt")]
     predictor = MasksFromBboxesPredictor(cfg, model_weights=model_weights, use_bboxes=use_bboxes)
 
     for img_id in tqdm.tqdm(ids):
