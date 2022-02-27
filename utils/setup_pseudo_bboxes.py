@@ -11,7 +11,7 @@ from utils.bbox_conversion import yolo_bboxes_to_pascal_voc
 
 
 # Dataset
-def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path):
+def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path, img_ext):
     source_path = Path(root, dataset_name)
     pseudo_masks_path = Path(pseudo_masks_path, dataset_name)
 
@@ -20,7 +20,7 @@ def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path):
     for img_id in ids:
         record = {}
 
-        filename = str(source_path / f'{img_id}.png')
+        filename = str(source_path / f'{img_id}.{img_ext}')
         height, width = cv2.imread(filename).shape[:2]
 
         record["file_name"] = filename
@@ -76,5 +76,9 @@ def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path):
 def setup_pseudo_bboxes(pseudo_masks_path):
     data_path = "/thesis/datasets"
     for dataset_name in ["video", "new_dataset_semi_supervised"]:
-        DatasetCatalog.register(dataset_name, lambda d=dataset_name: get_pseudo_bboxes_dicts(data_path, d, pseudo_masks_path))
+        if dataset_name in ["new_dataset_semi_supervised"]:
+            ext = 'jpg'
+        else:
+            ext = 'png'
+        DatasetCatalog.register(dataset_name, lambda d=dataset_name: get_pseudo_bboxes_dicts(data_path, d, pseudo_masks_path, ext))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
