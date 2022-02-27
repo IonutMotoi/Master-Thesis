@@ -239,7 +239,10 @@ def main(args):
             for i in range(len(cfg.PSEUDOMASKS.DATA_FOLDER)):
                 print(f"Generating pseudo-masks for dataset {i + 1} out of {len(cfg.PSEUDOMASKS.DATA_FOLDER)}...")
                 dest_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
-                ext = 'jpg' if cfg.PSEUDOMASKS.DATASET_NAME[i] == "new_dataset_train" else 'png'
+                if cfg.PSEUDOMASKS.DATASET_NAME[i] in ["new_dataset_train", "new_dataset_semi_supervised"]:
+                    ext = 'jpg'
+                else:
+                    ext = 'png'
                 use_bboxes = cfg.PSEUDOMASKS.PROCESS_METHOD != 'naive'
                 generate_masks_from_bboxes(cfg,
                                            data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
@@ -252,7 +255,10 @@ def main(args):
         if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic', 'grabcut']:
             for i in range(len(cfg.PSEUDOMASKS.DATA_FOLDER)):
                 masks_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
-                ext = 'jpg' if cfg.PSEUDOMASKS.DATASET_NAME[i] == "new_dataset_train" else 'png'
+                if cfg.PSEUDOMASKS.DATASET_NAME[i] in ["new_dataset_train", "new_dataset_semi_supervised"]:
+                    ext = 'jpg'
+                else:
+                    ext = 'png'
                 print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
                       f"of dataset {i + 1} out of {len(cfg.PSEUDOMASKS.DATA_FOLDER)}...")
                 process_pseudomasks(cfg,
@@ -264,7 +270,10 @@ def main(args):
         elif cfg.PSEUDOMASKS.PROCESS_METHOD == 'dilation_grabcut':
             for i in range(len(cfg.PSEUDOMASKS.DATA_FOLDER)):
                 masks_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
-                ext = 'jpg' if cfg.PSEUDOMASKS.DATASET_NAME[i] == "new_dataset_train" else 'png'
+                if cfg.PSEUDOMASKS.DATASET_NAME[i] in ["new_dataset_train", "new_dataset_semi_supervised"]:
+                    ext = 'jpg'
+                else:
+                    ext = 'png'
                 print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
                       f"of dataset {i + 1} out of {len(cfg.PSEUDOMASKS.DATA_FOLDER)}...")
                 print("DILATION:")
