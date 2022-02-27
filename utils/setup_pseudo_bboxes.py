@@ -15,12 +15,7 @@ def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path):
     source_path = Path(root, dataset_name)
     pseudo_masks_path = Path(pseudo_masks_path, dataset_name)
 
-    with open(os.path.join(root, dataset_name, "ids.txt"), 'r') as f:
-        # Read all lines in file
-        lines = f.readlines()
-        # Recover the items ids, removing the \n at the end
-        ids = [line.rstrip() for line in lines]
-
+    ids = [f.stem for f in sorted(source_path.glob("*.txt"))]
     dataset_dicts = []
     for img_id in ids:
         record = {}
@@ -79,7 +74,7 @@ def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path):
 
 
 def setup_pseudo_bboxes(pseudo_masks_path):
-    data_path = "/thesis/datasets/videos"
-    for dataset_name in ["closeup1", "closeup2", "video1", "video2", "video3"]:
+    data_path = "/thesis/datasets"
+    for dataset_name in ["video", "new_dataset_semi_supervised"]:
         DatasetCatalog.register(dataset_name, lambda d=dataset_name: get_pseudo_bboxes_dicts(data_path, d, pseudo_masks_path))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
