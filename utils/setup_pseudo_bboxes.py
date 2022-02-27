@@ -81,5 +81,5 @@ def setup_pseudo_bboxes(pseudo_masks_path):
             ext = 'jpg'
         else:
             ext = 'png'
-        DatasetCatalog.register(dataset_name, lambda d=dataset_name: get_pseudo_bboxes_dicts(data_path, d, pseudo_masks_path, ext))
+        DatasetCatalog.register(dataset_name, lambda d=dataset_name, e=ext: get_pseudo_bboxes_dicts(data_path, d, pseudo_masks_path, e))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
