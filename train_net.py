@@ -261,6 +261,26 @@ def main(args):
                                     data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
                                     output_path=masks_folder,
                                     img_ext=ext)
+        elif cfg.PSEUDOMASKS.PROCESS_METHOD == 'dilation_grabcut':
+            for i in range(len(cfg.PSEUDOMASKS.DATA_FOLDER)):
+                masks_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
+                ext = 'jpg' if cfg.PSEUDOMASKS.DATASET_NAME[i] == "new_dataset_train" else 'png'
+                print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
+                      f"of dataset {i + 1} out of {len(cfg.PSEUDOMASKS.DATA_FOLDER)}...")
+                print("DILATION:")
+                process_pseudomasks(cfg,
+                                    method='dilation',
+                                    input_masks=[f'{masks_folder}/*.npz'],
+                                    data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                    output_path=masks_folder,
+                                    img_ext=ext)
+                print("GRABCUT:")
+                process_pseudomasks(cfg,
+                                    method='grabcut',
+                                    input_masks=[f'{masks_folder}/*.npz'],
+                                    data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                    output_path=masks_folder,
+                                    img_ext=ext)
 
         # Train
         do_train(cfg, model, resume=args.resume, model_weights=None)
