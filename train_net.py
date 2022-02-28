@@ -204,11 +204,11 @@ def main(args):
 
     # Register datasets
     setup_wgisd()
-    # if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
-    #     setup_new_dataset(pseudo_masks_folder, naive=True)
-    # else:
-    #     setup_new_dataset(pseudo_masks_folder)
-    setup_new_dataset(pseudo_masks_folder)
+    if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
+        setup_new_dataset(pseudo_masks_folder, naive=True)
+    else:
+        setup_new_dataset(pseudo_masks_folder)
+    # setup_new_dataset(pseudo_masks_folder)
     setup_pseudo_bboxes(pseudo_masks_folder)
 
     if args.eval_only:
