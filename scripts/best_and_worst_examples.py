@@ -104,7 +104,7 @@ def compute_best_and_worst_examples(args):
     )
 
     # Setup dataset, mapper and dataloader
-    data_path = "/thesis/new_dataset"
+    data_path = "/thesis/datasets/new_dataset"
     dataset_name = "new_dataset_validation"
     DatasetCatalog.register(dataset_name,
                             lambda d="validation": get_new_dataset_dicts(data_path, d, None))
