@@ -88,7 +88,7 @@ def get_wgisd_dicts(root, source, pseudo_masks_path):
 def setup_wgisd(pseudo_masks_path=None):
     data_path = "/thesis/datasets/wgisd"
 
-    for name in ["train", "valid"]:
+    for name in ["train", "valid", "test"]:
         dataset_name = "wgisd_" + name
         if dataset_name in DatasetCatalog.list():
             DatasetCatalog.remove(dataset_name)
