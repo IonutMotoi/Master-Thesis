@@ -21,6 +21,7 @@ from sweep.sweep_utils import set_config_from_sweep, get_hyperparameters
 from utils.early_stopping import EarlyStopping
 from utils.setup_new_dataset import setup_new_dataset
 from utils.setup_pseudo_bboxes import setup_pseudo_bboxes
+from utils.setup_pseudo_bboxes_skip import setup_pseudo_bboxes_skip
 from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
 from utils.loss import ValidationLossEval, MeanTrainLoss
@@ -210,6 +211,7 @@ def main(args):
         setup_new_dataset(pseudo_masks_folder)
     # setup_new_dataset(pseudo_masks_folder)
     setup_pseudo_bboxes(pseudo_masks_folder)
+    setup_pseudo_bboxes_skip(pseudo_masks_folder)
 
     if args.eval_only:
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
@@ -246,6 +248,7 @@ def main(args):
                 use_bboxes = cfg.PSEUDOMASKS.PROCESS_METHOD != 'naive'
                 generate_masks_from_bboxes(cfg,
                                            data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
+                                           labels_folder=cfg.PSEUDOMASKS.LABELS_FOLDER[i],
                                            dest_folder=dest_folder,
                                            model_weights=model_weights,
                                            use_bboxes=use_bboxes,

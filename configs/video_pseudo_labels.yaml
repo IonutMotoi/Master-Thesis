@@ -13,6 +13,18 @@ OUTPUT_DIR: "./output/video_pseudo_labels"
 SEED: 42
 PSEUDOMASKS:
   GENERATE: True
-  DATASET_NAME: ["video"]
-  DATA_FOLDER: ["/thesis/datasets/video"]
+  DATASET_NAME: ["video", "FeaturesLabels_skip2", "FeaturesLabels_skip5", "FeaturesLabels_skip8",
+                 "FeaturesLabels_skip11", "FeaturesLabels_skip14"]
+  DATA_FOLDER: ["/thesis/datasets/video",
+                "/thesis/datasets/video",
+                "/thesis/datasets/video",
+                "/thesis/datasets/video",
+                "/thesis/datasets/video",
+                "/thesis/datasets/video"]
+  LABELS_FOLDER: ["/thesis/new_dataset/train",
+                  "/datasets_skip/FeaturesLabels_skip2",
+                  "/datasets_skip/FeaturesLabels_skip5",
+                  "/datasets_skip/FeaturesLabels_skip8",
+                  "/datasets_skip/FeaturesLabels_skip11",
+                  "/datasets_skip/FeaturesLabels_skip14"]
   PROCESS_METHOD: "none"
