@@ -21,7 +21,7 @@ PSEUDOMASKS:
                 "/thesis/datasets/video",
                 "/thesis/datasets/video",
                 "/thesis/datasets/video"]
-  LABELS_FOLDER: ["/thesis/new_dataset/train",
+  LABELS_FOLDER: ["/thesis/datasets/video",
                   "./datasets_skip/FeaturesLabels_skip2",
                   "./datasets_skip/FeaturesLabels_skip5",
                   "./datasets_skip/FeaturesLabels_skip8",
