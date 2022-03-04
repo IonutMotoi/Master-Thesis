@@ -74,7 +74,7 @@ def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path, img_ext='png'
 
 
 def setup_pseudo_bboxes_skip(pseudo_masks_path):
-    data_path = "/datasets_skip"
+    data_path = "./datasets_skip"
     for dataset_name in ["FeaturesLabels_skip2", "FeaturesLabels_skip5", "FeaturesLabels_skip8",
                          "FeaturesLabels_skip11", "FeaturesLabels_skip14"]:
         DatasetCatalog.register(dataset_name, lambda d=dataset_name: get_pseudo_bboxes_dicts(data_path, d, pseudo_masks_path))

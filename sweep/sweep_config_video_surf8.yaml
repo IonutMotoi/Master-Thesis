@@ -20,6 +20,6 @@ command:
   - "configs/video_pseudo_labels.yaml"
   - "OUTPUT_DIR"
   - "./output/sweep_video_surf8"
-  - "DATASETS.TEST"
+  - "DATASETS.TRAIN"
   - '["wgisd_train", "FeaturesLabels_skip8"]'
 project: GrapeDnT

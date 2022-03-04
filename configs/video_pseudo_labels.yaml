@@ -22,9 +22,9 @@ PSEUDOMASKS:
                 "/thesis/datasets/video",
                 "/thesis/datasets/video"]
   LABELS_FOLDER: ["/thesis/new_dataset/train",
-                  "/datasets_skip/FeaturesLabels_skip2",
-                  "/datasets_skip/FeaturesLabels_skip5",
-                  "/datasets_skip/FeaturesLabels_skip8",
-                  "/datasets_skip/FeaturesLabels_skip11",
-                  "/datasets_skip/FeaturesLabels_skip14"]
+                  "./datasets_skip/FeaturesLabels_skip2",
+                  "./datasets_skip/FeaturesLabels_skip5",
+                  "./datasets_skip/FeaturesLabels_skip8",
+                  "./datasets_skip/FeaturesLabels_skip11",
+                  "./datasets_skip/FeaturesLabels_skip14"]
   PROCESS_METHOD: "none"
