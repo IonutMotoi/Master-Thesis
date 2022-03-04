@@ -14,7 +14,7 @@ from utils.bbox_conversion import yolo_bboxes_to_pascal_voc
 def get_pseudo_bboxes_dicts(root, dataset_name, pseudo_masks_path, img_ext='png'):
     source_path = Path(root, dataset_name)
     pseudo_masks_path = Path(pseudo_masks_path, dataset_name)
-    images_path = Path("thesis", "datasets", "video")
+    images_path = Path("/thesis/datasets/video")
 
     ids = [f.stem for f in sorted(source_path.glob("*.txt"))]
     dataset_dicts = []
