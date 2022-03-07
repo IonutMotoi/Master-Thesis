@@ -17,7 +17,7 @@ command:
   - ${interpreter}
   - ${program}
   - "--config-file"
-  - "configs/video_pseudo_labels.yaml"
+  - "configs/video_pseudo_labels_skip.yaml"
   - "OUTPUT_DIR"
   - "./output/sweep_video_sfm5"
   - "DATASETS.TRAIN"
