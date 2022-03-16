@@ -16,4 +16,6 @@ PSEUDOMASKS:
   DATASET_NAME: ["new_dataset_train", "video"]
   DATA_FOLDER: ["/thesis/datasets/new_dataset/train",
                 "/thesis/datasets/video"]
+  LABELS_FOLDER: ["/thesis/datasets/new_dataset/train",
+                  "/thesis/datasets/video"]
   PROCESS_METHOD: "none"

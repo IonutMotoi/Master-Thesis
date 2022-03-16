@@ -16,4 +16,6 @@ PSEUDOMASKS:
   DATASET_NAME: ["new_dataset_semi_supervised", "video"]
   DATA_FOLDER: ["/thesis/datasets/new_dataset_semi_supervised",
                 "/thesis/datasets/video"]
+  LABELS_FOLDER: ["/thesis/datasets/new_dataset_semi_supervised",
+                  "/thesis/datasets/video"]
   PROCESS_METHOD: "none"

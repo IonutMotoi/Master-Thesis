@@ -15,4 +15,5 @@ PSEUDOMASKS:
   GENERATE: True
   DATASET_NAME: ["new_dataset_semi_supervised"]
   DATA_FOLDER: ["/thesis/datasets/new_dataset_semi_supervised"]
+  LABELS_FOLDER: [ "/thesis/datasets/new_dataset_semi_supervised" ]
   PROCESS_METHOD: "none"
