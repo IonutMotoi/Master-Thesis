@@ -17,7 +17,7 @@ command:
   - ${interpreter}
   - ${program}
   - "--config-file"
-  - "configs/semi_supervised_pseudo_labels.yaml"
+  - "configs/new_dataset_video_semi_supervised.yaml"
   - "OUTPUT_DIR"
-  - "./output/sweep_semi_supervised"
+  - "./output/sweep_new_dataset_video_semi_supervised"
 project: GrapeDnT
