@@ -14,6 +14,7 @@ from utils.save import save_masks
 def generate_masks_from_bboxes(cfg, data_folder, labels_folder, dest_folder, model_weights=None,
                                use_bboxes=True, img_ext='jpg'):
     ids = [file.stem for file in Path(labels_folder).glob("*.txt")]
+    print(len(ids))
     predictor = MasksFromBboxesPredictor(cfg, model_weights=model_weights, use_bboxes=use_bboxes)
 
     for img_id in tqdm.tqdm(ids):
