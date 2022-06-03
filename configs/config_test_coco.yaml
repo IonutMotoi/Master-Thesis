@@ -6,4 +6,3 @@ MODEL:
   ROI_HEADS:
     SCORE_THRESH_TEST: 0.05  # default 0.05
 OUTPUT_DIR: "./output/test_coco"
-EVALUATOR: "coco"

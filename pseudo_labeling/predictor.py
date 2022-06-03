@@ -15,13 +15,12 @@ class MasksFromBboxesPredictor:
     single device for a single input image with GT (Ground-Truth) bounding boxes and classes.
 
     Compared to using the model directly, this class does the following additions:
-    1. Load checkpoint from `cfg.MODEL.WEIGHTS`.
+    1. Load checkpoint from model_weights if specified, otherwise from 'cfg.PSEUDOMASKS.INITIAL_WEIGHTS'.
     2. Always take BGR image as the input and apply conversion defined by `cfg.INPUT.FORMAT`.
        As input it also requires the GT bboxes and classes that will be used to predict the masks.
     3. Apply resizing defined by `cfg.INPUT.{MIN,MAX}_SIZE_TEST` to both image and labels
     4. Take one input image with the bounding boxes and classes and produce a single output, instead of a batch.
     """
-
     def __init__(self, cfg, model_weights=None, use_bboxes=True):
         self.cfg = cfg.clone()  # cfg can be modified by model
         self.model = build_model(self.cfg)
@@ -44,6 +43,7 @@ class MasksFromBboxesPredictor:
         assert self.input_format in ["RGB", "BGR"], self.input_format
 
         self.use_bboxes = use_bboxes
+
 
     def __call__(self, original_image, bboxes, classes):
         """
@@ -72,7 +72,7 @@ class MasksFromBboxesPredictor:
             if self.use_bboxes:
                 # Transform the GT bounding boxes
                 bboxes = [transform.apply_box(np.array([bbox]))[0].clip(min=0) for bbox in bboxes]
-                bboxes = torch.tensor(bboxes)
+                bboxes = torch.tensor(np.array(bboxes))
 
                 # Create an 'Instances' object with the GT bboxes and classes
                 target = Instances(image_size=image.shape[1:])

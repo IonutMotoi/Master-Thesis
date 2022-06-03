@@ -11,8 +11,9 @@ TEST:
   EVAL_PERIOD: 182  # evaluate every epoch
 OUTPUT_DIR: "./output/new_dataset_pseudo_labels"
 SEED: 42
+
 PSEUDOMASKS:
   GENERATE: True
   DATASET_NAME: ["new_dataset_train"]
-  DATA_FOLDER: ["/thesis/datasets/new_dataset/train"]
+  DATA_FOLDER: ["datasets/new_dataset/train"]
   PROCESS_METHOD: "none"

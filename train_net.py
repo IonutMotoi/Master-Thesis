@@ -17,7 +17,6 @@ from detectron2.utils.events import EventStorage
 
 from pseudo_labeling.mask_processing import dilate_pseudomasks, slic_pseudomasks, process_pseudomasks
 from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
-from sweep.sweep_utils import set_config_from_sweep, get_hyperparameters
 from utils.early_stopping import EarlyStopping
 from utils.setup_new_dataset import setup_new_dataset
 from utils.setup_pseudo_bboxes import setup_pseudo_bboxes
@@ -26,7 +25,6 @@ from utils.setup_wgisd import setup_wgisd
 from utils.albumentations_mapper import AlbumentationsMapper
 from utils.loss import ValidationLossEval, MeanTrainLoss
 from utils.visualization import visualize_image_and_annotations
-from utils.pascal_voc_evaluator import PascalVOCEvaluator
 
 logger = logging.getLogger("detectron2")
 
@@ -34,14 +32,7 @@ logger = logging.getLogger("detectron2")
 def get_evaluator(cfg, dataset_name, output_folder=None):
     if output_folder is None:
         output_folder = os.path.join(cfg.OUTPUT_DIR, "inference")
-    if cfg.EVALUATOR == "pascal":
-        if "detection" in dataset_name:
-            task = "detection"
-        else:
-            task = "segmentation"
-        return PascalVOCEvaluator(dataset_name, task)
-    else:
-        return COCOEvaluator(dataset_name, output_dir=output_folder)
+    return COCOEvaluator(dataset_name, output_dir=output_folder)
 
 
 def do_test(cfg, model):
@@ -49,17 +40,12 @@ def do_test(cfg, model):
     for dataset_name in cfg.DATASETS.TEST:
         mapper = AlbumentationsMapper(cfg, is_train=False)
         data_loader = build_detection_test_loader(cfg, dataset_name, mapper=mapper)
-        evaluator = get_evaluator(
-            cfg, dataset_name, os.path.join(cfg.OUTPUT_DIR, "inference", dataset_name)
-        )
+        evaluator = get_evaluator(cfg, dataset_name, os.path.join(cfg.OUTPUT_DIR, "inference", dataset_name))
         results_i = inference_on_dataset(model, data_loader, evaluator)
         results[dataset_name] = results_i
         if comm.is_main_process():
-            if cfg.EVALUATOR == "pascal":
-                evaluator.print_results(results_i)
-            else:
-                logger.info("Evaluation results for {} in csv format:".format(dataset_name))
-                print_csv_format(results_i)
+            logger.info("Evaluation results for {} in csv format:".format(dataset_name))
+            print_csv_format(results_i)
     return results
 
 
@@ -177,15 +163,6 @@ def setup(args):
     cfg.set_new_allowed(True)  # to allow merging new keys
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
-
-    # Get default hyperparameters (can be over-ridden by a sweep)
-    hyperparameters = get_hyperparameters(cfg)
-
-    # Init Weight & Biases and sync with Tensorboard
-    wandb.init(project="GrapeDnT", sync_tensorboard=True, config=hyperparameters)
-
-    cfg = set_config_from_sweep(cfg, wandb.config)
-
     cfg.freeze()
     default_setup(cfg, args)
     return cfg
@@ -194,6 +171,8 @@ def setup(args):
 def main(args):
     cfg = setup(args)
 
+    # Init Weight & Biases and sync with Tensorboard
+    wandb.init(project="GrapeDnT", sync_tensorboard=True)
     # Save config.yaml on wandb
     wandb.save(os.path.join(cfg.OUTPUT_DIR, "config.yaml"))
 
@@ -270,55 +249,25 @@ def main(args):
                                     data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
                                     output_path=masks_folder,
                                     img_ext=ext)
-        elif cfg.PSEUDOMASKS.PROCESS_METHOD == 'dilation_grabcut':
-            for i in range(len(cfg.PSEUDOMASKS.DATA_FOLDER)):
-                masks_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
-                if cfg.PSEUDOMASKS.DATASET_NAME[i] in ["new_dataset_train", "new_dataset_semi_supervised"]:
-                    ext = 'jpg'
-                else:
-                    ext = 'png'
-                print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
-                      f"of dataset {i + 1} out of {len(cfg.PSEUDOMASKS.DATA_FOLDER)}...")
-                print("DILATION:")
-                process_pseudomasks(cfg,
-                                    method='dilation',
-                                    input_masks=[f'{masks_folder}/*.npz'],
-                                    data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                    output_path=masks_folder,
-                                    img_ext=ext)
-                print("GRABCUT:")
-                process_pseudomasks(cfg,
-                                    method='grabcut',
-                                    input_masks=[f'{masks_folder}/*.npz'],
-                                    data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                    output_path=masks_folder,
-                                    img_ext=ext)
 
         # Train
-        do_train(cfg, model, resume=args.resume, model_weights=None)
+        # do_train(cfg, model, resume=args.resume, model_weights=None)
 
-        # Save the best model for each training round on Weight and Biases
-        if cfg.SOLVER.MAX_TRAINING_ROUNDS > 1:
-            os.rename(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"),
-                      os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
-            wandb.save(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
-            # Need to remove the saved models due to limited space
-            if train_round > 1:  # Remove previous model
-                os.remove(os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round - 1}.pth"))
-        else:
-            wandb.save(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"))
-
+        # Save the best model for each training round
+        # if cfg.SOLVER.MAX_TRAINING_ROUNDS > 1:
+            # os.rename(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"),
+                    #   os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
     return
 
 
 if __name__ == "__main__":
     parser = default_argument_parser()
-    parser.add_argument("-q", "--dry_run", action="store_true", help="Dry run (do not log to wandb)")
+    parser.add_argument("--wandb", action="store_true", help="Log to wandb")
     args = parser.parse_args()
-
-    # easier testing--don't log to wandb if dry run is set
-    if args.dry_run:
-        os.environ['WANDB_MODE'] = 'dryrun'
+    if args.wandb:
+        os.environ['WANDB_MODE'] = 'enabled'
+    else:
+        os.environ['WANDB_MODE'] = 'disabled'
 
     print("Command Line Args:", args)
     launch(

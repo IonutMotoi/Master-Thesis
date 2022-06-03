@@ -26,10 +26,10 @@ def generate_masks_from_bboxes(cfg, data_folder, labels_folder, dest_folder, mod
         bboxes_path = os.path.join(labels_folder, f'{img_id}.txt')
         bboxes = np.loadtxt(bboxes_path, delimiter=" ", dtype=np.float32)
         if bboxes.ndim == 2:
-            classes = bboxes[:, 0].tolist()
+            classes = bboxes[:, 0].astype(int).tolist()
             bboxes = bboxes[:, 1:]
         else:  # only 1 instance
-            classes = [bboxes[0]]
+            classes = [bboxes[0].astype(int)]
             bboxes = [bboxes[1:]]
 
         # Convert bboxes from YOLO format to Pascal VOC format
