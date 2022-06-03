@@ -8,14 +8,14 @@ from torch.nn.parallel import DistributedDataParallel
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import build_detection_test_loader, build_detection_train_loader
-from detectron2.engine import launch, default_argument_parser, default_setup, PeriodicCheckpointer, default_writers
+from detectron2.engine import launch, default_argument_parser, default_setup, default_writers
 from detectron2.evaluation import inference_on_dataset, print_csv_format, COCOEvaluator
 from detectron2.modeling import build_model
 from detectron2.solver import build_optimizer, build_lr_scheduler
 from detectron2.utils import comm
 from detectron2.utils.events import EventStorage
 
-from pseudo_labeling.mask_processing import dilate_pseudomasks, slic_pseudomasks, process_pseudomasks
+from pseudo_labeling.mask_processing import process_pseudomasks
 from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
 from utils.early_stopping import EarlyStopping
 from utils.setup_new_dataset import setup_new_dataset

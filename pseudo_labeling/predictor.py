@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import torch
 from detectron2.checkpoint import DetectionCheckpointer
