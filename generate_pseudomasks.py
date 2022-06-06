@@ -54,7 +54,7 @@ def main(args):
                     f"of dataset {i + 1} out of {num_datasets}...")
             process_pseudomasks(cfg,
                                 method=process_method,
-                                input_masks=f'{dest_folder}/*.npz',
+                                masks_folder=dest_folder,
                                 data_path=data_folder,
                                 output_path=dest_folder,
                                 img_ext=img_ext)
