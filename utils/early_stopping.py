@@ -34,12 +34,14 @@ class EarlyStopping:
             self.wait_count = 0
             self.has_improved = True
         else:
-            self.wait_count += 1
-            print(f"No improvement -> patience: {self.wait_count}/{self.patience}")
             self.has_improved = False
+            if self.patience > 0:
+                self.wait_count += 1
+                print(f"No improvement -> patience: {self.wait_count}/{self.patience}")
 
     def should_stop(self):
-        if self.wait_count == self.patience:
-            return True
-        else:
-            return False
+        if self.patience > 0:
+            if self.wait_count == self.patience:
+                return True
+            else:
+                return False

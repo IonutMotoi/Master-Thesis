@@ -8,23 +8,19 @@ from torch.nn.parallel import DistributedDataParallel
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
 from detectron2.data import build_detection_test_loader, build_detection_train_loader
-from detectron2.engine import launch, default_argument_parser, default_setup, default_writers
+from detectron2.engine import launch, default_argument_parser, default_setup, default_writers, PeriodicCheckpointer
 from detectron2.evaluation import inference_on_dataset, print_csv_format, COCOEvaluator
 from detectron2.modeling import build_model
 from detectron2.solver import build_optimizer, build_lr_scheduler
 from detectron2.utils import comm
 from detectron2.utils.events import EventStorage
 
-from pseudo_labeling.mask_processing import process_pseudomasks
-from pseudo_labeling.masks_from_bboxes import generate_masks_from_bboxes
 from utils.early_stopping import EarlyStopping
-from utils.setup_new_dataset import setup_new_dataset
-from utils.setup_pseudo_bboxes import setup_pseudo_bboxes
-from utils.setup_pseudo_bboxes_skip import setup_pseudo_bboxes_skip
-from utils.setup_wgisd import setup_wgisd
+from utils.setup_source_dataset import setup_source_dataset
+from utils.setup_target_val_test_dataset import setup_target_val_test_dataset
+from utils.setup_target_dataset import setup_target_dataset
 from utils.albumentations_mapper import AlbumentationsMapper
-from utils.loss import ValidationLossEval, MeanTrainLoss
-from utils.visualization import visualize_image_and_annotations
+from utils.loss import MeanTrainLoss
 
 logger = logging.getLogger("detectron2")
 
@@ -49,26 +45,20 @@ def do_test(cfg, model):
     return results
 
 
-def do_train(cfg, model, resume=False, model_weights=None):
+def do_train(cfg, model, patience, resume=False):
     model.train()
     optimizer = build_optimizer(cfg, model)
     scheduler = build_lr_scheduler(cfg, optimizer)
     checkpointer = DetectionCheckpointer(model, cfg.OUTPUT_DIR, optimizer=optimizer, scheduler=scheduler)
-    if model_weights is not None:
-        start_iter = (checkpointer.resume_or_load(model_weights, resume=resume).get("iteration", -1) + 1)
-    else:
-        start_iter = (checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1)
+    start_iter = (checkpointer.resume_or_load(cfg.MODEL.WEIGHTS, resume=resume).get("iteration", -1) + 1)
     max_iter = cfg.SOLVER.MAX_ITER
-    # periodic_checkpointer = PeriodicCheckpointer(checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter, max_to_keep=1)
+    periodic_checkpointer = PeriodicCheckpointer(checkpointer, cfg.SOLVER.CHECKPOINT_PERIOD, max_iter=max_iter, max_to_keep=1)
     writers = default_writers(cfg.OUTPUT_DIR, max_iter) if comm.is_main_process() else []
 
     mapper = AlbumentationsMapper(cfg, is_train=True)
     data_loader = build_detection_train_loader(cfg, mapper=mapper)
-    examples_count = 0  # Counter for saving examples of augmented images on W&B
-    validation_loss_eval_wgisd = ValidationLossEval(cfg, model, "wgisd_valid")
-    validation_loss_eval_new_dataset = ValidationLossEval(cfg, model, "new_dataset_validation")
     mean_train_loss = MeanTrainLoss()
-    early_stopping = EarlyStopping(patience=30)
+    early_stopping = EarlyStopping(patience=patience)
     iters_per_epoch = cfg.SOLVER.ITERS_PER_EPOCH
     epoch = 0
 
@@ -89,7 +79,7 @@ def do_train(cfg, model, resume=False, model_weights=None):
             optimizer.step()
             storage.put_scalar("lr", optimizer.param_groups[0]["lr"], smoothing_hint=False)
             scheduler.step()
-            # periodic_checkpointer.step(iteration)
+            periodic_checkpointer.step(iteration)
 
             # At the end of each epoch
             if (iteration - start_iter + 1) % iters_per_epoch == 0:
@@ -100,12 +90,6 @@ def do_train(cfg, model, resume=False, model_weights=None):
                                         smoothing_hint=False)
                 mean_train_loss.reset()
 
-                # Visualize some examples of augmented images and annotations
-                if examples_count < 10:
-                    image = visualize_image_and_annotations(data[0])
-                    storage.put_image("Example of augmented image", image)
-                    examples_count += 1
-
                 # COCO Evaluation
                 test_results = do_test(cfg, model)
                 for dataset_name, dataset_results in test_results.items():
@@ -113,24 +97,7 @@ def do_train(cfg, model, resume=False, model_weights=None):
                         with storage.name_scope(f"{dataset_name}_{name}"):
                             storage.put_scalars(**results, smoothing_hint=False)
 
-                # Validation loss
-                validation_loss_dict_wgisd = validation_loss_eval_wgisd.get_loss()
-                validation_loss_wgisd = sum(loss for loss in validation_loss_dict_wgisd.values())
-                with storage.name_scope("Validation losses wgisd"):
-                    storage.put_scalars(total_validation_loss_wgisd=validation_loss_wgisd,
-                                        **validation_loss_dict_wgisd,
-                                        smoothing_hint=False)
-                logger.info("Total validation loss -> wgisd: {}".format(validation_loss_wgisd))
-
-                validation_loss_dict_new_dataset = validation_loss_eval_new_dataset.get_loss()
-                validation_loss_new_dataset = sum(loss for loss in validation_loss_dict_new_dataset.values())
-                with storage.name_scope("Validation losses new dataset"):
-                    storage.put_scalars(total_validation_loss_new_dataset=validation_loss_new_dataset,
-                                        **validation_loss_dict_new_dataset,
-                                        smoothing_hint=False)
-                logger.info("Total validation loss -> new dataset: {}".format(validation_loss_new_dataset))
-
-                # Early stopping
+                # Early stopping and best model checkpointing
                 print("#######################################")
                 metric = test_results["new_dataset_validation"]["segm"]["AP"]
                 early_stopping.on_epoch_end(metric, epoch)
@@ -179,90 +146,41 @@ def main(args):
     model = build_model(cfg)
     logger.info("Model:\n{}".format(model))
 
-    # Pseudo-masks will be generated in a subfolder of OUTPUT_DIR
-    pseudo_masks_folder = os.path.join(cfg.OUTPUT_DIR, "pseudomasks")
-
-    # Register datasets
-    setup_wgisd()
-    if cfg.PSEUDOMASKS.PROCESS_METHOD == 'naive':
-        setup_new_dataset(pseudo_masks_folder, naive=True)
-    else:
-        setup_new_dataset(pseudo_masks_folder)
-    # setup_new_dataset(pseudo_masks_folder)
-    setup_pseudo_bboxes(pseudo_masks_folder)
-    setup_pseudo_bboxes_skip(pseudo_masks_folder)
-
     if args.eval_only:
+        setup_target_val_test_dataset()
         DetectionCheckpointer(model, save_dir=cfg.OUTPUT_DIR).resume_or_load(
             cfg.MODEL.WEIGHTS, resume=args.resume
         )
         # Evaluate
         return do_test(cfg, model)
 
+    # Register datasets
+    setup_source_dataset()
+    setup_target_val_test_dataset()
+
+    if cfg.PSEUDOMASKS.ENABLED:
+        for i in range(len(cfg.PSEUDOMASKS.DATASET_NAME)):
+            setup_target_dataset(
+                cfg.PSEUDOMASKS.DATASET_NAME[i], 
+                cfg.PSEUDOMASKS.DATA_FOLDER[i], 
+                cfg.PSEUDOMASKS.EXTENSION[i], 
+                cfg.PSEUDOMASKS.PSEUDOMASKS_FOLDER[i])
+
     distributed = comm.get_world_size() > 1
     if distributed:
         model = DistributedDataParallel(
             model, device_ids=[comm.get_local_rank()], broadcast_buffers=False
-        )
+        )    
 
-    for train_round in range(1, cfg.SOLVER.MAX_TRAINING_ROUNDS + 1):
-        print("#######################################")
-        print(f"Training round {train_round} out of {cfg.SOLVER.MAX_TRAINING_ROUNDS}")
-        print("#######################################")
-
-        if train_round == 1:
-            model_weights = None
-        else:
-            model_weights = os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round - 1}.pth")
-
-        # Generate pseudo-masks
-        if cfg.PSEUDOMASKS.GENERATE:
-            for i in range(len(cfg.PSEUDOMASKS.DATA_FOLDER)):
-                print(f"Generating pseudo-masks for dataset {i + 1} out of {len(cfg.PSEUDOMASKS.DATA_FOLDER)}...")
-                dest_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
-                if cfg.PSEUDOMASKS.DATASET_NAME[i] in ["new_dataset_train", "new_dataset_semi_supervised"]:
-                    ext = 'jpg'
-                else:
-                    ext = 'png'
-                use_bboxes = cfg.PSEUDOMASKS.PROCESS_METHOD != 'naive'
-                generate_masks_from_bboxes(cfg,
-                                           data_folder=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                           labels_folder=cfg.PSEUDOMASKS.LABELS_FOLDER[i],
-                                           dest_folder=dest_folder,
-                                           model_weights=model_weights,
-                                           use_bboxes=use_bboxes,
-                                           img_ext=ext)
-
-        # Post-process pseudo-masks
-        if cfg.PSEUDOMASKS.PROCESS_METHOD in ['dilation', 'slic', 'grabcut']:
-            for i in range(len(cfg.PSEUDOMASKS.DATA_FOLDER)):
-                masks_folder = os.path.join(pseudo_masks_folder, cfg.PSEUDOMASKS.DATASET_NAME[i])
-                if cfg.PSEUDOMASKS.DATASET_NAME[i] in ["new_dataset_train", "new_dataset_semi_supervised"]:
-                    ext = 'jpg'
-                else:
-                    ext = 'png'
-                print(f"Applying post-processing with {cfg.PSEUDOMASKS.PROCESS_METHOD} method to the pseudo-masks "
-                      f"of dataset {i + 1} out of {len(cfg.PSEUDOMASKS.DATA_FOLDER)}...")
-                process_pseudomasks(cfg,
-                                    method=cfg.PSEUDOMASKS.PROCESS_METHOD,
-                                    input_masks=[f'{masks_folder}/*.npz'],
-                                    data_path=cfg.PSEUDOMASKS.DATA_FOLDER[i],
-                                    output_path=masks_folder,
-                                    img_ext=ext)
-
-        # Train
-        # do_train(cfg, model, resume=args.resume, model_weights=None)
-
-        # Save the best model for each training round
-        # if cfg.SOLVER.MAX_TRAINING_ROUNDS > 1:
-            # os.rename(os.path.join(cfg.OUTPUT_DIR, "best_model.pth"),
-                    #   os.path.join(cfg.OUTPUT_DIR, f"best_model_train_round_{train_round}.pth"))
+    # Train
+    do_train(cfg, model, patience=args.patience, resume=args.resume)
     return
 
 
 if __name__ == "__main__":
     parser = default_argument_parser()
     parser.add_argument("--wandb", action="store_true", help="Log to wandb")
+    parser.add_argument("--patience", default=-1, help="Patience value for early stopping (default -1 -> No early stopping")
     args = parser.parse_args()
     if args.wandb:
         os.environ['WANDB_MODE'] = 'enabled'

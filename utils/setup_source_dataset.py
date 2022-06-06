@@ -10,24 +10,16 @@ from utils.bbox_conversion import yolo_bbox_to_pascal_voc
 
 
 # Dataset
-def get_wgisd_dicts(root, source, pseudo_masks_path):
+def get_wgisd_dicts(root, source):
     # Load the dataset subset defined by source
-    assert source in ['train', 'valid', 'test', 'test_detection', 'pseudo_masks'], \
-        'source should be "train", "valid", "test", "test_detection", "pseudo_masks"'
-
-    has_masks = True
+    assert source in ['train', 'valid', 'test'], 'Source should be "train", "valid" or "test"'
 
     if source == "train":
         source_path = os.path.join(root, 'train_split_masked.txt')
     elif source == "valid":
         source_path = os.path.join(root, 'valid_split_masked.txt')
-    elif source == "test":
+    else:  # source == "test"
         source_path = os.path.join(root, 'test_masked.txt')
-    elif source == "test_detection":
-        source_path = os.path.join(root, 'test.txt')
-        has_masks = False
-    else:  # source == "pseudo_masks":
-        source_path = os.path.join(root, 'train_without_masked_train_and_valid_ids.txt')
     root = os.path.join(root, "data")
 
     with open(source_path, 'r') as fp:
@@ -53,17 +45,11 @@ def get_wgisd_dicts(root, source, pseudo_masks_path):
         box_path = os.path.join(root, f'{img_id}.txt')
         bboxes = np.loadtxt(box_path, delimiter=" ", dtype=np.float32)
         bboxes = bboxes[:, 1:]
-
         num_objs = bboxes.shape[0]
 
-        if has_masks:
-            if source == "pseudo_masks":
-                mask_path = os.path.join(pseudo_masks_path, f'{img_id}.npz')
-                masks = np.load(mask_path)['arr_0'].astype(np.uint8)
-            else:
-                mask_path = os.path.join(root, f'{img_id}.npz')
-                masks = np.load(mask_path)['arr_0'].astype(np.uint8)
-            assert (masks.shape[2] == num_objs)
+        mask_path = os.path.join(root, f'{img_id}.npz')
+        masks = np.load(mask_path)['arr_0'].astype(np.uint8)
+        assert (masks.shape[2] == num_objs)
 
         objs = []
         for i in range(num_objs):
@@ -74,10 +60,8 @@ def get_wgisd_dicts(root, source, pseudo_masks_path):
                 "bbox": box,
                 "bbox_mode": BoxMode.XYXY_ABS,  # Pascal VOC bbox format
                 "category_id": 0,
-            }
-            if has_masks:
-                obj["segmentation"] = encode(np.asarray(masks[:, :, i], order="F"))  # COCO’s compressed RLE format
-
+                obj["segmentation"]: encode(np.asarray(masks[:, :, i], order="F"))  # COCO’s compressed RLE format
+            }                
             objs.append(obj)
         record["annotations"] = objs
 
@@ -85,13 +69,10 @@ def get_wgisd_dicts(root, source, pseudo_masks_path):
     return dataset_dicts
 
 
-def setup_wgisd(pseudo_masks_path=None):
-    data_path = "/thesis/datasets/wgisd"
+def setup_source_dataset():
+    data_path = "./datasets/wgisd"
 
-    for name in ["train", "valid", "test"]:
+    for name in ["train"]:  # ["train", "valid", "test"]:
         dataset_name = "wgisd_" + name
-        if dataset_name in DatasetCatalog.list():
-            DatasetCatalog.remove(dataset_name)
-
-        DatasetCatalog.register(dataset_name, lambda d=name: get_wgisd_dicts(data_path, d, pseudo_masks_path))
+        DatasetCatalog.register(dataset_name, lambda d=name: get_wgisd_dicts(data_path, d))
         MetadataCatalog.get(dataset_name).set(thing_classes=["grapes"])
