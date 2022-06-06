@@ -1,6 +1,7 @@
 datasets
 baselines
 output
+pseudomasks
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
