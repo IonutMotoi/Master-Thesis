@@ -11,8 +11,8 @@ from utils.bbox_conversion import yolo_bboxes_to_pascal_voc
 from utils.save import save_masks
 
 
-def generate_masks_from_bboxes(cfg, data_folder, labels_folder, dest_folder, model_weights=None, img_ext='jpg'):
-    ids = [file.stem for file in Path(labels_folder).glob("*.txt")]
+def generate_masks_from_bboxes(cfg, data_folder, dest_folder, model_weights, img_ext):
+    ids = [file.stem for file in Path(data_folder).glob("*.txt")]
     predictor = MasksFromBboxesPredictor(cfg, model_weights=model_weights)
 
     for img_id in tqdm.tqdm(ids):
@@ -22,7 +22,7 @@ def generate_masks_from_bboxes(cfg, data_folder, labels_folder, dest_folder, mod
         img_width = img.shape[1]
 
         # Get bboxes and classes GT
-        bboxes_path = os.path.join(labels_folder, f'{img_id}.txt')
+        bboxes_path = os.path.join(data_folder, f'{img_id}.txt')
         bboxes = np.loadtxt(bboxes_path, delimiter=" ", dtype=np.float32)
         if bboxes.ndim == 2:
             classes = bboxes[:, 0].astype(int).tolist()

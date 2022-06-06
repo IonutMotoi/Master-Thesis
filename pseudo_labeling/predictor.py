@@ -19,19 +19,15 @@ class MasksFromBboxesPredictor:
     3. Apply resizing defined by `cfg.INPUT.{MIN,MAX}_SIZE_TEST` to both image and labels
     4. Take one input image with the bounding boxes and classes and produce a single output, instead of a batch.
     """
-    def __init__(self, cfg, model_weights=None):
+    def __init__(self, cfg, model_weights):
         self.cfg = cfg.clone()  # cfg can be modified by model
         self.model = build_model(self.cfg)
         self.model.eval()
-        if len(cfg.DATASETS.TEST):
+        if len(cfg.DATASETS.TEST) > 0:
             self.metadata = MetadataCatalog.get(cfg.DATASETS.TEST[0])
 
         self.checkpointer = DetectionCheckpointer(self.model, cfg.OUTPUT_DIR)
-
-        if model_weights is not None:
-            self.checkpointer.load(model_weights)
-        else:
-            self.checkpointer.load(self.cfg.PSEUDOMASKS.INITIAL_WEIGHTS)
+        self.checkpointer.load(model_weights)
         
         self.aug = T.ResizeShortestEdge(
             [cfg.INPUT.MIN_SIZE_TEST, cfg.INPUT.MIN_SIZE_TEST], cfg.INPUT.MAX_SIZE_TEST

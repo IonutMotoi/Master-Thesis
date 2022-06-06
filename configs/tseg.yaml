@@ -6,7 +6,6 @@ SOLVER:
   MAX_ITER: 78100  # train for 100 epochs
   CHECKPOINT_PERIOD: 781  # checkpoint every epoch
   ITERS_PER_EPOCH: 781
-  MAX_TRAINING_ROUNDS: 1
 TEST:
   EVAL_PERIOD: 781  # evaluate every epoch
 OUTPUT_DIR: "./output/target_dataset_video_pseudo_labels"
@@ -17,4 +16,13 @@ PSEUDOMASKS:
   DATA_FOLDER: ["./datasets/target_dataset/train", "./datasets/video"]
   PSEUDOMASKS_FOLDER: ["./pseudomasks/target_train", "./pseudomasks/video"]
   EXTENSION: ["jpg", "png"]
-  PROCESS_METHOD: "none"
+  PROCESS_METHOD: "grabcut"
+  MODEL_WEIGHTS: "./baselines/wgisd_R101/best_model.pth"
+  GRABCUT:
+    MEDIAN_BLUR: 0
+  SLIC:
+    SLIC_ZERO: False
+    N_SEGMENTS: 2000
+    COMPACTNESS: 0.1
+    SIGMA: 0
+    THRESHOLD: 0.7

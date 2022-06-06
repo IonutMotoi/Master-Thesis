@@ -158,9 +158,9 @@ def grabcut_pseudomasks(masks, bboxes, image_path, gamma_iters=40, median_blur=0
     return masks
 
 
-def process_pseudomasks(cfg, method, input_masks, data_path, output_path, img_ext='jpg'):
+def process_pseudomasks(cfg, method, input_masks, data_path, output_path, img_ext):
     if len(input_masks) == 1:
-        input_masks = glob.glob(os.path.expanduser(input_masks[0]))
+        input_masks = glob.glob(os.path.expanduser(input_masks))
         assert input_masks, "The input path(s) was not found"
     for path in tqdm.tqdm(input_masks):
         masks = np.load(path)['arr_0'].astype(np.uint8)  # H x W x n
