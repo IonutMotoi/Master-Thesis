@@ -1,6 +1,6 @@
 _BASE_: "./sseg.yaml"
 DATASETS:
-  # 781 (88 + 94 + 599)
+  # 781 images (88 + 94 + 599)
   TRAIN: ("wgisd_train", "target_train", "video")
 SOLVER:
   MAX_ITER: 78100  # train for 100 epochs
